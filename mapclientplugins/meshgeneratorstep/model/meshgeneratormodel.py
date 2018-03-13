@@ -4,7 +4,7 @@ Created on 9 Mar, 2018 from mapclientplugins.meshgeneratorstep.
 @author: Richard Christie
 '''
 
-import os, sys
+import os, string, sys
 import json
 
 from opencmiss.zinc.context import Context
@@ -176,6 +176,14 @@ class MeshGeneratorModel(object):
         for elementRangeText in elementRangesTextIn.split(','):
             try:
                 elementRangeEnds = elementRangeText.split('-')
+                # remove trailing non-numeric characters, workaround for select 's' key ending up there
+                for e in range(len(elementRangeEnds)):
+                    size = len(elementRangeEnds[e])
+                    for i in range(size):
+                        if elementRangeEnds[e][size - i - 1] in string.digits:
+                            break;
+                    if i > 0:
+                        elementRangeEnds[e] = elementRangeEnds[e][:(size - i)]
                 elementRangeStart = int(elementRangeEnds[0])
                 if len(elementRangeEnds) > 1:
                     elementRangeStop = int(elementRangeEnds[1])
@@ -187,6 +195,7 @@ class MeshGeneratorModel(object):
                     elementRanges.append([elementRangeStop, elementRangeStart])
             except:
                 pass
+        elementRanges.sort()
         elementRangesText = ''
         first = True
         for elementRange in elementRanges:
