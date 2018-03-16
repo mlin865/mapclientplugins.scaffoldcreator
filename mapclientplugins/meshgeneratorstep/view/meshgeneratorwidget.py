@@ -82,6 +82,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._doneCallback = doneCallback
 
     def _doneButtonClicked(self):
+        self._ui.dockWidget.setFloating(False)
         self._model.done()
         self._model = None
         self._doneCallback()
