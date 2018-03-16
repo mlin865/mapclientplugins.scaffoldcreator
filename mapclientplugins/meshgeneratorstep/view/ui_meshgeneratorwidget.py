@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mapclientplugins\meshgeneratorstep\qt\meshgeneratorwidget.ui'
 #
-# Created: Fri Sep 29 10:44:37 2017
+# Created: Fri Mar 16 16:28:44 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -24,7 +24,7 @@ class Ui_MeshGeneratorWidget(object):
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.dockWidget = QtGui.QDockWidget(MeshGeneratorWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.dockWidget.sizePolicy().hasHeightForWidth())
         self.dockWidget.setSizePolicy(sizePolicy)
@@ -200,7 +200,7 @@ class Ui_MeshGeneratorWidget(object):
         self.horizontalLayout.addWidget(self.dockWidget)
         self.sceneviewer_widget = SceneviewerWidget(MeshGeneratorWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
-        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setHorizontalStretch(4)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.sceneviewer_widget.sizePolicy().hasHeightForWidth())
         self.sceneviewer_widget.setSizePolicy(sizePolicy)
