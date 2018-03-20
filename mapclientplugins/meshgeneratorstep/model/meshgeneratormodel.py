@@ -14,20 +14,7 @@ from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.material import Material
 from opencmiss.zinc.node import Node
-from scaffoldmaker.meshtypes.meshtype_2d_plate1 import MeshType_2d_plate1
-from scaffoldmaker.meshtypes.meshtype_2d_plate1 import MeshType_2d_plate1
-from scaffoldmaker.meshtypes.meshtype_2d_platehole1 import MeshType_2d_platehole1
-from scaffoldmaker.meshtypes.meshtype_2d_sphere1 import MeshType_2d_sphere1
-from scaffoldmaker.meshtypes.meshtype_2d_tube1 import MeshType_2d_tube1
-from scaffoldmaker.meshtypes.meshtype_3d_box1 import MeshType_3d_box1
-from scaffoldmaker.meshtypes.meshtype_3d_boxhole1 import MeshType_3d_boxhole1
-from scaffoldmaker.meshtypes.meshtype_3d_heartventricles1 import MeshType_3d_heartventricles1
-from scaffoldmaker.meshtypes.meshtype_3d_heartventricles2 import MeshType_3d_heartventricles2
-from scaffoldmaker.meshtypes.meshtype_3d_heartventriclesbase1 import MeshType_3d_heartventriclesbase1
-from scaffoldmaker.meshtypes.meshtype_3d_sphereshell1 import MeshType_3d_sphereshell1
-from scaffoldmaker.meshtypes.meshtype_3d_sphereshellseptum1 import MeshType_3d_sphereshellseptum1
-from scaffoldmaker.meshtypes.meshtype_3d_tube1 import MeshType_3d_tube1
-from scaffoldmaker.meshtypes.meshtype_3d_tubeseptum1 import MeshType_3d_tubeseptum1
+from scaffoldmaker.scaffoldmaker import Scaffoldmaker
 
 STRING_FLOAT_FORMAT = '{:.8g}'
 
@@ -92,22 +79,9 @@ class MeshGeneratorModel(object):
         self._generateMesh()
 
     def _discoverAllMeshTypes(self):
-        self._meshTypes = [
-            MeshType_2d_plate1,
-            MeshType_2d_platehole1,
-            MeshType_2d_sphere1,
-            MeshType_2d_tube1,
-            MeshType_3d_box1,
-            MeshType_3d_boxhole1,
-            MeshType_3d_heartventricles1,
-            MeshType_3d_heartventricles2,
-            MeshType_3d_heartventriclesbase1,
-            MeshType_3d_sphereshell1,
-            MeshType_3d_sphereshellseptum1,
-            MeshType_3d_tube1,
-            MeshType_3d_tubeseptum1
-            ]
-        self._currentMeshType = MeshType_3d_box1
+        scaffoldmaker = Scaffoldmaker()
+        self._meshTypes = scaffoldmaker.getMeshTypes()
+        self._currentMeshType = scaffoldmaker.getDefaultMeshType()
         self._settings['meshTypeName'] = self._currentMeshType.getName()
         self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions()
 
