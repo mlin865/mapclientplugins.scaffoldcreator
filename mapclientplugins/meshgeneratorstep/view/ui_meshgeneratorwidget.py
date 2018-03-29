@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'mapclientplugins\meshgeneratorstep\qt\meshgeneratorwidget.ui'
+# Form implementation generated from reading ui file 'mapclientplugins/meshgeneratorstep/qt/meshgeneratorwidget.ui'
 #
-# Created: Fri Mar 16 16:28:44 2018
+# Created: Thu Mar 29 15:09:37 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,15 +12,13 @@ from PySide import QtCore, QtGui
 class Ui_MeshGeneratorWidget(object):
     def setupUi(self, MeshGeneratorWidget):
         MeshGeneratorWidget.setObjectName("MeshGeneratorWidget")
-        MeshGeneratorWidget.resize(580, 616)
+        MeshGeneratorWidget.resize(1140, 668)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MeshGeneratorWidget.sizePolicy().hasHeightForWidth())
         MeshGeneratorWidget.setSizePolicy(sizePolicy)
         self.horizontalLayout = QtGui.QHBoxLayout(MeshGeneratorWidget)
-        self.horizontalLayout.setSpacing(0)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.dockWidget = QtGui.QDockWidget(MeshGeneratorWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
@@ -54,7 +52,7 @@ class Ui_MeshGeneratorWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents_2 = QtGui.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 364, 531))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 351, 595))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -206,6 +204,38 @@ class Ui_MeshGeneratorWidget(object):
         self.sceneviewer_widget.setSizePolicy(sizePolicy)
         self.sceneviewer_widget.setObjectName("sceneviewer_widget")
         self.horizontalLayout.addWidget(self.sceneviewer_widget)
+        self.dockWidget_AnnotationControls = QtGui.QDockWidget(MeshGeneratorWidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.dockWidget_AnnotationControls.sizePolicy().hasHeightForWidth())
+        self.dockWidget_AnnotationControls.setSizePolicy(sizePolicy)
+        self.dockWidget_AnnotationControls.setObjectName("dockWidget_AnnotationControls")
+        self.dockWidgetContents_2 = QtGui.QWidget()
+        self.dockWidgetContents_2.setObjectName("dockWidgetContents_2")
+        self.verticalLayout_5 = QtGui.QVBoxLayout(self.dockWidgetContents_2)
+        self.verticalLayout_5.setSpacing(0)
+        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.treeWidgetAnnotation = QtGui.QTreeWidget(self.dockWidgetContents_2)
+        self.treeWidgetAnnotation.setAlternatingRowColors(True)
+        self.treeWidgetAnnotation.setSelectionMode(QtGui.QAbstractItemView.MultiSelection)
+        self.treeWidgetAnnotation.setObjectName("treeWidgetAnnotation")
+        item_0 = QtGui.QTreeWidgetItem(self.treeWidgetAnnotation)
+        item_0.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsDragEnabled|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled|QtCore.Qt.ItemIsTristate)
+        item_1 = QtGui.QTreeWidgetItem(item_0)
+        item_1 = QtGui.QTreeWidgetItem(item_0)
+        item_1 = QtGui.QTreeWidgetItem(item_0)
+        item_0 = QtGui.QTreeWidgetItem(self.treeWidgetAnnotation)
+        item_0.setFlags(QtCore.Qt.ItemIsSelectable|QtCore.Qt.ItemIsDragEnabled|QtCore.Qt.ItemIsUserCheckable|QtCore.Qt.ItemIsEnabled|QtCore.Qt.ItemIsTristate)
+        item_1 = QtGui.QTreeWidgetItem(item_0)
+        item_1 = QtGui.QTreeWidgetItem(item_0)
+        item_1 = QtGui.QTreeWidgetItem(item_0)
+        item_0 = QtGui.QTreeWidgetItem(self.treeWidgetAnnotation)
+        item_0 = QtGui.QTreeWidgetItem(self.treeWidgetAnnotation)
+        self.verticalLayout_5.addWidget(self.treeWidgetAnnotation)
+        self.dockWidget_AnnotationControls.setWidget(self.dockWidgetContents_2)
+        self.horizontalLayout.addWidget(self.dockWidget_AnnotationControls)
 
         self.retranslateUi(MeshGeneratorWidget)
         QtCore.QMetaObject.connectSlotsByName(MeshGeneratorWidget)
@@ -230,5 +260,20 @@ class Ui_MeshGeneratorWidget(object):
         self.displayXiAxes_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Xi axes", None, QtGui.QApplication.UnicodeUTF8))
         self.viewAll_button.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "View All", None, QtGui.QApplication.UnicodeUTF8))
         self.done_button.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Done", None, QtGui.QApplication.UnicodeUTF8))
+        self.dockWidget_AnnotationControls.setWindowTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Annotation Controls", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidgetAnnotation.headerItem().setText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "Heart", None, QtGui.QApplication.UnicodeUTF8))
+        __sortingEnabled = self.treeWidgetAnnotation.isSortingEnabled()
+        self.treeWidgetAnnotation.setSortingEnabled(False)
+        self.treeWidgetAnnotation.topLevelItem(0).setText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "left_side_of_heart", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidgetAnnotation.topLevelItem(0).child(0).setText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "ventricle", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidgetAnnotation.topLevelItem(0).child(1).setText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "atrium", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidgetAnnotation.topLevelItem(0).child(2).setText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "auricle", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidgetAnnotation.topLevelItem(1).setText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "right_side_of_heart", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidgetAnnotation.topLevelItem(1).child(0).setText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "ventricle", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidgetAnnotation.topLevelItem(1).child(1).setText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "atrium", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidgetAnnotation.topLevelItem(1).child(2).setText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "auricle", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidgetAnnotation.topLevelItem(2).setText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "apex_of_heart", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidgetAnnotation.topLevelItem(3).setText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "vortex_of_heart", None, QtGui.QApplication.UnicodeUTF8))
+        self.treeWidgetAnnotation.setSortingEnabled(__sortingEnabled)
 
 from opencmiss.zincwidgets.sceneviewerwidget import SceneviewerWidget

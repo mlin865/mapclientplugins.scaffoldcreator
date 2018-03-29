@@ -26,6 +26,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.sceneviewer_widget.graphicsInitialized.connect(self._graphicsInitialized)
         self._model.registerSceneChangeCallback(self._sceneChanged)
         self._doneCallback = None
+        self._populateAnnotationTree()
         self._refreshOptions()
         self._makeConnections()
 
@@ -74,6 +75,36 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displaySurfacesTranslucent_checkBox.clicked.connect(self._displaySurfacesTranslucentClicked)
         self._ui.displaySurfacesWireframe_checkBox.clicked.connect(self._displaySurfacesWireframeClicked)
         self._ui.displayXiAxes_checkBox.clicked.connect(self._displayXiAxesClicked)
+        # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
+        self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
+
+    def _createFMAItem(self, parent, text, fma_id):
+        item = QtGui.QTreeWidgetItem(parent)
+        item.setText(0, text)
+        item.setData(0, QtCore.Qt.UserRole + 1, fma_id)
+        item.setCheckState(0, QtCore.Qt.Unchecked)
+        item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsTristate)
+
+        return item
+
+    def _populateAnnotationTree(self):
+        tree = self._ui.treeWidgetAnnotation
+        tree.clear()
+        rsh_item = self._createFMAItem(tree, 'right side of heart', 'FMA_7165')
+        self._createFMAItem(rsh_item, 'ventricle', 'FMA_7098')
+        self._createFMAItem(rsh_item, 'atrium', 'FMA_7096')
+        self._createFMAItem(rsh_item, 'auricle', 'FMA_7218')
+        lsh_item = self._createFMAItem(tree, 'left side of heart', 'FMA_7166')
+        self._createFMAItem(lsh_item, 'ventricle', 'FMA_7101')
+        self._createFMAItem(lsh_item, 'atrium', 'FMA_7097')
+        self._createFMAItem(lsh_item, 'auricle', 'FMA_7219')
+        apex_item = self._createFMAItem(tree, 'apex of heart', 'FMA_7164')
+        vortex_item = self._createFMAItem(tree, 'vortex of heart', 'FMA_84628')
+
+        self._ui.treeWidgetAnnotation.addTopLevelItem(rsh_item)
+        self._ui.treeWidgetAnnotation.addTopLevelItem(lsh_item)
+        self._ui.treeWidgetAnnotation.addTopLevelItem(apex_item)
+        self._ui.treeWidgetAnnotation.addTopLevelItem(vortex_item)
 
     def getModel(self):
         return self._model
@@ -185,6 +216,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _displayXiAxesClicked(self):
         self._model.setDisplayXiAxes(self._ui.displayXiAxes_checkBox.isChecked())
+
+    def _annotationItemChanged(self, item):
+        print(item.text(0))
+        print(item.data(0, QtCore.Qt.UserRole + 1))
 
     def _viewAll(self):
         '''

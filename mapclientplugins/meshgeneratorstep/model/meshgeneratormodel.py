@@ -16,7 +16,10 @@ from opencmiss.zinc.material import Material
 from opencmiss.zinc.node import Node
 from scaffoldmaker.scaffoldmaker import Scaffoldmaker
 
+from mapclientplugins.meshgeneratorstep.model.meshselectionmodel import MeshSelectionModel
+
 STRING_FLOAT_FORMAT = '{:.8g}'
+
 
 class MeshGeneratorModel(object):
     '''
@@ -56,6 +59,7 @@ class MeshGeneratorModel(object):
         trans_blue.setAttributeReal(Material.ATTRIBUTE_SHININESS , 0.2)
         glyphmodule = self._context.getGlyphmodule()
         glyphmodule.defineStandardGlyphs()
+        self._selection_model = MeshSelectionModel(self)
         self._deleteElementRanges = []
         self._scale = [ 1.0, 1.0, 1.0 ]
         self._settings = {
