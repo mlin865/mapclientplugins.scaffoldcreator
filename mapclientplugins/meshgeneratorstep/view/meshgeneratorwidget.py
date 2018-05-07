@@ -42,6 +42,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
             #self._ui.sceneviewer_widget.setSelectModeAll()
             sceneviewer.setLookatParametersNonSkew([2.0, -2.0, 1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 1.0])
             sceneviewer.setTransparencyMode(sceneviewer.TRANSPARENCY_MODE_SLOW)
+            self._autoPerturbLines()
             self._viewAll()
 
     def _sceneChanged(self):
@@ -49,6 +50,16 @@ class MeshGeneratorWidget(QtGui.QWidget):
         if sceneviewer is not None:
             scene = self._model.getScene()
             self._ui.sceneviewer_widget.setScene(scene)
+            self._autoPerturbLines()
+
+    def _autoPerturbLines(self):
+        '''
+        Enable scene viewer perturb lines iff solid surfaces are drawn with lines.
+        Call whenever lines, surfaces or translucency changes
+        '''
+        sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
+        if sceneviewer is not None:
+            sceneviewer.setPerturbLinesFlag(self._model.needPerturbLines())
 
     def _makeConnections(self):
         self._ui.done_button.clicked.connect(self._doneButtonClicked)
@@ -195,6 +206,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _displayLinesClicked(self):
         self._model.setDisplayLines(self._ui.displayLines_checkBox.isChecked())
+        self._autoPerturbLines()
 
     def _displayNodeDerivativesClicked(self):
         self._model.setDisplayNodeDerivatives(self._ui.displayNodeDerivatives_checkBox.isChecked())
@@ -204,12 +216,14 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _displaySurfacesClicked(self):
         self._model.setDisplaySurfaces(self._ui.displaySurfaces_checkBox.isChecked())
+        self._autoPerturbLines()
 
     def _displaySurfacesExteriorClicked(self):
         self._model.setDisplaySurfacesExterior(self._ui.displaySurfacesExterior_checkBox.isChecked())
 
     def _displaySurfacesTranslucentClicked(self):
         self._model.setDisplaySurfacesTranslucent(self._ui.displaySurfacesTranslucent_checkBox.isChecked())
+        self._autoPerturbLines()
 
     def _displaySurfacesWireframeClicked(self):
         self._model.setDisplaySurfacesWireframe(self._ui.displaySurfacesWireframe_checkBox.isChecked())

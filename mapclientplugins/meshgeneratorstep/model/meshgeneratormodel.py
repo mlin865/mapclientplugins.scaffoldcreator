@@ -335,6 +335,17 @@ class MeshGeneratorModel(object):
     def setDisplayXiAxes(self, show):
         self._setVisibility('displayXiAxes', show)
 
+    def needPerturbLines(self):
+        '''
+        Return if solid surfaces are drawn with lines, requiring perturb lines to be activated.
+        '''
+        if self._region is None:
+            return False
+        mesh2d = self._region.getFieldmodule().findMeshByDimension(2)
+        if mesh2d.getSize() == 0:
+            return False
+        return self.isDisplayLines() and self.isDisplaySurfaces() and not self.isDisplaySurfacesTranslucent()
+
     def _getMesh(self):
         fm = self._region.getFieldmodule()
         for dimension in range(3,0,-1):
