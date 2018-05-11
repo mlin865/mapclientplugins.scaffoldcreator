@@ -16,9 +16,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui = Ui_MeshGeneratorWidget()
         self._ui.setupUi(self)
         self._model = model
+        self._generator_model = model.getGeneratorModel()
         self._ui.sceneviewer_widget.setContext(model.getContext())
         self._ui.sceneviewer_widget.graphicsInitialized.connect(self._graphicsInitialized)
-        self._ui.sceneviewer_widget.setModel(self._model.getAlignmentModel())
+        self._ui.sceneviewer_widget.setModel(self._model.getPlaneModel())
         self._model.registerSceneChangeCallback(self._sceneChanged)
         self._doneCallback = None
         # self._populateAnnotationTree()
@@ -54,16 +55,16 @@ class MeshGeneratorWidget(QtGui.QWidget):
         """
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
         if sceneviewer is not None:
-            sceneviewer.setPerturbLinesFlag(self._model.needPerturbLines())
+            sceneviewer.setPerturbLinesFlag(self._generator_model.needPerturbLines())
 
     def _makeConnections(self):
         self._ui.done_button.clicked.connect(self._doneButtonClicked)
         self._ui.viewAll_button.clicked.connect(self._viewAll)
-        meshTypeNames = self._model.getAllMeshTypeNames()
+        meshTypeNames = self._generator_model.getAllMeshTypeNames()
         index = 0
         for meshTypeName in meshTypeNames:
             self._ui.meshType_comboBox.addItem(meshTypeName)
-            if meshTypeName == self._model.getMeshTypeName():
+            if meshTypeName == self._generator_model.getMeshTypeName():
                 self._ui.meshType_comboBox.setCurrentIndex(index)
             index = index + 1
         self._ui.meshType_comboBox.currentIndexChanged.connect(self._meshTypeChanged)
@@ -126,15 +127,15 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _meshTypeChanged(self, index):
         meshTypeName = self._ui.meshType_comboBox.itemText(index)
-        self._model.setMeshTypeByName(meshTypeName)
+        self._generator_model.setMeshTypeByName(meshTypeName)
         self._refreshMeshTypeOptions()
 
     def _meshTypeOptionCheckBoxClicked(self, checkBox):
-        self._model.setMeshTypeOption(checkBox.objectName(), checkBox.isChecked())
+        self._generator_model.setMeshTypeOption(checkBox.objectName(), checkBox.isChecked())
 
     def _meshTypeOptionLineEditChanged(self, lineEdit):
-        self._model.setMeshTypeOption(lineEdit.objectName(), lineEdit.text())
-        finalValue = self._model.getMeshTypeOption(lineEdit.objectName())
+        self._generator_model.setMeshTypeOption(lineEdit.objectName(), lineEdit.text())
+        finalValue = self._generator_model.getMeshTypeOption(lineEdit.objectName())
         lineEdit.setText(str(finalValue))
 
     def _refreshMeshTypeOptions(self):
@@ -144,9 +145,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
             child = layout.takeAt(0)
             if child.widget():
               child.widget().deleteLater()
-        optionNames = self._model.getMeshTypeOrderedOptionNames()
+        optionNames = self._generator_model.getMeshTypeOrderedOptionNames()
         for key in optionNames:
-            value = self._model.getMeshTypeOption(key)
+            value = self._generator_model.getMeshTypeOption(key)
             # print('key ', key, ' value ', value)
             if type(value) is bool:
                 checkBox = QtGui.QCheckBox(self._ui.meshTypeOptions_frame)
@@ -171,60 +172,60 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _refreshOptions(self):
         self._ui.identifier_label.setText('Identifier:  ' + self._model.getIdentifier())
-        self._ui.deleteElementsRanges_lineEdit.setText(self._model.getDeleteElementsRangesText())
-        self._ui.scale_lineEdit.setText(self._model.getScaleText())
+        self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
+        self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
         self._refreshMeshTypeOptions()
-        self._ui.displayAxes_checkBox.setChecked(self._model.isDisplayAxes())
-        self._ui.displayElementNumbers_checkBox.setChecked(self._model.isDisplayElementNumbers())
-        self._ui.displayLines_checkBox.setChecked(self._model.isDisplayLines())
-        self._ui.displayNodeDerivatives_checkBox.setChecked(self._model.isDisplayNodeDerivatives())
-        self._ui.displayNodeNumbers_checkBox.setChecked(self._model.isDisplayNodeNumbers())
-        self._ui.displaySurfaces_checkBox.setChecked(self._model.isDisplaySurfaces())
-        self._ui.displaySurfacesExterior_checkBox.setChecked(self._model.isDisplaySurfacesExterior())
-        self._ui.displaySurfacesTranslucent_checkBox.setChecked(self._model.isDisplaySurfacesTranslucent())
-        self._ui.displaySurfacesWireframe_checkBox.setChecked(self._model.isDisplaySurfacesWireframe())
-        self._ui.displayXiAxes_checkBox.setChecked(self._model.isDisplayXiAxes())
+        self._ui.displayAxes_checkBox.setChecked(self._generator_model.isDisplayAxes())
+        self._ui.displayElementNumbers_checkBox.setChecked(self._generator_model.isDisplayElementNumbers())
+        self._ui.displayLines_checkBox.setChecked(self._generator_model.isDisplayLines())
+        self._ui.displayNodeDerivatives_checkBox.setChecked(self._generator_model.isDisplayNodeDerivatives())
+        self._ui.displayNodeNumbers_checkBox.setChecked(self._generator_model.isDisplayNodeNumbers())
+        self._ui.displaySurfaces_checkBox.setChecked(self._generator_model.isDisplaySurfaces())
+        self._ui.displaySurfacesExterior_checkBox.setChecked(self._generator_model.isDisplaySurfacesExterior())
+        self._ui.displaySurfacesTranslucent_checkBox.setChecked(self._generator_model.isDisplaySurfacesTranslucent())
+        self._ui.displaySurfacesWireframe_checkBox.setChecked(self._generator_model.isDisplaySurfacesWireframe())
+        self._ui.displayXiAxes_checkBox.setChecked(self._generator_model.isDisplayXiAxes())
 
     def _deleteElementRangesLineEditChanged(self):
-        self._model.setDeleteElementsRangesText(self._ui.deleteElementsRanges_lineEdit.text())
-        self._ui.deleteElementsRanges_lineEdit.setText(self._model.getDeleteElementsRangesText())
+        self._generator_model.setDeleteElementsRangesText(self._ui.deleteElementsRanges_lineEdit.text())
+        self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
 
     def _scaleLineEditChanged(self):
-        self._model.setScaleText(self._ui.scale_lineEdit.text())
-        self._ui.scale_lineEdit.setText(self._model.getScaleText())
+        self._generator_model.setScaleText(self._ui.scale_lineEdit.text())
+        self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
 
     def _displayAxesClicked(self):
-        self._model.setDisplayAxes(self._ui.displayAxes_checkBox.isChecked())
+        self._generator_model.setDisplayAxes(self._ui.displayAxes_checkBox.isChecked())
 
     def _displayElementNumbersClicked(self):
-        self._model.setDisplayElementNumbers(self._ui.displayElementNumbers_checkBox.isChecked())
+        self._generator_model.setDisplayElementNumbers(self._ui.displayElementNumbers_checkBox.isChecked())
 
     def _displayLinesClicked(self):
-        self._model.setDisplayLines(self._ui.displayLines_checkBox.isChecked())
+        self._generator_model.setDisplayLines(self._ui.displayLines_checkBox.isChecked())
         self._autoPerturbLines()
 
     def _displayNodeDerivativesClicked(self):
-        self._model.setDisplayNodeDerivatives(self._ui.displayNodeDerivatives_checkBox.isChecked())
+        self._generator_model.setDisplayNodeDerivatives(self._ui.displayNodeDerivatives_checkBox.isChecked())
 
     def _displayNodeNumbersClicked(self):
-        self._model.setDisplayNodeNumbers(self._ui.displayNodeNumbers_checkBox.isChecked())
+        self._generator_model.setDisplayNodeNumbers(self._ui.displayNodeNumbers_checkBox.isChecked())
 
     def _displaySurfacesClicked(self):
-        self._model.setDisplaySurfaces(self._ui.displaySurfaces_checkBox.isChecked())
+        self._generator_model.setDisplaySurfaces(self._ui.displaySurfaces_checkBox.isChecked())
         self._autoPerturbLines()
 
     def _displaySurfacesExteriorClicked(self):
-        self._model.setDisplaySurfacesExterior(self._ui.displaySurfacesExterior_checkBox.isChecked())
+        self._generator_model.setDisplaySurfacesExterior(self._ui.displaySurfacesExterior_checkBox.isChecked())
 
     def _displaySurfacesTranslucentClicked(self):
-        self._model.setDisplaySurfacesTranslucent(self._ui.displaySurfacesTranslucent_checkBox.isChecked())
+        self._generator_model.setDisplaySurfacesTranslucent(self._ui.displaySurfacesTranslucent_checkBox.isChecked())
         self._autoPerturbLines()
 
     def _displaySurfacesWireframeClicked(self):
-        self._model.setDisplaySurfacesWireframe(self._ui.displaySurfacesWireframe_checkBox.isChecked())
+        self._generator_model.setDisplaySurfacesWireframe(self._ui.displaySurfacesWireframe_checkBox.isChecked())
 
     def _displayXiAxesClicked(self):
-        self._model.setDisplayXiAxes(self._ui.displayXiAxes_checkBox.isChecked())
+        self._generator_model.setDisplayXiAxes(self._ui.displayXiAxes_checkBox.isChecked())
 
     def _annotationItemChanged(self, item):
         print(item.text(0))

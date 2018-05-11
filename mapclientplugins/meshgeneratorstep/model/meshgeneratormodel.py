@@ -4,8 +4,7 @@ Created on 9 Mar, 2018 from mapclientplugins.meshgeneratorstep.
 @author: Richard Christie
 """
 
-import os, string
-import json
+import string
 
 from opencmiss.zinc.field import Field
 from opencmiss.zinc.glyph import Glyph
@@ -14,19 +13,21 @@ from opencmiss.zinc.node import Node
 from scaffoldmaker.scaffoldmaker import Scaffoldmaker
 
 from mapclientplugins.meshgeneratorstep.model.meshalignmentmodel import MeshAlignmentModel
-from mapclientplugins.meshgeneratorstep.model.meshselectionmodel import MeshSelectionModel
 
 STRING_FLOAT_FORMAT = '{:.8g}'
 
 
-class MeshGeneratorModel(object):
+class MeshGeneratorModel(MeshAlignmentModel):
     """
     Framework for generating meshes of a number of types, with mesh type specific options
     """
 
-    def __init__(self, region):
+    def __init__(self, region, material_module):
         self._region_name = "generated_mesh"
         self._parent_region = region
+        self._materialmodule = material_module
+        self._region = None
+        self._sceneChangeCallback = None
         self._deleteElementRanges = []
         self._scale = [ 1.0, 1.0, 1.0 ]
         self._settings = {
@@ -309,17 +310,19 @@ class MeshGeneratorModel(object):
         self._parseScaleText(self._settings['scale'])
 
     def _generateMesh(self):
-        self._parent_region.removeRegion(self._region)
-        self._region = self._context.createChild(self._region_name)
+        if self._region:
+            self._parent_region.removeChild(self._region)
+        self._region = self._parent_region.createChild(self._region_name)
+        self._scene = self._region.getScene()
         fm = self._region.getFieldmodule()
         fm.beginChange()
-        logger = self._context.getLogger()
+        # logger = self._context.getLogger()
         self._currentMeshType.generateMesh(self._region, self._settings['meshTypeOptions'])
-        loggerMessageCount = logger.getNumberOfMessages()
-        if loggerMessageCount > 0:
-            for i in range(1, loggerMessageCount + 1):
-                print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
-            logger.removeAllMessages()
+        # loggerMessageCount = logger.getNumberOfMessages()
+        # if loggerMessageCount > 0:
+        #     for i in range(1, loggerMessageCount + 1):
+        #         print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
+        #     logger.removeAllMessages()
         mesh = self._getMesh()
         # meshDimension = mesh.getDimension()
         nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
@@ -354,7 +357,6 @@ class MeshGeneratorModel(object):
             del scale
         fm.endChange()
         self._createGraphics(self._region)
-        self._alignment_model.resetModel(self._region)
         if self._sceneChangeCallback is not None:
             self._sceneChangeCallback()
 

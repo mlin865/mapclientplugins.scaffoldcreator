@@ -15,15 +15,16 @@ class MasterModel(object):
         self._identifier = identifier
         self._filenameStem = os.path.join(self._location, self._identifier)
         self._context = Context("MeshGenerator")
-        self._generator_model = MeshGeneratorModel()
-        self._plane_model = MeshPlaneModel()
+        self._initialise()
+        self._region = self._context.createRegion()
+        self._generator_model = MeshGeneratorModel(self._region, self._materialmodule)
+        self._plane_model = MeshPlaneModel(self._region)
         self._loadSettings()
 
     def _initialise(self):
         self._filenameStem = os.path.join(self._location, self._identifier)
         tess = self._context.getTessellationmodule().getDefaultTessellation()
         tess.setRefinementFactors(12)
-        self._sceneChangeCallback = None
         # set up standard materials and glyphs so we can use them elsewhere
         self._materialmodule = self._context.getMaterialmodule()
         self._materialmodule.defineStandardMaterials()
@@ -61,6 +62,12 @@ class MasterModel(object):
 
     def getScene(self):
         return self._region.getScene()
+
+    def getContext(self):
+        return self._context
+
+    def registerSceneChangeCallback(self, sceneChangeCallback):
+        self._generator_model.registerSceneChangeCallback(sceneChangeCallback)
 
     def done(self):
         self._saveSettings()
