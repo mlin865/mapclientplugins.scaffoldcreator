@@ -1,45 +1,40 @@
-'''
+"""
 Created on Aug 29, 2017
 
 @author: Richard Christie
-'''
+"""
 from PySide import QtGui, QtCore
 from functools import partial
-from opencmiss.zinc.sceneviewer import Sceneviewer
 
 from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
 
+
 class MeshGeneratorWidget(QtGui.QWidget):
-    '''
-    classdocs
-    '''
 
     def __init__(self, model, parent=None):
-        '''
-        Constructor
-        '''
         super(MeshGeneratorWidget, self).__init__(parent)
         self._ui = Ui_MeshGeneratorWidget()
         self._ui.setupUi(self)
         self._model = model
         self._ui.sceneviewer_widget.setContext(model.getContext())
         self._ui.sceneviewer_widget.graphicsInitialized.connect(self._graphicsInitialized)
+        self._ui.sceneviewer_widget.setModel(self._model.getAlignmentModel())
         self._model.registerSceneChangeCallback(self._sceneChanged)
         self._doneCallback = None
-        self._populateAnnotationTree()
+        # self._populateAnnotationTree()
         self._refreshOptions()
         self._makeConnections()
 
     def _graphicsInitialized(self):
-        '''
+        """
         Callback for when SceneviewerWidget is initialised
         Set custom scene from model
-        '''
+        """
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
         if sceneviewer is not None:
             scene = self._model.getScene()
             self._ui.sceneviewer_widget.setScene(scene)
-            #self._ui.sceneviewer_widget.setSelectModeAll()
+            # self._ui.sceneviewer_widget.setSelectModeAll()
             sceneviewer.setLookatParametersNonSkew([2.0, -2.0, 1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 1.0])
             sceneviewer.setTransparencyMode(sceneviewer.TRANSPARENCY_MODE_SLOW)
             self._autoPerturbLines()
@@ -53,10 +48,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
             self._autoPerturbLines()
 
     def _autoPerturbLines(self):
-        '''
+        """
         Enable scene viewer perturb lines iff solid surfaces are drawn with lines.
         Call whenever lines, surfaces or translucency changes
-        '''
+        """
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
         if sceneviewer is not None:
             sceneviewer.setPerturbLinesFlag(self._model.needPerturbLines())
@@ -87,7 +82,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displaySurfacesWireframe_checkBox.clicked.connect(self._displaySurfacesWireframeClicked)
         self._ui.displayXiAxes_checkBox.clicked.connect(self._displayXiAxesClicked)
         # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
-        self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
+        # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
 
     def _createFMAItem(self, parent, text, fma_id):
         item = QtGui.QTreeWidgetItem(parent)
@@ -236,8 +231,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         print(item.data(0, QtCore.Qt.UserRole + 1))
 
     def _viewAll(self):
-        '''
+        """
         Ask sceneviewer to show all of scene.
-        '''
+        """
         if self._ui.sceneviewer_widget.getSceneviewer() is not None:
             self._ui.sceneviewer_widget.viewAll()
