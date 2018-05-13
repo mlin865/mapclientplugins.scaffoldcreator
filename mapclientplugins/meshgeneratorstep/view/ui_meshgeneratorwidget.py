@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt\meshgeneratorwidget.ui'
 #
-# Created: Thu May 10 12:27:41 2018
+# Created: Fri May 11 14:08:57 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -215,6 +215,21 @@ class Ui_MeshGeneratorWidget(object):
         self.dockWidget_AlignmentControls.setObjectName("dockWidget_AlignmentControls")
         self.dockWidgetContents_3 = QtGui.QWidget()
         self.dockWidgetContents_3.setObjectName("dockWidgetContents_3")
+        self.verticalLayout_5 = QtGui.QVBoxLayout(self.dockWidgetContents_3)
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.horizontalLayout_4 = QtGui.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.label = QtGui.QLabel(self.dockWidgetContents_3)
+        self.label.setObjectName("label")
+        self.horizontalLayout_4.addWidget(self.label)
+        self.activeModel_comboBox = QtGui.QComboBox(self.dockWidgetContents_3)
+        self.activeModel_comboBox.setObjectName("activeModel_comboBox")
+        self.activeModel_comboBox.addItem("")
+        self.activeModel_comboBox.addItem("")
+        self.horizontalLayout_4.addWidget(self.activeModel_comboBox)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_4)
+        spacerItem1 = QtGui.QSpacerItem(20, 579, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_5.addItem(spacerItem1)
         self.dockWidget_AlignmentControls.setWidget(self.dockWidgetContents_3)
         self.horizontalLayout.addWidget(self.dockWidget_AlignmentControls)
 
@@ -242,5 +257,8 @@ class Ui_MeshGeneratorWidget(object):
         self.viewAll_button.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "View All", None, QtGui.QApplication.UnicodeUTF8))
         self.done_button.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Done", None, QtGui.QApplication.UnicodeUTF8))
         self.dockWidget_AlignmentControls.setWindowTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Alignment Controls", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Active Model:", None, QtGui.QApplication.UnicodeUTF8))
+        self.activeModel_comboBox.setItemText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "Image Plane", None, QtGui.QApplication.UnicodeUTF8))
+        self.activeModel_comboBox.setItemText(1, QtGui.QApplication.translate("MeshGeneratorWidget", "Genereated Mesh", None, QtGui.QApplication.UnicodeUTF8))
 
 from opencmiss.zincwidgets.alignmentsceneviewerwidget import AlignmentSceneviewerWidget

@@ -23,6 +23,7 @@ class MeshGeneratorModel(MeshAlignmentModel):
     """
 
     def __init__(self, region, material_module):
+        super(MeshGeneratorModel, self).__init__()
         self._region_name = "generated_mesh"
         self._parent_region = region
         self._materialmodule = material_module

@@ -82,6 +82,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displaySurfacesTranslucent_checkBox.clicked.connect(self._displaySurfacesTranslucentClicked)
         self._ui.displaySurfacesWireframe_checkBox.clicked.connect(self._displaySurfacesWireframeClicked)
         self._ui.displayXiAxes_checkBox.clicked.connect(self._displayXiAxesClicked)
+        self._ui.activeModel_comboBox.currentIndexChanged.connect(self._activeModelChanged)
         # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
         # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
 
@@ -124,6 +125,12 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._model.done()
         self._model = None
         self._doneCallback()
+
+    def _activeModelChanged(self, index):
+        if index == 0:
+            self._ui.sceneviewer_widget.setModel(self._model.getPlaneModel())
+        else:
+            self._ui.sceneviewer_widget.setModel(self._model.getGeneratorModel())
 
     def _meshTypeChanged(self, index):
         meshTypeName = self._ui.meshType_comboBox.itemText(index)
