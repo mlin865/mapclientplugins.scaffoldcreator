@@ -1,6 +1,8 @@
 
 import json
 
+from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_WINDOW_PIXEL_BOTTOM_LEFT
+
 from opencmiss.utils.maths import vectorops
 
 
@@ -15,8 +17,9 @@ class MeshAlignmentModel(object):
     def isStateAlign(self):
         return self._isStateAlign
 
-    def setStateAlign(self):
-        self._isStateAlign = True
+    def setStateAlign(self, state=True):
+        self._isStateAlign = state
+        self._updateAlignModeGraphic()
 
     def setAlignSettingsChangeCallback(self, alignSettingsChangeCallback):
         self._alignSettingsChangeCallback = alignSettingsChangeCallback
@@ -64,6 +67,9 @@ class MeshAlignmentModel(object):
         self._resetAlignSettings()
         self._applyAlignSettings()
 
+    def applyAlignment(self):
+        self._applyAlignSettings()
+
     def loadAlignSettings(self):
         with open(self._location + '-align-settings.json', 'r') as f:
             self._alignSettings.update(json.loads(f.read()))
@@ -95,6 +101,22 @@ class MeshAlignmentModel(object):
         if self._alignSettingsChangeCallback is not None:
             self._alignSettingsChangeCallback()
 
+    def _updateAlignModeGraphic(self):
+        if self._scene is not None:
+            graphics = self._scene.findGraphicsByName("align-mode-indicator")
+            if not graphics.isValid():
+                materialmodule = self._scene.getMaterialmodule()
+                graphics = self._scene.createGraphicsPoints()
+                graphics.setName("align-mode-indicator")
+                pointAttr = graphics.getGraphicspointattributes()
+                pointAttr.setBaseSize(1)
+                pointAttr.setLabelText(1, "Aligning")
+                pointAttr.setGlyphOffset([3, 5, 0])
+                graphics.setMaterial(materialmodule.findMaterialByName('yellow'))
+                graphics.setScenecoordinatesystem(SCENECOORDINATESYSTEM_WINDOW_PIXEL_BOTTOM_LEFT)
+
+            graphics.setVisibilityFlag(self._isStateAlign)
+
     def _clear(self):
         """
         Ensure scene for this region is not in use before calling!
@@ -102,4 +124,4 @@ class MeshAlignmentModel(object):
         self._scene = None
         self._alignSettingsChangeCallback = None
         self._resetAlignSettings()
-        self._isStateAlign = True
+        self._isStateAlign = False

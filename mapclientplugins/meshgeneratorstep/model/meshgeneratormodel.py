@@ -460,6 +460,7 @@ class MeshGeneratorModel(MeshAlignmentModel):
         xiAxes.setName('displayXiAxes')
         xiAxes.setVisibilityFlag(self.isDisplayXiAxes())
 
+        self.applyAlignment()
         scene.endChange()
 
     def writeModel(self, file_name):

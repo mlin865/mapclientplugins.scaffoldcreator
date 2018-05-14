@@ -7,6 +7,7 @@ from PySide import QtGui, QtCore
 from functools import partial
 
 from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
+from opencmiss.utils.maths import vectorops
 
 
 class MeshGeneratorWidget(QtGui.QWidget):
@@ -83,6 +84,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displaySurfacesWireframe_checkBox.clicked.connect(self._displaySurfacesWireframeClicked)
         self._ui.displayXiAxes_checkBox.clicked.connect(self._displayXiAxesClicked)
         self._ui.activeModel_comboBox.currentIndexChanged.connect(self._activeModelChanged)
+        self._ui.image_pushButton.clicked.connect(self._imageButtonClicked)
         # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
         # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
 
@@ -125,6 +127,16 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._model.done()
         self._model = None
         self._doneCallback()
+
+    def _imageButtonClicked(self):
+        sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
+        normal, up, offset = self._model.getPlaneModel().getPlaneInfo()
+        _, current_lookat_pos = sceneviewer.getLookatPosition()
+        _, current_eye_pos = sceneviewer.getEyePosition()
+        view_distance = vectorops.magnitude(vectorops.sub(current_eye_pos, current_lookat_pos))
+        eye_pos = vectorops.add(vectorops.mult(normal, view_distance), offset)
+        lookat_pos = offset
+        sceneviewer.setLookatParametersNonSkew(eye_pos, lookat_pos, up)
 
     def _activeModelChanged(self, index):
         if index == 0:
