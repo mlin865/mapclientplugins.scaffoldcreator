@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt\meshgeneratorwidget.ui'
 #
-# Created: Mon May 14 14:54:08 2018
+# Created: Mon May 14 14:56:31 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -236,11 +236,9 @@ class Ui_MeshGeneratorWidget(object):
         self.image_pushButton = QtGui.QPushButton(self.dockWidgetContents_3)
         self.image_pushButton.setObjectName("image_pushButton")
         self.horizontalLayout_5.addWidget(self.image_pushButton)
-        spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_5.addItem(spacerItem1)
         self.verticalLayout_5.addLayout(self.horizontalLayout_5)
-        spacerItem2 = QtGui.QSpacerItem(20, 548, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout_5.addItem(spacerItem2)
+        spacerItem1 = QtGui.QSpacerItem(20, 548, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_5.addItem(spacerItem1)
         self.dockWidget_AlignmentControls.setWidget(self.dockWidgetContents_3)
         self.horizontalLayout.addWidget(self.dockWidget_AlignmentControls)
 
