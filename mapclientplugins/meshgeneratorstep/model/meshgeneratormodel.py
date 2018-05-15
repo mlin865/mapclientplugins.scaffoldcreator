@@ -425,7 +425,7 @@ class MeshGeneratorModel(MeshAlignmentModel):
                 if first or (absScale < minScale):
                     minScale = absScale
                     first = False
-        width = 0.02*minScale
+        width = 0.01*minScale
 
         nodeDerivativeMaterialNames = [ 'gold', 'silver', 'green' ]
         for i in range(meshDimension):
