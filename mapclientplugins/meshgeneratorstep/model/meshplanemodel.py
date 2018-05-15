@@ -31,17 +31,18 @@ class MeshPlaneModel(MeshAlignmentModel):
 
     def setImageInfo(self, image_info):
         images = []
-        location = image_info.location()
-        if os.path.isdir(location):
-            for item in sorted(os.listdir(location), key=alphanum_key):
-                image_candidate = os.path.join(location, item)
-                if imghdr.what(image_candidate):
-                    images.append(image_candidate)
-        elif os.path.exists(location):
-            if imghdr.what(location):
-                images.append(location)
+        if image_info is not None:
+            location = image_info.location()
+            if os.path.isdir(location):
+                for item in sorted(os.listdir(location), key=alphanum_key):
+                    image_candidate = os.path.join(location, item)
+                    if imghdr.what(image_candidate):
+                        images.append(image_candidate)
+            elif os.path.exists(location):
+                if imghdr.what(location):
+                    images.append(location)
 
-        self._load_images(images)
+            self._load_images(images)
 
     def _load_images(self, images):
         fieldmodule = self._region.getFieldmodule()
