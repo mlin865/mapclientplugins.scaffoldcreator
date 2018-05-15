@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'mapclientplugins\meshgeneratorstep\qt\meshgeneratorwidget.ui'
+# Form implementation generated from reading ui file 'qt\meshgeneratorwidget.ui'
 #
-# Created: Fri Mar 16 16:28:44 2018
+# Created: Mon May 14 14:56:31 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,15 +12,13 @@ from PySide import QtCore, QtGui
 class Ui_MeshGeneratorWidget(object):
     def setupUi(self, MeshGeneratorWidget):
         MeshGeneratorWidget.setObjectName("MeshGeneratorWidget")
-        MeshGeneratorWidget.resize(580, 616)
+        MeshGeneratorWidget.resize(1140, 668)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(MeshGeneratorWidget.sizePolicy().hasHeightForWidth())
         MeshGeneratorWidget.setSizePolicy(sizePolicy)
         self.horizontalLayout = QtGui.QHBoxLayout(MeshGeneratorWidget)
-        self.horizontalLayout.setSpacing(0)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.dockWidget = QtGui.QDockWidget(MeshGeneratorWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
@@ -54,7 +52,7 @@ class Ui_MeshGeneratorWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents_2 = QtGui.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 364, 531))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 351, 595))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -198,7 +196,7 @@ class Ui_MeshGeneratorWidget(object):
         self.verticalLayout.addWidget(self.frame)
         self.dockWidget.setWidget(self.dockWidgetContents)
         self.horizontalLayout.addWidget(self.dockWidget)
-        self.sceneviewer_widget = SceneviewerWidget(MeshGeneratorWidget)
+        self.sceneviewer_widget = AlignmentSceneviewerWidget(MeshGeneratorWidget)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(4)
         sizePolicy.setVerticalStretch(0)
@@ -206,12 +204,49 @@ class Ui_MeshGeneratorWidget(object):
         self.sceneviewer_widget.setSizePolicy(sizePolicy)
         self.sceneviewer_widget.setObjectName("sceneviewer_widget")
         self.horizontalLayout.addWidget(self.sceneviewer_widget)
+        self.dockWidget_AlignmentControls = QtGui.QDockWidget(MeshGeneratorWidget)
+        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.dockWidget_AlignmentControls.sizePolicy().hasHeightForWidth())
+        self.dockWidget_AlignmentControls.setSizePolicy(sizePolicy)
+        self.dockWidget_AlignmentControls.setFeatures(QtGui.QDockWidget.DockWidgetFloatable|QtGui.QDockWidget.DockWidgetMovable)
+        self.dockWidget_AlignmentControls.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea|QtCore.Qt.RightDockWidgetArea)
+        self.dockWidget_AlignmentControls.setObjectName("dockWidget_AlignmentControls")
+        self.dockWidgetContents_3 = QtGui.QWidget()
+        self.dockWidgetContents_3.setObjectName("dockWidgetContents_3")
+        self.verticalLayout_5 = QtGui.QVBoxLayout(self.dockWidgetContents_3)
+        self.verticalLayout_5.setObjectName("verticalLayout_5")
+        self.horizontalLayout_4 = QtGui.QHBoxLayout()
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.label = QtGui.QLabel(self.dockWidgetContents_3)
+        self.label.setObjectName("label")
+        self.horizontalLayout_4.addWidget(self.label)
+        self.activeModel_comboBox = QtGui.QComboBox(self.dockWidgetContents_3)
+        self.activeModel_comboBox.setObjectName("activeModel_comboBox")
+        self.activeModel_comboBox.addItem("")
+        self.activeModel_comboBox.addItem("")
+        self.horizontalLayout_4.addWidget(self.activeModel_comboBox)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_4)
+        self.horizontalLayout_5 = QtGui.QHBoxLayout()
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.label_2 = QtGui.QLabel(self.dockWidgetContents_3)
+        self.label_2.setObjectName("label_2")
+        self.horizontalLayout_5.addWidget(self.label_2)
+        self.image_pushButton = QtGui.QPushButton(self.dockWidgetContents_3)
+        self.image_pushButton.setObjectName("image_pushButton")
+        self.horizontalLayout_5.addWidget(self.image_pushButton)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_5)
+        spacerItem1 = QtGui.QSpacerItem(20, 548, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout_5.addItem(spacerItem1)
+        self.dockWidget_AlignmentControls.setWidget(self.dockWidgetContents_3)
+        self.horizontalLayout.addWidget(self.dockWidget_AlignmentControls)
 
         self.retranslateUi(MeshGeneratorWidget)
         QtCore.QMetaObject.connectSlotsByName(MeshGeneratorWidget)
 
     def retranslateUi(self, MeshGeneratorWidget):
-        MeshGeneratorWidget.setWindowTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        MeshGeneratorWidget.setWindowTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Mesh Generator", None, QtGui.QApplication.UnicodeUTF8))
         self.dockWidget.setWindowTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Mesh Generator Controls", None, QtGui.QApplication.UnicodeUTF8))
         self.identifier_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Identifier", None, QtGui.QApplication.UnicodeUTF8))
         self.meshType_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Mesh type:", None, QtGui.QApplication.UnicodeUTF8))
@@ -230,5 +265,11 @@ class Ui_MeshGeneratorWidget(object):
         self.displayXiAxes_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Xi axes", None, QtGui.QApplication.UnicodeUTF8))
         self.viewAll_button.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "View All", None, QtGui.QApplication.UnicodeUTF8))
         self.done_button.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Done", None, QtGui.QApplication.UnicodeUTF8))
+        self.dockWidget_AlignmentControls.setWindowTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Alignment Controls", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Active Model:", None, QtGui.QApplication.UnicodeUTF8))
+        self.activeModel_comboBox.setItemText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "Image Plane", None, QtGui.QApplication.UnicodeUTF8))
+        self.activeModel_comboBox.setItemText(1, QtGui.QApplication.translate("MeshGeneratorWidget", "Genereated Mesh", None, QtGui.QApplication.UnicodeUTF8))
+        self.label_2.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Reset View:", None, QtGui.QApplication.UnicodeUTF8))
+        self.image_pushButton.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "To Image", None, QtGui.QApplication.UnicodeUTF8))
 
-from opencmiss.zincwidgets.sceneviewerwidget import SceneviewerWidget
+from opencmiss.zincwidgets.alignmentsceneviewerwidget import AlignmentSceneviewerWidget
