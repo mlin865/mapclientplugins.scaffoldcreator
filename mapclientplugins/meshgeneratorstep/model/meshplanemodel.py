@@ -6,6 +6,8 @@ import get_image_size
 from opencmiss.utils.maths import vectorops
 from opencmiss.utils.zinc import createFiniteElementField, createSquare2DFiniteElement, createImageField, \
     createMaterialUsingImageField
+from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE, \
+    SCENECOORDINATESYSTEM_LOCAL
 
 from mapclientplugins.meshgeneratorstep.model.meshalignmentmodel import MeshAlignmentModel
 
@@ -15,9 +17,9 @@ class MeshPlaneModel(MeshAlignmentModel):
     def __init__(self, region):
         super(MeshPlaneModel, self).__init__()
         self._region_name = "plane_mesh"
+        self._image_plane_fixed = False
         self._parent_region = region
         self._region = None
-        self._reset()
 
     def getPlaneInfo(self):
         original_up = [0.0, 1.0, 0.0]
@@ -42,7 +44,15 @@ class MeshPlaneModel(MeshAlignmentModel):
                 if imghdr.what(location):
                     images.append(location)
 
+            self._reset()
             self._load_images(images)
+
+    def setImagePlaneFixed(self, state):
+        graphics = self._scene.findGraphicsByName("plane-surfaces")
+        if graphics.isValid() and state:
+            graphics.setScenecoordinatesystem(SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE )
+        elif graphics.isValid() and not state:
+            graphics.setScenecoordinatesystem(SCENECOORDINATESYSTEM_LOCAL)
 
     def _load_images(self, images):
         fieldmodule = self._region.getFieldmodule()

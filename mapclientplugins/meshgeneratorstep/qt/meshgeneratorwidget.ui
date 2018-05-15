@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1140</width>
-    <height>668</height>
+    <width>1006</width>
+    <height>638</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -41,7 +41,7 @@
       <set>Qt::AllDockWidgetAreas</set>
      </property>
      <property name="windowTitle">
-      <string>Mesh Generator Controls</string>
+      <string>Control Panel</string>
      </property>
      <widget class="QWidget" name="dockWidgetContents">
       <property name="sizePolicy">
@@ -83,7 +83,7 @@
             <x>0</x>
             <y>0</y>
             <width>351</width>
-            <height>595</height>
+            <height>565</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -304,6 +304,64 @@
                   </property>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QCheckBox" name="imagePlane_checkBox">
+                  <property name="text">
+                   <string>Image plane</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="fixImagePlane_checkBox">
+                  <property name="text">
+                   <string>Fix image plane</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QGroupBox" name="alignment_groupBox">
+               <property name="title">
+                <string>Alignment</string>
+               </property>
+               <layout class="QGridLayout" name="gridLayout">
+                <item row="0" column="0">
+                 <widget class="QLabel" name="activeModel_label">
+                  <property name="text">
+                   <string>Active Model:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1" colspan="2">
+                 <widget class="QComboBox" name="activeModel_comboBox">
+                  <item>
+                   <property name="text">
+                    <string>Image Plane</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>Genereated Mesh</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item row="1" column="0" colspan="2">
+                 <widget class="QLabel" name="toImage_label">
+                  <property name="text">
+                   <string>Reset View:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="2">
+                 <widget class="QPushButton" name="toImage_pushButton">
+                  <property name="text">
+                   <string>To Image</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </widget>
              </item>
@@ -373,86 +431,6 @@
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <zorder>dockWidget_AlignmentControls</zorder>
-    </widget>
-   </item>
-   <item>
-    <widget class="QDockWidget" name="dockWidget_AlignmentControls">
-     <property name="sizePolicy">
-      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-       <horstretch>1</horstretch>
-       <verstretch>0</verstretch>
-      </sizepolicy>
-     </property>
-     <property name="features">
-      <set>QDockWidget::DockWidgetFloatable|QDockWidget::DockWidgetMovable</set>
-     </property>
-     <property name="allowedAreas">
-      <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
-     </property>
-     <property name="windowTitle">
-      <string>Alignment Controls</string>
-     </property>
-     <widget class="QWidget" name="dockWidgetContents_3">
-      <layout class="QVBoxLayout" name="verticalLayout_5">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_4">
-         <item>
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Active Model:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QComboBox" name="activeModel_comboBox">
-           <item>
-            <property name="text">
-             <string>Image Plane</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Genereated Mesh</string>
-            </property>
-           </item>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
-         <item>
-          <widget class="QLabel" name="label_2">
-           <property name="text">
-            <string>Reset View:</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="image_pushButton">
-           <property name="text">
-            <string>To Image</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-       <item>
-        <spacer name="verticalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>548</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-      </layout>
-     </widget>
     </widget>
    </item>
   </layout>

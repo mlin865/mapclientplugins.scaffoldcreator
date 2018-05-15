@@ -84,7 +84,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displaySurfacesWireframe_checkBox.clicked.connect(self._displaySurfacesWireframeClicked)
         self._ui.displayXiAxes_checkBox.clicked.connect(self._displayXiAxesClicked)
         self._ui.activeModel_comboBox.currentIndexChanged.connect(self._activeModelChanged)
-        self._ui.image_pushButton.clicked.connect(self._imageButtonClicked)
+        self._ui.toImage_pushButton.clicked.connect(self._imageButtonClicked)
         # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
         # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
 
@@ -121,6 +121,15 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def registerDoneExecution(self, doneCallback):
         self._doneCallback = doneCallback
+
+    def setImageInfo(self, image_info):
+        self._model.getPlaneModel().setImageInfo(image_info)
+        if image_info is None:
+            self._model.getGeneratorModel().disableAlignment()
+            self._model.getPlaneModel().disableAlignment()
+            self._ui.alignment_groupBox.setVisible(False)
+            self._ui.fixImagePlane_checkBox.setVisible(False)
+            self._ui.imagePlane_checkBox.setVisible(False)
 
     def _doneButtonClicked(self):
         self._ui.dockWidget.setFloating(False)
