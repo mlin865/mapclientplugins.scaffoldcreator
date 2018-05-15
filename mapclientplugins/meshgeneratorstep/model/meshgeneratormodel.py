@@ -48,7 +48,6 @@ class MeshGeneratorModel(MeshAlignmentModel):
             'displayXiAxes' : False
         }
         self._discoverAllMeshTypes()
-        self._generateMesh()
 
     def _discoverAllMeshTypes(self):
         scaffoldmaker = Scaffoldmaker()
@@ -309,6 +308,7 @@ class MeshGeneratorModel(MeshAlignmentModel):
         self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions()
         self._settings['meshTypeOptions'].update(savedMeshTypeOptions)
         self._parseScaleText(self._settings['scale'])
+        self._generateMesh()
 
     def _generateMesh(self):
         if self._region:
@@ -425,7 +425,7 @@ class MeshGeneratorModel(MeshAlignmentModel):
                 if first or (absScale < minScale):
                     minScale = absScale
                     first = False
-        width = 0.02*minScale
+        width = 0.01*minScale
 
         nodeDerivativeMaterialNames = [ 'gold', 'silver', 'green' ]
         for i in range(meshDimension):

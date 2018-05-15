@@ -73,20 +73,25 @@ class MasterModel(object):
         self._saveSettings()
         self._generator_model.writeModel(self.getOutputModelFilename())
 
+    def _getSettings(self):
+        generator_settings = self._generator_model.getSettings()
+        return {'generator_settings': generator_settings}
+
     def _loadSettings(self):
         try:
             settings = {}
             with open(self._filenameStem + '-settings.json', 'r') as f:
                 settings.update(json.loads(f.read()))
-
-            if 'generator_settings' in settings:
-                self._generator_model.setSettings(settings['generator_settings'])
+            if not 'generator_settings' in settings:
+                # migrate from old settings before named generator_settings
+                settings = {'generator_settings': settings}
         except:
-            pass  # no settings saved yet
+            # no settings saved yet, following gets defaults
+            settings = self._getSettings()
+        self._generator_model.setSettings(settings['generator_settings'])
 
     def _saveSettings(self):
-        generator_settings = self._generator_model.getSettings()
-        settings = {'generator_settings': generator_settings}
+        settings = self._getSettings()
         with open(self._filenameStem + '-settings.json', 'w') as f:
             f.write(json.dumps(settings, default=lambda o: o.__dict__, sort_keys=True, indent=4))
 
