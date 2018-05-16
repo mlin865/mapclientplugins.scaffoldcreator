@@ -56,8 +56,10 @@ class MeshPlaneModel(MeshAlignmentModel):
         return self._settings['image-plane-fixed']
 
     def setImagePlaneFixed(self, state):
-        graphics = self._scene.findGraphicsByName("plane-surfaces")
         self._settings['image-plane-fixed'] = state
+        if self._scene is None:
+            return
+        graphics = self._scene.findGraphicsByName("plane-surfaces")
         if graphics.isValid() and state:
             matrix = self._scene.getTransformationMatrix()
             print(matrix)
@@ -70,7 +72,8 @@ class MeshPlaneModel(MeshAlignmentModel):
 
     def setImagePlaneVisible(self, state):
         self._settings['display-image-plane'] = state
-        self._scene.setVisibilityFlag(state)
+        if self._scene is not None:
+            self._scene.setVisibilityFlag(state)
 
     def getSettings(self):
         self._settings['alignment'].update(self.getAlignSettings())
@@ -129,6 +132,7 @@ class MeshPlaneModel(MeshAlignmentModel):
         surfaces.setCoordinateField(self._scaledCoordinateField)
         surfaces.setTextureCoordinateField(xi)
         surfaces.setMaterial(materialmodule.findMaterialByName('silver'))
+        scene.setVisibilityFlag(self.isDisplayImagePlane())
         scene.endChange()
 
 

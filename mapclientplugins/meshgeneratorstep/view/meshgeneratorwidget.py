@@ -129,7 +129,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
             self._plane_model.disableAlignment()
             self._ui.alignment_groupBox.setVisible(False)
             self._ui.fixImagePlane_checkBox.setVisible(False)
-            self._ui.imagePlane_checkBox.setVisible(False)
+            self._ui.displayImagePlane_checkBox.setVisible(False)
 
     def _doneButtonClicked(self):
         self._ui.dockWidget.setFloating(False)
