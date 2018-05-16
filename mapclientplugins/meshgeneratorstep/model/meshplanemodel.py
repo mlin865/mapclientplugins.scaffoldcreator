@@ -20,6 +20,11 @@ class MeshPlaneModel(MeshAlignmentModel):
         self._image_plane_fixed = False
         self._parent_region = region
         self._region = None
+        self._settings = {
+            'display-image-plane': True,
+            'image-plane-fixed': False,
+            'alignment': {},
+        }
 
     def getPlaneInfo(self):
         original_up = [0.0, 1.0, 0.0]
@@ -47,12 +52,34 @@ class MeshPlaneModel(MeshAlignmentModel):
             self._reset()
             self._load_images(images)
 
+    def isImagePlaneFixed(self):
+        return self._settings['image-plane-fixed']
+
     def setImagePlaneFixed(self, state):
         graphics = self._scene.findGraphicsByName("plane-surfaces")
+        self._settings['image-plane-fixed'] = state
         if graphics.isValid() and state:
             graphics.setScenecoordinatesystem(SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE )
         elif graphics.isValid() and not state:
             graphics.setScenecoordinatesystem(SCENECOORDINATESYSTEM_LOCAL)
+
+    def isDisplayImagePlane(self):
+        return self._settings['display-image-plane']
+
+    def setImagePlaneVisible(self, state):
+        self._settings['display-image-plane'] = state
+        self._scene.setVisibilityFlag(state)
+
+    def getSettings(self):
+        self._settings['alignment'].update(self.getAlignSettings())
+        return self._settings
+
+    def setSettings(self, settings):
+        self._settings.update(settings)
+        self.setImagePlaneVisible(settings['display-image-plane'])
+        self.setImagePlaneFixed(settings['image-plane-fixed'])
+        if 'alignment' in settings:
+            self.setAlignSettings(settings['alignment'])
 
     def _load_images(self, images):
         fieldmodule = self._region.getFieldmodule()

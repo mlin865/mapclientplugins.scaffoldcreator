@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt\meshgeneratorwidget.ui'
 #
-# Created: Wed May 16 10:43:26 2018
+# Created: Wed May 16 11:58:06 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -169,9 +169,9 @@ class Ui_MeshGeneratorWidget(object):
         self.displayXiAxes_checkBox = QtGui.QCheckBox(self.displayOptions_groupBox)
         self.displayXiAxes_checkBox.setObjectName("displayXiAxes_checkBox")
         self.verticalLayout_7.addWidget(self.displayXiAxes_checkBox)
-        self.imagePlane_checkBox = QtGui.QCheckBox(self.displayOptions_groupBox)
-        self.imagePlane_checkBox.setObjectName("imagePlane_checkBox")
-        self.verticalLayout_7.addWidget(self.imagePlane_checkBox)
+        self.displayImagePlane_checkBox = QtGui.QCheckBox(self.displayOptions_groupBox)
+        self.displayImagePlane_checkBox.setObjectName("displayImagePlane_checkBox")
+        self.verticalLayout_7.addWidget(self.displayImagePlane_checkBox)
         self.fixImagePlane_checkBox = QtGui.QCheckBox(self.displayOptions_groupBox)
         self.fixImagePlane_checkBox.setObjectName("fixImagePlane_checkBox")
         self.verticalLayout_7.addWidget(self.fixImagePlane_checkBox)
@@ -251,12 +251,12 @@ class Ui_MeshGeneratorWidget(object):
         self.displayNodeNumbers_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Node numbers", None, QtGui.QApplication.UnicodeUTF8))
         self.displayNodeDerivatives_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Node derivatives", None, QtGui.QApplication.UnicodeUTF8))
         self.displayXiAxes_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Xi axes", None, QtGui.QApplication.UnicodeUTF8))
-        self.imagePlane_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Image plane", None, QtGui.QApplication.UnicodeUTF8))
+        self.displayImagePlane_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Image plane", None, QtGui.QApplication.UnicodeUTF8))
         self.fixImagePlane_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Fix image plane", None, QtGui.QApplication.UnicodeUTF8))
         self.alignment_groupBox.setTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Alignment", None, QtGui.QApplication.UnicodeUTF8))
         self.activeModel_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Active Model:", None, QtGui.QApplication.UnicodeUTF8))
         self.activeModel_comboBox.setItemText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "Image Plane", None, QtGui.QApplication.UnicodeUTF8))
-        self.activeModel_comboBox.setItemText(1, QtGui.QApplication.translate("MeshGeneratorWidget", "Genereated Mesh", None, QtGui.QApplication.UnicodeUTF8))
+        self.activeModel_comboBox.setItemText(1, QtGui.QApplication.translate("MeshGeneratorWidget", "Generated Mesh", None, QtGui.QApplication.UnicodeUTF8))
         self.toImage_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Reset View:", None, QtGui.QApplication.UnicodeUTF8))
         self.toImage_pushButton.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "To Image", None, QtGui.QApplication.UnicodeUTF8))
         self.viewAll_button.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "View All", None, QtGui.QApplication.UnicodeUTF8))

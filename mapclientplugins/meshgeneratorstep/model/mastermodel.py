@@ -19,7 +19,7 @@ class MasterModel(object):
         self._region = self._context.createRegion()
         self._generator_model = MeshGeneratorModel(self._region, self._materialmodule)
         self._plane_model = MeshPlaneModel(self._region)
-        self._loadSettings()
+        # self._loadSettings()
 
     def _initialise(self):
         self._filenameStem = os.path.join(self._location, self._identifier)
@@ -75,9 +75,10 @@ class MasterModel(object):
 
     def _getSettings(self):
         generator_settings = self._generator_model.getSettings()
-        return {'generator_settings': generator_settings}
+        image_plane_settings = self._plane_model.getSettings()
+        return {'generator_settings': generator_settings, 'image_plane_settings': image_plane_settings}
 
-    def _loadSettings(self):
+    def loadSettings(self):
         try:
             settings = {}
             with open(self._filenameStem + '-settings.json', 'r') as f:
@@ -85,10 +86,13 @@ class MasterModel(object):
             if not 'generator_settings' in settings:
                 # migrate from old settings before named generator_settings
                 settings = {'generator_settings': settings}
+            if 'image_plane_settings' not in settings:
+                settings.update({'image_plane_settings': self._plane_model.getSettings()})
         except:
             # no settings saved yet, following gets defaults
             settings = self._getSettings()
         self._generator_model.setSettings(settings['generator_settings'])
+        self._plane_model.setSettings(settings['image_plane_settings'])
 
     def _saveSettings(self):
         settings = self._getSettings()

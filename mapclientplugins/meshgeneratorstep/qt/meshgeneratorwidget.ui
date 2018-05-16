@@ -305,7 +305,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="imagePlane_checkBox">
+                 <widget class="QCheckBox" name="displayImagePlane_checkBox">
                   <property name="text">
                    <string>Image plane</string>
                   </property>
@@ -343,7 +343,7 @@
                   </item>
                   <item>
                    <property name="text">
-                    <string>Genereated Mesh</string>
+                    <string>Generated Mesh</string>
                    </property>
                   </item>
                  </widget>

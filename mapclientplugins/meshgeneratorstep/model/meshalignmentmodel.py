@@ -78,6 +78,14 @@ class MeshAlignmentModel(object):
     def applyAlignment(self):
         self._applyAlignSettings()
 
+    def getAlignSettings(self):
+        return self._alignSettings
+
+    def setAlignSettings(self, settings):
+        self._alignSettings.update(settings)
+        if self._scene is not None:
+            self._applyAlignSettings()
+
     def loadAlignSettings(self):
         with open(self._location + '-align-settings.json', 'r') as f:
             self._alignSettings.update(json.loads(f.read()))

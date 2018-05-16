@@ -18,13 +18,12 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.setupUi(self)
         self._model = model
         self._generator_model = model.getGeneratorModel()
+        self._plane_model = model.getPlaneModel()
         self._ui.sceneviewer_widget.setContext(model.getContext())
-        self._ui.sceneviewer_widget.graphicsInitialized.connect(self._graphicsInitialized)
-        self._ui.sceneviewer_widget.setModel(self._model.getPlaneModel())
+        self._ui.sceneviewer_widget.setModel(self._plane_model)
         self._model.registerSceneChangeCallback(self._sceneChanged)
         self._doneCallback = None
         # self._populateAnnotationTree()
-        self._refreshOptions()
         self._makeConnections()
 
     def _graphicsInitialized(self):
@@ -34,6 +33,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         """
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
         if sceneviewer is not None:
+            self._model.loadSettings()
+            self._refreshOptions()
             scene = self._model.getScene()
             self._ui.sceneviewer_widget.setScene(scene)
             # self._ui.sceneviewer_widget.setSelectModeAll()
@@ -59,6 +60,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
             sceneviewer.setPerturbLinesFlag(self._generator_model.needPerturbLines())
 
     def _makeConnections(self):
+        self._ui.sceneviewer_widget.graphicsInitialized.connect(self._graphicsInitialized)
         self._ui.done_button.clicked.connect(self._doneButtonClicked)
         self._ui.viewAll_button.clicked.connect(self._viewAll)
         meshTypeNames = self._generator_model.getAllMeshTypeNames()
@@ -85,6 +87,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayXiAxes_checkBox.clicked.connect(self._displayXiAxesClicked)
         self._ui.activeModel_comboBox.currentIndexChanged.connect(self._activeModelChanged)
         self._ui.toImage_pushButton.clicked.connect(self._imageButtonClicked)
+        self._ui.displayImagePlane_checkBox.clicked.connect(self._displayImagePlaneClicked)
+        self._ui.fixImagePlane_checkBox.clicked.connect(self._fixImagePlaneClicked)
         # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
         # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
 
@@ -123,10 +127,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._doneCallback = doneCallback
 
     def setImageInfo(self, image_info):
-        self._model.getPlaneModel().setImageInfo(image_info)
+        self._plane_model.setImageInfo(image_info)
         if image_info is None:
-            self._model.getGeneratorModel().disableAlignment()
-            self._model.getPlaneModel().disableAlignment()
+            self._generator_model.disableAlignment()
+            self._plane_model.disableAlignment()
             self._ui.alignment_groupBox.setVisible(False)
             self._ui.fixImagePlane_checkBox.setVisible(False)
             self._ui.imagePlane_checkBox.setVisible(False)
@@ -139,7 +143,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _imageButtonClicked(self):
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
-        normal, up, offset = self._model.getPlaneModel().getPlaneInfo()
+        normal, up, offset = self._plane_model.getPlaneInfo()
         _, current_lookat_pos = sceneviewer.getLookatPosition()
         _, current_eye_pos = sceneviewer.getEyePosition()
         view_distance = vectorops.magnitude(vectorops.sub(current_eye_pos, current_lookat_pos))
@@ -147,11 +151,17 @@ class MeshGeneratorWidget(QtGui.QWidget):
         lookat_pos = offset
         sceneviewer.setLookatParametersNonSkew(eye_pos, lookat_pos, up)
 
+    def _fixImagePlaneClicked(self):
+        self._plane_model.setImagePlaneFixed(self._ui.fixImagePlane_checkBox.isChecked())
+
+    def _displayImagePlaneClicked(self):
+        self._plane_model.setImagePlaneVisible(self._ui.displayImagePlane_checkBox.isChecked())
+
     def _activeModelChanged(self, index):
         if index == 0:
-            self._ui.sceneviewer_widget.setModel(self._model.getPlaneModel())
+            self._ui.sceneviewer_widget.setModel(self._plane_model)
         else:
-            self._ui.sceneviewer_widget.setModel(self._model.getGeneratorModel())
+            self._ui.sceneviewer_widget.setModel(self._generator_model)
 
     def _meshTypeChanged(self, index):
         meshTypeName = self._ui.meshType_comboBox.itemText(index)
@@ -213,6 +223,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displaySurfacesTranslucent_checkBox.setChecked(self._generator_model.isDisplaySurfacesTranslucent())
         self._ui.displaySurfacesWireframe_checkBox.setChecked(self._generator_model.isDisplaySurfacesWireframe())
         self._ui.displayXiAxes_checkBox.setChecked(self._generator_model.isDisplayXiAxes())
+        self._ui.displayImagePlane_checkBox.setChecked(self._plane_model.isDisplayImagePlane())
+        self._ui.fixImagePlane_checkBox.setChecked(self._plane_model.isImagePlaneFixed())
 
     def _deleteElementRangesLineEditChanged(self):
         self._generator_model.setDeleteElementsRangesText(self._ui.deleteElementsRanges_lineEdit.text())
