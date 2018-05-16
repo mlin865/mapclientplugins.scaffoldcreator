@@ -15,7 +15,15 @@ class MeshAlignmentModel(object):
         self._scene = scene
 
     def isStateAlign(self):
+        if self._disableAlignment:
+            return False
         return self._isStateAlign
+
+    def disableAlignment(self):
+        self._disableAlignment = True
+
+    def enableAlignment(self):
+        self._disableAlignment = False
 
     def setStateAlign(self, state=True):
         self._isStateAlign = state
@@ -70,6 +78,14 @@ class MeshAlignmentModel(object):
     def applyAlignment(self):
         self._applyAlignSettings()
 
+    def getAlignSettings(self):
+        return self._alignSettings
+
+    def setAlignSettings(self, settings):
+        self._alignSettings.update(settings)
+        if self._scene is not None:
+            self._applyAlignSettings()
+
     def loadAlignSettings(self):
         with open(self._location + '-align-settings.json', 'r') as f:
             self._alignSettings.update(json.loads(f.read()))
@@ -122,6 +138,7 @@ class MeshAlignmentModel(object):
         Ensure scene for this region is not in use before calling!
         """
         self._scene = None
+        self._disableAlignment = False
         self._alignSettingsChangeCallback = None
         self._resetAlignSettings()
         self._isStateAlign = False

@@ -4,7 +4,7 @@ MAP Client Plugin Step
 """
 import json
 
-from PySide import QtGui
+from PySide import QtCore, QtGui
 
 from mapclient.mountpoints.workflowstep import WorkflowStepMountPoint
 from mapclientplugins.meshgeneratorstep.configuredialog import ConfigureDialog
@@ -26,11 +26,11 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         self._icon =  QtGui.QImage(':/meshgeneratorstep/images/model-viewer.png')
         # Ports:
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
-                      'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
-                      'http://physiomeproject.org/workflow/1.0/rdf-schema#images'))
-        self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#file_location'))
+        self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
+                      'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
+                      'http://physiomeproject.org/workflow/1.0/rdf-schema#images'))
         # Port data:
         self._portData0 = None # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
         self._images_info = None
@@ -47,8 +47,9 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         User invokes the _doneExecution() method when finished, via pushbutton.
         """
         self._model = MasterModel(self._location, self._config['identifier'])
-        self._model.getPlaneModel().setImageInfo(self._images_info)
         self._view = MeshGeneratorWidget(self._model)
+        self._view.setImageInfo(self._images_info)
+        # self._view.setWindowFlags(QtCore.Qt.Widget)
         self._view.registerDoneExecution(self._myDoneExecution)
         self._setCurrentWidget(self._view)
 
