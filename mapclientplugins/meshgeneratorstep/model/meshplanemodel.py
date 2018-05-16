@@ -59,6 +59,8 @@ class MeshPlaneModel(MeshAlignmentModel):
         graphics = self._scene.findGraphicsByName("plane-surfaces")
         self._settings['image-plane-fixed'] = state
         if graphics.isValid() and state:
+            matrix = self._scene.getTransformationMatrix()
+            print(matrix)
             graphics.setScenecoordinatesystem(SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE )
         elif graphics.isValid() and not state:
             graphics.setScenecoordinatesystem(SCENECOORDINATESYSTEM_LOCAL)
