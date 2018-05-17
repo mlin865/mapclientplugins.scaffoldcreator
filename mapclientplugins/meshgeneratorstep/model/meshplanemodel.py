@@ -4,8 +4,8 @@ import re
 import get_image_size
 
 from opencmiss.utils.maths import vectorops
-from opencmiss.utils.zinc import createFiniteElementField, createSquare2DFiniteElement, createImageField, \
-    createMaterialUsingImageField
+from opencmiss.utils.zinc import createFiniteElementField, createSquare2DFiniteElement, \
+    createMaterialUsingImageField, createVolumeImageField
 from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE, \
     SCENECOORDINATESYSTEM_LOCAL
 
@@ -17,7 +17,9 @@ class MeshPlaneModel(MeshAlignmentModel):
     def __init__(self, region):
         super(MeshPlaneModel, self).__init__()
         self._region_name = "plane_mesh"
+        self._timekeeper = None
         self._image_plane_fixed = False
+        self._frame_count = 0
         self._parent_region = region
         self._region = None
         self._settings = {
@@ -75,6 +77,22 @@ class MeshPlaneModel(MeshAlignmentModel):
         if self._scene is not None:
             self._scene.setVisibilityFlag(state)
 
+    def getFrameCount(self):
+        return self._frame_count
+
+    def getTimeForFrameIndex(self, index, frames_per_second):
+        duration = self._frame_count / frames_per_second
+        frame_separation = 1 / self._frame_count
+        initial_offset = frame_separation / 2
+
+        return (index * frame_separation + initial_offset) * duration
+
+    def getFrameIndexForTime(self, time, frames_per_second):
+        duration = self._frame_count / frames_per_second
+        frame_separation = 1 / self._frame_count
+        initial_offset = frame_separation / 2
+        return int((time / duration - initial_offset) / frame_separation + 0.5)
+
     def getSettings(self):
         self._settings['alignment'].update(self.getAlignSettings())
         return self._settings
@@ -88,16 +106,17 @@ class MeshPlaneModel(MeshAlignmentModel):
 
     def _load_images(self, images):
         fieldmodule = self._region.getFieldmodule()
-        for image in images:
-            width, height = get_image_size.get_image_size(image)
+        self._frame_count = len(images)
+        if self._frame_count > 0:
+            # Assume all images have the same dimensions.
+            width, height = get_image_size.get_image_size(images[0])
             if width != -1 or height != -1:
                 cache = fieldmodule.createFieldcache()
                 self._modelScaleField.assignReal(cache, [width/1000.0, height/1000.0, 1.0])
-            image_field = createImageField(fieldmodule, image)
+            image_field = createVolumeImageField(fieldmodule, images)
             material = createMaterialUsingImageField(self._region, image_field)
             surface = self._scene.findGraphicsByName('plane-surfaces')
             surface.setMaterial(material)
-            break
 
     def _reset(self):
         if self._region:
@@ -130,7 +149,12 @@ class MeshPlaneModel(MeshAlignmentModel):
         surfaces = scene.createGraphicsSurfaces()
         surfaces.setName('plane-surfaces')
         surfaces.setCoordinateField(self._scaledCoordinateField)
-        surfaces.setTextureCoordinateField(xi)
+        temp1 = fieldmodule.createFieldComponent(xi, [1, 2])
+        timekeepermodule = scene.getTimekeepermodule()
+        self._timekeeper = timekeepermodule.getDefaultTimekeeper()
+        temp2 = fieldmodule.createFieldTimeValue(self._timekeeper)
+        texture_field = fieldmodule.createFieldConcatenate([temp1, temp2])
+        surfaces.setTextureCoordinateField(texture_field)
         surfaces.setMaterial(materialmodule.findMaterialByName('silver'))
         scene.setVisibilityFlag(self.isDisplayImagePlane())
         scene.endChange()

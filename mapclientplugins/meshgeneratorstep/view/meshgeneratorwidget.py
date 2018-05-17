@@ -17,6 +17,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui = Ui_MeshGeneratorWidget()
         self._ui.setupUi(self)
         self._model = model
+        self._model.registerTimeValueUpdateCallback(self._updateTimeValue)
+        self._model.registerFrameIndexUpdateCallback(self._updateFrameIndex)
         self._generator_model = model.getGeneratorModel()
         self._plane_model = model.getPlaneModel()
         self._ui.sceneviewer_widget.setContext(model.getContext())
@@ -85,6 +87,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.toImage_pushButton.clicked.connect(self._imageButtonClicked)
         self._ui.displayImagePlane_checkBox.clicked.connect(self._displayImagePlaneClicked)
         self._ui.fixImagePlane_checkBox.clicked.connect(self._fixImagePlaneClicked)
+        self._ui.timeValue_doubleSpinBox.valueChanged.connect(self._timeValueChanged)
+        self._ui.timePlayStop_pushButton.clicked.connect(self._timePlayStopClicked)
+        self._ui.frameIndex_spinBox.valueChanged.connect(self._frameIndexValueChanged)
+        self._ui.framesPerSecond_spinBox.valueChanged.connect(self._framesPerSecondValueChanged)
         # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
         # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
 
@@ -130,6 +136,11 @@ class MeshGeneratorWidget(QtGui.QWidget):
             self._ui.alignment_groupBox.setVisible(False)
             self._ui.fixImagePlane_checkBox.setVisible(False)
             self._ui.displayImagePlane_checkBox.setVisible(False)
+        else:
+            frame_count = self._plane_model.getFrameCount()
+            self._ui.numFramesValue_label.setText("{0}".format(frame_count))
+            self._ui.frameIndex_spinBox.setMaximum(frame_count)
+            self._ui.timeValue_doubleSpinBox.setMaximum(frame_count / self._model.getFramesPerSecond())
 
     def _doneButtonClicked(self):
         self._ui.dockWidget.setFloating(False)
@@ -146,6 +157,46 @@ class MeshGeneratorWidget(QtGui.QWidget):
         eye_pos = vectorops.add(vectorops.mult(normal, view_distance), offset)
         lookat_pos = offset
         sceneviewer.setLookatParametersNonSkew(eye_pos, lookat_pos, up)
+
+    def _updateTimeValue(self, value):
+        self._ui.timeValue_doubleSpinBox.blockSignals(True)
+        frame_count = self._plane_model.getFrameCount()
+        max_time_value = frame_count / self._ui.framesPerSecond_spinBox.value()
+        if value > max_time_value:
+            self._ui.timeValue_doubleSpinBox.setValue(max_time_value)
+            self._timePlayStopClicked()
+        else:
+            self._ui.timeValue_doubleSpinBox.setValue(value)
+        self._ui.timeValue_doubleSpinBox.blockSignals(False)
+
+    def _updateFrameIndex(self, value):
+        self._ui.frameIndex_spinBox.blockSignals(True)
+        self._ui.frameIndex_spinBox.setValue(value)
+        self._ui.frameIndex_spinBox.blockSignals(False)
+
+    def _timeValueChanged(self, value):
+        self._model.setTimeValue(value)
+
+    def _timeDurationChanged(self, value):
+        self._model.setTimeDuration(value)
+
+    def _timePlayStopClicked(self):
+        play_text = 'Play'
+        stop_text = 'Stop'
+        current_text = self._ui.timePlayStop_pushButton.text()
+        if current_text == play_text:
+            self._ui.timePlayStop_pushButton.setText(stop_text)
+            self._model.play()
+        else:
+            self._ui.timePlayStop_pushButton.setText(play_text)
+            self._model.stop()
+
+    def _frameIndexValueChanged(self, value):
+        self._model.setFrameIndex(value)
+
+    def _framesPerSecondValueChanged(self, value):
+        self._model.setFramesPerSecond(value)
+        self._ui.timeValue_doubleSpinBox.setMaximum(self._plane_model.getFrameCount()/value)
 
     def _fixImagePlaneClicked(self):
         self._plane_model.setImagePlaneFixed(self._ui.fixImagePlane_checkBox.isChecked())
@@ -220,6 +271,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayXiAxes_checkBox.setChecked(self._generator_model.isDisplayXiAxes())
         self._ui.displayImagePlane_checkBox.setChecked(self._plane_model.isDisplayImagePlane())
         self._ui.fixImagePlane_checkBox.setChecked(self._plane_model.isImagePlaneFixed())
+        self._ui.framesPerSecond_spinBox.setValue(self._model.getFramesPerSecond())
         index = self._ui.meshType_comboBox.findText(self._generator_model.getMeshTypeName())
         self._ui.meshType_comboBox.blockSignals(True)
         self._ui.meshType_comboBox.setCurrentIndex(index)
