@@ -91,6 +91,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.timePlayStop_pushButton.clicked.connect(self._timePlayStopClicked)
         self._ui.frameIndex_spinBox.valueChanged.connect(self._frameIndexValueChanged)
         self._ui.framesPerSecond_spinBox.valueChanged.connect(self._framesPerSecondValueChanged)
+        self._ui.timeLoop_checkBox.clicked.connect(self._timeLoopClicked)
         # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
         # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
 
@@ -191,6 +192,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
             self._ui.timePlayStop_pushButton.setText(play_text)
             self._model.stop()
 
+    def _timeLoopClicked(self):
+        self._model.setTimeLoop(self._ui.timeLoop_checkBox.isChecked())
+
     def _frameIndexValueChanged(self, value):
         self._model.setFrameIndex(value)
 
@@ -272,6 +276,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayImagePlane_checkBox.setChecked(self._plane_model.isDisplayImagePlane())
         self._ui.fixImagePlane_checkBox.setChecked(self._plane_model.isImagePlaneFixed())
         self._ui.framesPerSecond_spinBox.setValue(self._model.getFramesPerSecond())
+        self._ui.timeLoop_checkBox.setChecked(self._model.isTimeLoop())
         index = self._ui.meshType_comboBox.findText(self._generator_model.getMeshTypeName())
         self._ui.meshType_comboBox.blockSignals(True)
         self._ui.meshType_comboBox.setCurrentIndex(index)

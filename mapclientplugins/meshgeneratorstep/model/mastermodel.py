@@ -28,6 +28,7 @@ class MasterModel(object):
         self._plane_model = MeshPlaneModel(self._region)
         self._settings = {
             'frames-per-second': 25,
+            'time-loop': False
         }
         self._makeConnections()
         # self._loadSettings()
@@ -64,6 +65,9 @@ class MasterModel(object):
 
     def _timeout(self):
         self._current_time += 1000/self._settings['frames-per-second']/1000
+        duration = self._plane_model.getFrameCount() / self._settings['frames-per-second']
+        if self._settings['time-loop'] and self._current_time > duration:
+            self._current_time -= duration
         self._timekeeper.setTime(self._scaleCurrentTimeToTimekeeperTime())
         frame_index = self._plane_model.getFrameIndexForTime(self._current_time, self._settings['frames-per-second']) + 1
         self._timeValueUpdate(self._current_time)
@@ -112,6 +116,12 @@ class MasterModel(object):
 
     def getFramesPerSecond(self):
         return self._settings['frames-per-second']
+
+    def setTimeLoop(self, state):
+        self._settings['time-loop'] = state
+
+    def isTimeLoop(self):
+        return self._settings['time-loop']
 
     def play(self):
         self._timer.start(1000/self._settings['frames-per-second'])

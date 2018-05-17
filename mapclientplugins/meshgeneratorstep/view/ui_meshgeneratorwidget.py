@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt\meshgeneratorwidget.ui'
 #
-# Created: Thu May 17 13:40:40 2018
+# Created: Fri May 18 09:42:58 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -218,6 +218,9 @@ class Ui_MeshGeneratorWidget(object):
         self.timeValue_label = QtGui.QLabel(self.time_groupBox)
         self.timeValue_label.setObjectName("timeValue_label")
         self.gridLayout_2.addWidget(self.timeValue_label, 0, 0, 1, 1)
+        self.timeLoop_checkBox = QtGui.QCheckBox(self.time_groupBox)
+        self.timeLoop_checkBox.setObjectName("timeLoop_checkBox")
+        self.gridLayout_2.addWidget(self.timeLoop_checkBox, 4, 2, 1, 1)
         self.verticalLayout_3.addWidget(self.time_groupBox)
         self.alignment_groupBox = QtGui.QGroupBox(self.scrollAreaWidgetContents_2)
         self.alignment_groupBox.setObjectName("alignment_groupBox")
@@ -303,6 +306,7 @@ class Ui_MeshGeneratorWidget(object):
         self.numFrames_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "# frames:", None, QtGui.QApplication.UnicodeUTF8))
         self.numFramesValue_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
         self.timeValue_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Time value:", None, QtGui.QApplication.UnicodeUTF8))
+        self.timeLoop_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Loop", None, QtGui.QApplication.UnicodeUTF8))
         self.alignment_groupBox.setTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Alignment", None, QtGui.QApplication.UnicodeUTF8))
         self.activeModel_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Active Model:", None, QtGui.QApplication.UnicodeUTF8))
         self.activeModel_comboBox.setItemText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "Image Plane", None, QtGui.QApplication.UnicodeUTF8))
