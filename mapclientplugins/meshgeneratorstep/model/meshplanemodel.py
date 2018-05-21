@@ -6,8 +6,8 @@ import get_image_size
 from opencmiss.utils.maths import vectorops
 from opencmiss.utils.zinc import createFiniteElementField, createSquare2DFiniteElement, \
     createMaterialUsingImageField, createVolumeImageField
-from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE, \
-    SCENECOORDINATESYSTEM_LOCAL
+from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_LOCAL, \
+    SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE
 
 from mapclientplugins.meshgeneratorstep.model.meshalignmentmodel import MeshAlignmentModel
 
@@ -19,6 +19,9 @@ class MeshPlaneModel(MeshAlignmentModel):
         self._region_name = "plane_mesh"
         self._timekeeper = None
         self._image_plane_fixed = False
+        self._fixed_coordinate_field = None
+        self._fixed_projection_field = None
+        self._stationary_projection_field = None
         self._frame_count = 0
         self._parent_region = region
         self._region = None
@@ -61,13 +64,34 @@ class MeshPlaneModel(MeshAlignmentModel):
         self._settings['image-plane-fixed'] = state
         if self._scene is None:
             return
-        graphics = self._scene.findGraphicsByName("plane-surfaces")
-        if graphics.isValid() and state:
-            matrix = self._scene.getTransformationMatrix()
-            print(matrix)
-            graphics.setScenecoordinatesystem(SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE )
-        elif graphics.isValid() and not state:
-            graphics.setScenecoordinatesystem(SCENECOORDINATESYSTEM_LOCAL)
+        fieldmodule = self._region.getFieldmodule()
+        surface_graphics = self._scene.findGraphicsByName("plane-surfaces")
+        line_graphics = self._scene.findGraphicsByName("plane-lines")
+        if surface_graphics.isValid() and state:
+            fieldmodule.beginChange()
+            cache = fieldmodule.createFieldcache()
+            result, projection = self._ndc_projection_field.evaluateReal(cache, 16)
+            self._fixed_projection_field.assignReal(cache, projection)
+            fieldmodule.endChange()
+            surface_graphics.setCoordinateField(self._fixed_coordinate_field)
+            line_graphics.setCoordinateField(self._fixed_coordinate_field)
+        elif surface_graphics.isValid() and not state:
+            cache = fieldmodule.createFieldcache()
+            _, t_matrix = self._scene.getTransformationMatrix()
+            t_matrix = vectorops.reshape(t_matrix, (4, 4))
+            _, projection = self._stationary_projection_field.evaluateReal(cache, 16)
+            projection = vectorops.reshape(projection, (4,4))
+            projection = vectorops.matrixmult(t_matrix, projection)
+            projection = vectorops.reshape(projection, -1)
+            rotation_matrix = [[projection[0], projection[1], projection[2]],
+                               [projection[4], projection[5], projection[6]],
+                               [projection[8], projection[9], projection[10]]]
+            euler_angles = vectorops.rotationMatrix3ToEuler(rotation_matrix)
+            offset_vector = [projection[3], projection[7], projection[11]]
+            self.setAlignOffset(offset_vector)
+            self.setAlignEulerAngles(euler_angles)
+            surface_graphics.setCoordinateField(self._scaledCoordinateField)
+            line_graphics.setCoordinateField(self._scaledCoordinateField)
 
     def isDisplayImagePlane(self):
         return self._settings['display-image-plane']
@@ -76,6 +100,19 @@ class MeshPlaneModel(MeshAlignmentModel):
         self._settings['display-image-plane'] = state
         if self._scene is not None:
             self._scene.setVisibilityFlag(state)
+
+    def setSceneviewer(self, sceneviewer):
+        fieldmodule = self._region.getFieldmodule()
+        fieldmodule.beginChange()
+        self._ndc_projection_field = \
+            fieldmodule.createFieldSceneviewerProjection(sceneviewer, SCENECOORDINATESYSTEM_LOCAL,
+                                                         SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE)
+        p2 = fieldmodule.createFieldSceneviewerProjection(sceneviewer, SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE,
+                                                          SCENECOORDINATESYSTEM_LOCAL)
+        self._stationary_projection_field = fieldmodule.createFieldMatrixMultiply(4, p2, self._fixed_projection_field)
+        self._fixed_coordinate_field = fieldmodule.createFieldProjection(self._scaledCoordinateField,
+                                                                         self._stationary_projection_field)
+        fieldmodule.endChange()
 
     def getFrameCount(self):
         return self._frame_count
@@ -132,6 +169,7 @@ class MeshPlaneModel(MeshAlignmentModel):
         fieldmodule = self._region.getFieldmodule()
         self._modelScaleField = fieldmodule.createFieldConstant([2, 3, 1])
         self._scaledCoordinateField = fieldmodule.createFieldMultiply(self._modelScaleField, self._modelCoordinateField)
+        self._fixed_projection_field = fieldmodule.createFieldConstant([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
         createSquare2DFiniteElement(fieldmodule, self._modelCoordinateField,
                                     [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [-0.5, 0.5, 0.0], [0.5, 0.5, 0.0]])
 
@@ -139,6 +177,8 @@ class MeshPlaneModel(MeshAlignmentModel):
         scene = self._scene
         scene.beginChange()
         scene.removeAllGraphics()
+        timekeepermodule = scene.getTimekeepermodule()
+        self._timekeeper = timekeepermodule.getDefaultTimekeeper()
         fieldmodule = self._region.getFieldmodule()
         xi = fieldmodule.findFieldByName('xi')
         materialmodule = scene.getMaterialmodule()
@@ -150,8 +190,6 @@ class MeshPlaneModel(MeshAlignmentModel):
         surfaces.setName('plane-surfaces')
         surfaces.setCoordinateField(self._scaledCoordinateField)
         temp1 = fieldmodule.createFieldComponent(xi, [1, 2])
-        timekeepermodule = scene.getTimekeepermodule()
-        self._timekeeper = timekeepermodule.getDefaultTimekeeper()
         temp2 = fieldmodule.createFieldTimeValue(self._timekeeper)
         texture_field = fieldmodule.createFieldConcatenate([temp1, temp2])
         surfaces.setTextureCoordinateField(texture_field)

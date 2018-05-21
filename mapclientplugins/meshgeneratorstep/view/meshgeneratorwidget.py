@@ -51,6 +51,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _sceneChanged(self):
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
         if sceneviewer is not None:
+            self._plane_model.setSceneviewer(sceneviewer)
             scene = self._model.getScene()
             self._ui.sceneviewer_widget.setScene(scene)
             self._autoPerturbLines()
