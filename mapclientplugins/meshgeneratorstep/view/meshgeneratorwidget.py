@@ -3,9 +3,12 @@ Created on Aug 29, 2017
 
 @author: Richard Christie
 """
+import types
+
 from PySide import QtGui, QtCore
 from functools import partial
 
+from mapclientplugins.meshgeneratorstep.model.fiducialmarkermodel import FIDUCIAL_MARKER_LABELS
 from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
 from opencmiss.utils.maths import vectorops
 
@@ -21,10 +24,13 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._model.registerFrameIndexUpdateCallback(self._updateFrameIndex)
         self._generator_model = model.getGeneratorModel()
         self._plane_model = model.getPlaneModel()
+        self._fiducial_marker_model = model.getFiducialMarkerModel()
         self._ui.sceneviewer_widget.setContext(model.getContext())
         self._ui.sceneviewer_widget.setModel(self._plane_model)
         self._model.registerSceneChangeCallback(self._sceneChanged)
         self._doneCallback = None
+        self._populateFiducialMarkersComboBox()
+        self._marker_mode_active = False
         # self._populateAnnotationTree()
         meshTypeNames = self._generator_model.getAllMeshTypeNames()
         for meshTypeName in meshTypeNames:
@@ -93,8 +99,19 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.frameIndex_spinBox.valueChanged.connect(self._frameIndexValueChanged)
         self._ui.framesPerSecond_spinBox.valueChanged.connect(self._framesPerSecondValueChanged)
         self._ui.timeLoop_checkBox.clicked.connect(self._timeLoopClicked)
+        self._ui.displayFiducialMarkers_checkBox.clicked.connect(self._displayFiducialMarkersClicked)
+        self._ui.fiducialMarker_comboBox.currentIndexChanged.connect(self._fiducialMarkerChanged)
         # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
         # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
+
+    def _fiducialMarkerChanged(self):
+        self._fiducial_marker_model.setActiveMarker(self._ui.fiducialMarker_comboBox.currentText())
+
+    def _displayFiducialMarkersClicked(self):
+        self._fiducial_marker_model.setDisplayFiducialMarkers(self._ui.displayFiducialMarkers_checkBox.isChecked())
+
+    def _populateFiducialMarkersComboBox(self):
+        self._ui.fiducialMarker_comboBox.addItems(FIDUCIAL_MARKER_LABELS)
 
     def _createFMAItem(self, parent, text, fma_id):
         item = QtGui.QTreeWidgetItem(parent)
@@ -275,6 +292,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displaySurfacesWireframe_checkBox.setChecked(self._generator_model.isDisplaySurfacesWireframe())
         self._ui.displayXiAxes_checkBox.setChecked(self._generator_model.isDisplayXiAxes())
         self._ui.displayImagePlane_checkBox.setChecked(self._plane_model.isDisplayImagePlane())
+        self._ui.displayFiducialMarkers_checkBox.setChecked(self._fiducial_marker_model.isDisplayFiducialMarkers())
         self._ui.fixImagePlane_checkBox.setChecked(self._plane_model.isImagePlaneFixed())
         self._ui.framesPerSecond_spinBox.setValue(self._model.getFramesPerSecond())
         self._ui.timeLoop_checkBox.setChecked(self._model.isTimeLoop())
@@ -282,6 +300,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.meshType_comboBox.blockSignals(True)
         self._ui.meshType_comboBox.setCurrentIndex(index)
         self._ui.meshType_comboBox.blockSignals(False)
+        index = self._ui.fiducialMarker_comboBox.findText(self._fiducial_marker_model.getActiveMarker())
+        self._ui.fiducialMarker_comboBox.blockSignals(True)
+        self._ui.fiducialMarker_comboBox.setCurrentIndex(0 if index == -1 else index)
+        self._ui.fiducialMarker_comboBox.blockSignals(False)
         self._refreshMeshTypeOptions()
 
     def _deleteElementRangesLineEditChanged(self):
@@ -335,3 +357,40 @@ class MeshGeneratorWidget(QtGui.QWidget):
         """
         if self._ui.sceneviewer_widget.getSceneviewer() is not None:
             self._ui.sceneviewer_widget.viewAll()
+
+    def keyPressEvent(self, event):
+        if event.modifiers() & QtCore.Qt.CTRL and QtGui.QApplication.mouseButtons() == QtCore.Qt.NoButton:
+            self._marker_mode_active = True
+            self._ui.sceneviewer_widget._model = self._fiducial_marker_model
+            self._original_mousePressEvent = self._ui.sceneviewer_widget.mousePressEvent
+            self._ui.sceneviewer_widget._calculatePointOnPlane = types.MethodType(_calculatePointOnPlane, self._ui.sceneviewer_widget)
+            self._ui.sceneviewer_widget.mousePressEvent = types.MethodType(mousePressEvent, self._ui.sceneviewer_widget)
+            self._model.printLog()
+
+    def keyReleaseEvent(self, event):
+        if self._marker_mode_active:
+            self._marker_mode_active = False
+            self._ui.sceneviewer_widget._model = self._plane_model
+            self._ui.sceneviewer_widget._calculatePointOnPlane = None
+            self._ui.sceneviewer_widget.mousePressEvent = self._original_mousePressEvent
+
+
+def mousePressEvent(self, event):
+    if self._active_button != QtCore.Qt.NoButton:
+        return
+
+    if (event.modifiers() & QtCore.Qt.CTRL) and event.button() == QtCore.Qt.LeftButton:
+        point_on_plane = self._calculatePointOnPlane(event.x(), event.y())
+        if point_on_plane is not None:
+            self._model.setNodeLocation(point_on_plane)
+
+
+def _calculatePointOnPlane(self, x, y):
+    from opencmiss.utils.maths.algorithms import calculateLinePlaneIntersection
+
+    far_plane_point = self.unproject(x, -y, -1.0)
+    near_plane_point = self.unproject(x, -y, 1.0)
+    plane_point, plane_normal = self._model.getPlaneDescription()
+    point_on_plane = calculateLinePlaneIntersection(near_plane_point, far_plane_point, plane_point, plane_normal)
+
+    return point_on_plane

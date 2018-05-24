@@ -8,6 +8,7 @@ from opencmiss.zinc.material import Material
 
 from mapclientplugins.meshgeneratorstep.model.meshgeneratormodel import MeshGeneratorModel
 from mapclientplugins.meshgeneratorstep.model.meshplanemodel import MeshPlaneModel
+from mapclientplugins.meshgeneratorstep.model.fiducialmarkermodel import FiducialMarkerModel
 
 
 class MasterModel(object):
@@ -26,12 +27,19 @@ class MasterModel(object):
         self._region = self._context.createRegion()
         self._generator_model = MeshGeneratorModel(self._region, self._materialmodule)
         self._plane_model = MeshPlaneModel(self._region)
+        self._fiducial_marker_model = FiducialMarkerModel(self._region)
+        self._fiducial_marker_model.registerGetPlaneInfoMethod(self._plane_model.getPlaneInfo)
         self._settings = {
             'frames-per-second': 25,
             'time-loop': False
         }
         self._makeConnections()
         # self._loadSettings()
+
+    def printLog(self):
+        logger = self._context.getLogger()
+        for index in range(logger.getNumberOfMessages()):
+            print(logger.getMessageTextAtIndex(index))
 
     def _initialise(self):
         self._filenameStem = os.path.join(self._location, self._identifier)
@@ -93,6 +101,9 @@ class MasterModel(object):
     def getPlaneModel(self):
         return self._plane_model
 
+    def getFiducialMarkerModel(self):
+        return self._fiducial_marker_model
+
     def getScene(self):
         return self._region.getScene()
 
@@ -146,6 +157,7 @@ class MasterModel(object):
         settings = self._settings
         settings['generator_settings'] = self._generator_model.getSettings()
         settings['image_plane_settings'] = self._plane_model.getSettings()
+        settings['fiducial-markers'] = self._fiducial_marker_model.getSettings()
         return settings
 
     def loadSettings(self):
@@ -158,11 +170,14 @@ class MasterModel(object):
                 settings = {'generator_settings': settings}
             if 'image_plane_settings' not in settings:
                 settings.update({'image_plane_settings': self._plane_model.getSettings()})
+            if 'fiducial-markers' not in settings:
+                settings.update({'fiducial-markers': self._fiducial_marker_model.getSettings()})
         except:
             # no settings saved yet, following gets defaults
             settings = self._getSettings()
         self._generator_model.setSettings(settings['generator_settings'])
         self._plane_model.setSettings(settings['image_plane_settings'])
+        self._fiducial_marker_model.setSettings(settings['fiducial-markers'])
 
     def _saveSettings(self):
         settings = self._getSettings()

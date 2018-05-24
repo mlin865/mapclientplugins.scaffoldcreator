@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'qt\meshgeneratorwidget.ui'
 #
-# Created: Fri May 18 09:42:58 2018
+# Created: Thu May 24 13:27:06 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -173,6 +173,9 @@ class Ui_MeshGeneratorWidget(object):
         self.fixImagePlane_checkBox = QtGui.QCheckBox(self.displayOptions_groupBox)
         self.fixImagePlane_checkBox.setObjectName("fixImagePlane_checkBox")
         self.verticalLayout_7.addWidget(self.fixImagePlane_checkBox)
+        self.displayFiducialMarkers_checkBox = QtGui.QCheckBox(self.displayOptions_groupBox)
+        self.displayFiducialMarkers_checkBox.setObjectName("displayFiducialMarkers_checkBox")
+        self.verticalLayout_7.addWidget(self.displayFiducialMarkers_checkBox)
         self.verticalLayout_3.addWidget(self.displayOptions_groupBox)
         self.time_groupBox = QtGui.QGroupBox(self.scrollAreaWidgetContents_2)
         self.time_groupBox.setObjectName("time_groupBox")
@@ -241,6 +244,17 @@ class Ui_MeshGeneratorWidget(object):
         self.toImage_pushButton.setObjectName("toImage_pushButton")
         self.gridLayout.addWidget(self.toImage_pushButton, 1, 2, 1, 1)
         self.verticalLayout_3.addWidget(self.alignment_groupBox)
+        self.fiducialMarkers_groupBox = QtGui.QGroupBox(self.scrollAreaWidgetContents_2)
+        self.fiducialMarkers_groupBox.setObjectName("fiducialMarkers_groupBox")
+        self.gridLayout_3 = QtGui.QGridLayout(self.fiducialMarkers_groupBox)
+        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.fiducialMarkerLabels_label = QtGui.QLabel(self.fiducialMarkers_groupBox)
+        self.fiducialMarkerLabels_label.setObjectName("fiducialMarkerLabels_label")
+        self.gridLayout_3.addWidget(self.fiducialMarkerLabels_label, 0, 0, 1, 1)
+        self.fiducialMarker_comboBox = QtGui.QComboBox(self.fiducialMarkers_groupBox)
+        self.fiducialMarker_comboBox.setObjectName("fiducialMarker_comboBox")
+        self.gridLayout_3.addWidget(self.fiducialMarker_comboBox, 0, 1, 1, 1)
+        self.verticalLayout_3.addWidget(self.fiducialMarkers_groupBox)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_3.addItem(spacerItem)
         self.verticalLayout_2.addLayout(self.verticalLayout_3)
@@ -299,7 +313,8 @@ class Ui_MeshGeneratorWidget(object):
         self.displayXiAxes_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Xi axes", None, QtGui.QApplication.UnicodeUTF8))
         self.displayImagePlane_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Image plane", None, QtGui.QApplication.UnicodeUTF8))
         self.fixImagePlane_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Fix image plane", None, QtGui.QApplication.UnicodeUTF8))
-        self.time_groupBox.setTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Time", None, QtGui.QApplication.UnicodeUTF8))
+        self.displayFiducialMarkers_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Fiducial markers", None, QtGui.QApplication.UnicodeUTF8))
+        self.time_groupBox.setTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Time:", None, QtGui.QApplication.UnicodeUTF8))
         self.frameIndex_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Frame index:", None, QtGui.QApplication.UnicodeUTF8))
         self.framesPerSecond_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Frames per second:", None, QtGui.QApplication.UnicodeUTF8))
         self.timePlayStop_pushButton.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Play", None, QtGui.QApplication.UnicodeUTF8))
@@ -307,12 +322,14 @@ class Ui_MeshGeneratorWidget(object):
         self.numFramesValue_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
         self.timeValue_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Time value:", None, QtGui.QApplication.UnicodeUTF8))
         self.timeLoop_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Loop", None, QtGui.QApplication.UnicodeUTF8))
-        self.alignment_groupBox.setTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Alignment", None, QtGui.QApplication.UnicodeUTF8))
+        self.alignment_groupBox.setTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Alignment:", None, QtGui.QApplication.UnicodeUTF8))
         self.activeModel_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Active Model:", None, QtGui.QApplication.UnicodeUTF8))
         self.activeModel_comboBox.setItemText(0, QtGui.QApplication.translate("MeshGeneratorWidget", "Image Plane", None, QtGui.QApplication.UnicodeUTF8))
         self.activeModel_comboBox.setItemText(1, QtGui.QApplication.translate("MeshGeneratorWidget", "Generated Mesh", None, QtGui.QApplication.UnicodeUTF8))
         self.toImage_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Reset View:", None, QtGui.QApplication.UnicodeUTF8))
         self.toImage_pushButton.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "To Image", None, QtGui.QApplication.UnicodeUTF8))
+        self.fiducialMarkers_groupBox.setTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Fiducial markers:", None, QtGui.QApplication.UnicodeUTF8))
+        self.fiducialMarkerLabels_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Labels:", None, QtGui.QApplication.UnicodeUTF8))
         self.viewAll_button.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "View All", None, QtGui.QApplication.UnicodeUTF8))
         self.done_button.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Done", None, QtGui.QApplication.UnicodeUTF8))
 
