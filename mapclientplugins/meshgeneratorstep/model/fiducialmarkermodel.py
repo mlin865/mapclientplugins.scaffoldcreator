@@ -27,6 +27,8 @@ class FiducialMarkerModel(object):
 
     def setDisplayFiducialMarkers(self, state):
         self._settings['display-fiducial-markers'] = state
+        if self._scene is not None:
+            self._scene.setVisibilityFlag(state)
 
     def isDisplayFiducialMarkers(self):
         return self._settings['display-fiducial-markers']
