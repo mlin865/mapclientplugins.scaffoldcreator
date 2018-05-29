@@ -31,6 +31,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._doneCallback = None
         self._populateFiducialMarkersComboBox()
         self._marker_mode_active = False
+        self._have_images = False
         # self._populateAnnotationTree()
         meshTypeNames = self._generator_model.getAllMeshTypeNames()
         for meshTypeName in meshTypeNames:
@@ -57,7 +58,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _sceneChanged(self):
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
         if sceneviewer is not None:
-            self._plane_model.setSceneviewer(sceneviewer)
+            if self._have_images:
+                self._plane_model.setSceneviewer(sceneviewer)
             scene = self._model.getScene()
             self._ui.sceneviewer_widget.setScene(scene)
             self._autoPerturbLines()
@@ -147,19 +149,25 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def registerDoneExecution(self, doneCallback):
         self._doneCallback = doneCallback
 
-    def setImageInfo(self, image_info):
-        self._plane_model.setImageInfo(image_info)
-        if image_info is None:
-            self._generator_model.disableAlignment()
-            self._plane_model.disableAlignment()
-            self._ui.alignment_groupBox.setVisible(False)
-            self._ui.fixImagePlane_checkBox.setVisible(False)
-            self._ui.displayImagePlane_checkBox.setVisible(False)
-        else:
+    def _updateUi(self):
+        if self._have_images:
             frame_count = self._plane_model.getFrameCount()
             self._ui.numFramesValue_label.setText("{0}".format(frame_count))
             self._ui.frameIndex_spinBox.setMaximum(frame_count)
             self._ui.timeValue_doubleSpinBox.setMaximum(frame_count / self._model.getFramesPerSecond())
+        else:
+            self._generator_model.disableAlignment()
+            self._plane_model.disableAlignment()
+            self._ui.alignment_groupBox.setVisible(False)
+            self._ui.fiducialMarkers_groupBox.setVisible(False)
+            self._ui.video_groupBox.setVisible(False)
+            self._ui.displayImagePlane_checkBox.setVisible(False)
+            self._ui.displayFiducialMarkers_checkBox.setVisible(False)
+
+    def setImageInfo(self, image_info):
+        self._plane_model.setImageInfo(image_info)
+        self._have_images = image_info is not None
+        self._updateUi()
 
     def _doneButtonClicked(self):
         self._ui.dockWidget.setFloating(False)

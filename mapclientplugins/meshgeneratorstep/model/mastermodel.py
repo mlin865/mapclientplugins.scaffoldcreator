@@ -77,9 +77,10 @@ class MasterModel(object):
         if self._settings['time-loop'] and self._current_time > duration:
             self._current_time -= duration
         self._timekeeper.setTime(self._scaleCurrentTimeToTimekeeperTime())
-        frame_index = self._plane_model.getFrameIndexForTime(self._current_time, self._settings['frames-per-second']) + 1
         self._timeValueUpdate(self._current_time)
-        self._frameIndexUpdate(frame_index)
+        if not self._plane_model.isDisabled():
+            frame_index = self._plane_model.getFrameIndexForTime(self._current_time, self._settings['frames-per-second']) + 1
+            self._frameIndexUpdate(frame_index)
 
     def _scaleCurrentTimeToTimekeeperTime(self):
         scaled_time = 0.0

@@ -19,6 +19,9 @@ class MeshAlignmentModel(object):
             return False
         return self._isStateAlign
 
+    def isDisabled(self):
+        return self._disableAlignment
+
     def disableAlignment(self):
         self._disableAlignment = True
 
