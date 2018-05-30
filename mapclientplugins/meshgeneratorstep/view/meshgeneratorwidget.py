@@ -371,8 +371,12 @@ class MeshGeneratorWidget(QtGui.QWidget):
             self._marker_mode_active = True
             self._ui.sceneviewer_widget._model = self._fiducial_marker_model
             self._original_mousePressEvent = self._ui.sceneviewer_widget.mousePressEvent
+            self._original_mouseMoveEvent = self._ui.sceneviewer_widget.mouseMoveEvent
+            self._original_mouseReleaseEvent = self._ui.sceneviewer_widget.mouseReleaseEvent
             self._ui.sceneviewer_widget._calculatePointOnPlane = types.MethodType(_calculatePointOnPlane, self._ui.sceneviewer_widget)
             self._ui.sceneviewer_widget.mousePressEvent = types.MethodType(mousePressEvent, self._ui.sceneviewer_widget)
+            self._ui.sceneviewer_widget.mouseMoveEvent = types.MethodType(mouseMoveEvent, self._ui.sceneviewer_widget)
+            self._ui.sceneviewer_widget.mouseReleaseEvent = types.MethodType(mouseReleaseEvent, self._ui.sceneviewer_widget)
             self._model.printLog()
 
     def keyReleaseEvent(self, event):
@@ -381,6 +385,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
             self._ui.sceneviewer_widget._model = self._plane_model
             self._ui.sceneviewer_widget._calculatePointOnPlane = None
             self._ui.sceneviewer_widget.mousePressEvent = self._original_mousePressEvent
+            self._ui.sceneviewer_widget.mouseMoveEvent = self._original_mouseMoveEvent
+            self._ui.sceneviewer_widget.mouseReleaseEvent = self._original_mouseReleaseEvent
 
 
 def mousePressEvent(self, event):
@@ -388,9 +394,22 @@ def mousePressEvent(self, event):
         return
 
     if (event.modifiers() & QtCore.Qt.CTRL) and event.button() == QtCore.Qt.LeftButton:
+        self._active_button = QtCore.Qt.LeftButton
+        self._use_zinc_mouse_event_handling = False
         point_on_plane = self._calculatePointOnPlane(event.x(), event.y())
         if point_on_plane is not None:
             self._model.setNodeLocation(point_on_plane)
+
+
+def mouseMoveEvent(self, event):
+    if (event.modifiers() & QtCore.Qt.CTRL) and self._active_button == QtCore.Qt.LeftButton:
+        point_on_plane = self._calculatePointOnPlane(event.x(), event.y())
+        if point_on_plane is not None:
+            self._model.setNodeLocation(point_on_plane)
+
+
+def mouseReleaseEvent(self, event):
+    self._active_button = QtCore.Qt.NoButton
 
 
 def _calculatePointOnPlane(self, x, y):
