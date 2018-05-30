@@ -87,7 +87,7 @@ def _createGraphics(scene, coordinate_field, label):
     label_attributes = label_graphic.getGraphicspointattributes()
     label_attributes.setBaseSize([0.02])
     label_attributes.setLabelText(1, label)
-    label_attributes.setLabelOffset(1.0)
+    label_attributes.setLabelOffset([1.0, -0.2, 0.0])
     scene.endChange()
 
     return graphic
