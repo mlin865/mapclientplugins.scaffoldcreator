@@ -4,20 +4,20 @@ import re
 import get_image_size
 
 from opencmiss.utils.maths import vectorops
-from opencmiss.utils.zinc import createFiniteElementField, createSquare2DFiniteElement, createImageField, \
-    createMaterialUsingImageField
-from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE, \
-    SCENECOORDINATESYSTEM_LOCAL
+from opencmiss.utils.zinc import createFiniteElementField, createSquare2DFiniteElement, \
+    createMaterialUsingImageField, createVolumeImageField
 
 from mapclientplugins.meshgeneratorstep.model.meshalignmentmodel import MeshAlignmentModel
+from mapclientplugins.meshgeneratorstep.model.fixcoordinatesmixin import FixCoordinatesMixin
 
 
-class MeshPlaneModel(MeshAlignmentModel):
+class MeshPlaneModel(MeshAlignmentModel, FixCoordinatesMixin):
 
     def __init__(self, region):
         super(MeshPlaneModel, self).__init__()
         self._region_name = "plane_mesh"
-        self._image_plane_fixed = False
+        self._timekeeper = None
+        self._frame_count = 0
         self._parent_region = region
         self._region = None
         self._settings = {
@@ -59,13 +59,16 @@ class MeshPlaneModel(MeshAlignmentModel):
         self._settings['image-plane-fixed'] = state
         if self._scene is None:
             return
-        graphics = self._scene.findGraphicsByName("plane-surfaces")
-        if graphics.isValid() and state:
-            matrix = self._scene.getTransformationMatrix()
-            print(matrix)
-            graphics.setScenecoordinatesystem(SCENECOORDINATESYSTEM_NORMALISED_WINDOW_FIT_CENTRE )
-        elif graphics.isValid() and not state:
-            graphics.setScenecoordinatesystem(SCENECOORDINATESYSTEM_LOCAL)
+        surface_graphics = self._scene.findGraphicsByName("plane-surfaces")
+        line_graphics = self._scene.findGraphicsByName("plane-lines")
+        if surface_graphics.isValid() and state:
+            self._updateFixedProjectionField()
+            surface_graphics.setCoordinateField(self._fixed_coordinate_field)
+            line_graphics.setCoordinateField(self._fixed_coordinate_field)
+        elif surface_graphics.isValid() and not state:
+            self._updateAlignmentValues()
+            surface_graphics.setCoordinateField(self._scaledCoordinateField)
+            line_graphics.setCoordinateField(self._scaledCoordinateField)
 
     def isDisplayImagePlane(self):
         return self._settings['display-image-plane']
@@ -74,6 +77,22 @@ class MeshPlaneModel(MeshAlignmentModel):
         self._settings['display-image-plane'] = state
         if self._scene is not None:
             self._scene.setVisibilityFlag(state)
+
+    def getFrameCount(self):
+        return self._frame_count
+
+    def getTimeForFrameIndex(self, index, frames_per_second):
+        duration = self._frame_count / frames_per_second
+        frame_separation = 1 / self._frame_count
+        initial_offset = frame_separation / 2
+
+        return (index * frame_separation + initial_offset) * duration
+
+    def getFrameIndexForTime(self, time, frames_per_second):
+        duration = self._frame_count / frames_per_second
+        frame_separation = 1 / self._frame_count
+        initial_offset = frame_separation / 2
+        return int((time / duration - initial_offset) / frame_separation + 0.5)
 
     def getSettings(self):
         self._settings['alignment'].update(self.getAlignSettings())
@@ -88,16 +107,17 @@ class MeshPlaneModel(MeshAlignmentModel):
 
     def _load_images(self, images):
         fieldmodule = self._region.getFieldmodule()
-        for image in images:
-            width, height = get_image_size.get_image_size(image)
+        self._frame_count = len(images)
+        if self._frame_count > 0:
+            # Assume all images have the same dimensions.
+            width, height = get_image_size.get_image_size(images[0])
             if width != -1 or height != -1:
                 cache = fieldmodule.createFieldcache()
                 self._modelScaleField.assignReal(cache, [width/1000.0, height/1000.0, 1.0])
-            image_field = createImageField(fieldmodule, image)
+            image_field = createVolumeImageField(fieldmodule, images)
             material = createMaterialUsingImageField(self._region, image_field)
             surface = self._scene.findGraphicsByName('plane-surfaces')
             surface.setMaterial(material)
-            break
 
     def _reset(self):
         if self._region:
@@ -113,6 +133,7 @@ class MeshPlaneModel(MeshAlignmentModel):
         fieldmodule = self._region.getFieldmodule()
         self._modelScaleField = fieldmodule.createFieldConstant([2, 3, 1])
         self._scaledCoordinateField = fieldmodule.createFieldMultiply(self._modelScaleField, self._modelCoordinateField)
+        self._fixed_projection_field = fieldmodule.createFieldConstant([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
         createSquare2DFiniteElement(fieldmodule, self._modelCoordinateField,
                                     [[-0.5, -0.5, 0.0], [0.5, -0.5, 0.0], [-0.5, 0.5, 0.0], [0.5, 0.5, 0.0]])
 
@@ -120,6 +141,8 @@ class MeshPlaneModel(MeshAlignmentModel):
         scene = self._scene
         scene.beginChange()
         scene.removeAllGraphics()
+        timekeepermodule = scene.getTimekeepermodule()
+        self._timekeeper = timekeepermodule.getDefaultTimekeeper()
         fieldmodule = self._region.getFieldmodule()
         xi = fieldmodule.findFieldByName('xi')
         materialmodule = scene.getMaterialmodule()
@@ -130,7 +153,10 @@ class MeshPlaneModel(MeshAlignmentModel):
         surfaces = scene.createGraphicsSurfaces()
         surfaces.setName('plane-surfaces')
         surfaces.setCoordinateField(self._scaledCoordinateField)
-        surfaces.setTextureCoordinateField(xi)
+        temp1 = fieldmodule.createFieldComponent(xi, [1, 2])
+        temp2 = fieldmodule.createFieldTimeValue(self._timekeeper)
+        texture_field = fieldmodule.createFieldConcatenate([temp1, temp2])
+        surfaces.setTextureCoordinateField(texture_field)
         surfaces.setMaterial(materialmodule.findMaterialByName('silver'))
         scene.setVisibilityFlag(self.isDisplayImagePlane())
         scene.endChange()

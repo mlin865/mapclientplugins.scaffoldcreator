@@ -19,6 +19,9 @@ class MeshAlignmentModel(object):
             return False
         return self._isStateAlign
 
+    def isDisabled(self):
+        return self._disableAlignment
+
     def disableAlignment(self):
         self._disableAlignment = True
 
@@ -33,7 +36,7 @@ class MeshAlignmentModel(object):
         self._alignSettingsChangeCallback = alignSettingsChangeCallback
 
     def scaleModel(self, factor):
-        self._alignSettings['scale'] *= factor
+        self._alignSettings['scale'] = vectorops.mult(self._alignSettings['scale'], factor)
         self._applyAlignSettings()
 
     def rotateModel(self, axis, angle):
@@ -68,7 +71,10 @@ class MeshAlignmentModel(object):
         return self._alignSettings['scale']
 
     def setAlignScale(self, scale):
-        self._alignSettings['scale'] = scale
+        if isinstance(scale, list):
+            self._alignSettings['scale'] = scale
+        else:
+            self._alignSettings['scale'] = [scale] * 3
         self._applyAlignSettings()
 
     def resetAlignment(self):
@@ -81,14 +87,22 @@ class MeshAlignmentModel(object):
     def getAlignSettings(self):
         return self._alignSettings
 
+    def _upgradeScaleSetting(self):
+        self._alignSettings['scale'] = [self._alignSettings['scale']] * 3
+
     def setAlignSettings(self, settings):
         self._alignSettings.update(settings)
+        if isinstance(self._alignSettings['scale'], float):
+            self._upgradeScaleSetting()
         if self._scene is not None:
             self._applyAlignSettings()
 
     def loadAlignSettings(self):
         with open(self._location + '-align-settings.json', 'r') as f:
             self._alignSettings.update(json.loads(f.read()))
+
+        if isinstance(self._alignSettings['scale'], float):
+            self._upgradeScaleSetting()
         self._applyAlignSettings()
 
     def saveAlignSettings(self):
@@ -96,18 +110,20 @@ class MeshAlignmentModel(object):
             f.write(json.dumps(self._alignSettings, default=lambda o: o.__dict__, sort_keys=True, indent=4))
 
     def _resetAlignSettings(self):
-        self._alignSettings = dict(euler_angles=[0.0, 0.0, 0.0], scale=1.0, offset=[0.0, 0.0, 0.0])
+        self._alignSettings = dict(euler_angles=[0.0, 0.0, 0.0], scale=[1.0, 1.0, 1.0], offset=[0.0, 0.0, 0.0])
 
     def _applyAlignSettings(self):
         rot = vectorops.eulerToRotationMatrix3(self._alignSettings['euler_angles'])
         scale = self._alignSettings['scale']
-        xScale = scale
+        xScale = scale[0]
+        yScale = scale[1]
+        zScale = scale[2]
         # if self.isAlignMirror():
         #     xScale = -scale
         rotationScale = [
-            rot[0][0]*xScale, rot[0][1]*xScale, rot[0][2]*xScale,
-            rot[1][0]*scale,  rot[1][1]*scale,  rot[1][2]*scale,
-            rot[2][0]*scale,  rot[2][1]*scale,  rot[2][2]*scale]
+            rot[0][0]*xScale, rot[0][1]*yScale, rot[0][2]*zScale,
+            rot[1][0]*xScale, rot[1][1]*yScale, rot[1][2]*zScale,
+            rot[2][0]*xScale, rot[2][1]*yScale, rot[2][2]*zScale]
         offset_vector = self._alignSettings['offset']
         transformation_matrix = [rotationScale[0], rotationScale[1], rotationScale[2], offset_vector[0],
                                  rotationScale[3], rotationScale[4], rotationScale[5], offset_vector[1],
