@@ -318,7 +318,7 @@ class MeshGeneratorModel(MeshAlignmentModel):
         fm = self._region.getFieldmodule()
         fm.beginChange()
         # logger = self._context.getLogger()
-        self._currentMeshType.generateMesh(self._region, self._settings['meshTypeOptions'])
+        annotationGroups = self._currentMeshType.generateMesh(self._region, self._settings['meshTypeOptions'])
         # loggerMessageCount = logger.getNumberOfMessages()
         # if loggerMessageCount > 0:
         #     for i in range(1, loggerMessageCount + 1):
@@ -348,6 +348,9 @@ class MeshGeneratorModel(MeshAlignmentModel):
             #size2 = nodes.getSize()
             #print('deleted', size1 - size2, 'nodes')
         fm.defineAllFaces()
+        if annotationGroups is not None:
+            for annotationGroup in annotationGroups:
+                annotationGroup.addSubelements()
         if self._settings['scale'] != '1*1*1':
             coordinates = fm.findFieldByName('coordinates').castFiniteElement()
             scale = fm.createFieldConstant(self._scale)
