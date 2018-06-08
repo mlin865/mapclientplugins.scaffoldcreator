@@ -297,7 +297,6 @@ class MeshGeneratorModel(MeshAlignmentModel):
         return self._getMesh().getDimension()
 
     def getNodeLocation(self, node_id):
-        # mesh = self._getMesh()
         fm = self._region.getFieldmodule()
         fm.beginChange()
         coordinates = fm.findFieldByName('coordinates')
