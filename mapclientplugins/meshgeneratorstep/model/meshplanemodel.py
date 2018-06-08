@@ -2,10 +2,12 @@ import imghdr
 import os
 import re
 import get_image_size
+import numpy as np
 
 from opencmiss.utils.maths import vectorops
 from opencmiss.utils.zinc import createFiniteElementField, createSquare2DFiniteElement, \
     createMaterialUsingImageField, createVolumeImageField
+from opencmiss.zinc.field import Field
 
 from mapclientplugins.meshgeneratorstep.model.meshalignmentmodel import MeshAlignmentModel
 from mapclientplugins.meshgeneratorstep.model.fixcoordinatesmixin import FixCoordinatesMixin
@@ -27,14 +29,15 @@ class MeshPlaneModel(MeshAlignmentModel, FixCoordinatesMixin):
         }
 
     def getPlaneInfo(self):
-        original_up = [0.0, 1.0, 0.0]
-        original_normal = [0.0, 0.0, 1.0]
-        euler_angles = self.getAlignEulerAngles()
-        offset = self.getAlignOffset()
-        rot = vectorops.eulerToRotationMatrix3(euler_angles)
-        normal = vectorops.mxvectormult(rot, original_normal)
-        up = vectorops.mxvectormult(rot, original_up)
-        return normal, up, offset
+        node_locations = self.getNodeLocations()
+        u1 = vectorops.sub(node_locations[1], node_locations[0])
+        u2 = vectorops.sub(node_locations[2], node_locations[0])
+
+        plane_centre = np.mean(node_locations, axis=0).tolist()
+        c = vectorops.cross(u1, u2)
+        normal = vectorops.normalize(c)
+        up = vectorops.normalize(u2)
+        return normal, up, plane_centre
 
     def setImageInfo(self, image_info):
         images = []
@@ -112,12 +115,53 @@ class MeshPlaneModel(MeshAlignmentModel, FixCoordinatesMixin):
             # Assume all images have the same dimensions.
             width, height = get_image_size.get_image_size(images[0])
             if width != -1 or height != -1:
-                cache = fieldmodule.createFieldcache()
-                self._modelScaleField.assignReal(cache, [width/1000.0, height/1000.0, 1.0])
+                node_locations = np.matrix(self.getNodeLocations())
+                N = node_locations.shape[0]
+                new_node_locations = np.multiply(node_locations.T, np.tile(np.matrix([width/1000.0, height/1000.0, 1.0]).T, (1, N)))
+                self.setNodeLocations(new_node_locations.T.tolist())
+
             image_field = createVolumeImageField(fieldmodule, images)
             material = createMaterialUsingImageField(self._region, image_field)
             surface = self._scene.findGraphicsByName('plane-surfaces')
             surface.setMaterial(material)
+
+    def getNodeLocations(self):
+        fm = self._region.getFieldmodule()
+        fm.beginChange()
+        cache = fm.createFieldcache()
+        coordinates = fm.findFieldByName('coordinates')
+        nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+        node_it = nodes.createNodeiterator()
+        node = node_it.next()
+
+        node_positions = []
+        while node.isValid():
+            cache.setNode(node)
+            _, position = coordinates.evaluateReal(cache, 3)
+            node_positions.append(self._getSceneTransformationFromAdjustedPosition(position))
+            node = node_it.next()
+
+        fm.endChange()
+
+        return node_positions
+
+    def setNodeLocations(self, node_positions):
+        fm = self._region.getFieldmodule()
+        fm.beginChange()
+        cache = fm.createFieldcache()
+        coordinates = fm.findFieldByName('coordinates')
+        nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+        node_it = nodes.createNodeiterator()
+        node = node_it.next()
+
+        index = 0
+        while node.isValid():
+            cache.setNode(node)
+            coordinates.assignReal(cache, self._getSceneTransformationToAdjustedPosition(list(node_positions[index])))
+            index += 1
+            node = node_it.next()
+
+        fm.endChange()
 
     def _reset(self):
         if self._region:
@@ -126,12 +170,12 @@ class MeshPlaneModel(MeshAlignmentModel, FixCoordinatesMixin):
         self._scene = self._region.getScene()
         self._createModel()
         self._createGraphics()
-        self.resetAlignment()
+        # self.resetAlignment()
 
     def _createModel(self):
         self._modelCoordinateField = createFiniteElementField(self._region)
         fieldmodule = self._region.getFieldmodule()
-        self._modelScaleField = fieldmodule.createFieldConstant([2, 3, 1])
+        self._modelScaleField = fieldmodule.createFieldConstant([1, 1, 1])
         self._scaledCoordinateField = fieldmodule.createFieldMultiply(self._modelScaleField, self._modelCoordinateField)
         self._fixed_projection_field = fieldmodule.createFieldConstant([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
         createSquare2DFiniteElement(fieldmodule, self._modelCoordinateField,

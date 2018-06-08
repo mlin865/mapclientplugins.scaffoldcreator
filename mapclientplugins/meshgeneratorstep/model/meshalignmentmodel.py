@@ -1,5 +1,6 @@
 
 import json
+import numpy as np
 
 from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_WINDOW_PIXEL_BOTTOM_LEFT
 
@@ -109,6 +110,25 @@ class MeshAlignmentModel(object):
         with open(self._location + '-align-settings.json', 'w') as f:
             f.write(json.dumps(self._alignSettings, default=lambda o: o.__dict__, sort_keys=True, indent=4))
 
+    def getSceneTransformationMatrix(self):
+        _, mx = self._scene.getTransformationMatrix()
+        return mx
+
+    def _getSceneTransformationFromAdjustedPosition(self, position):
+        matrix = self.getSceneTransformationMatrix()
+        matrix = vectorops.reshape(matrix, (4, 4))
+        new_position = vectorops.mxvectormult(matrix, [*position, 1])
+        new_position = vectorops.div(new_position[:3], new_position[3])
+        return new_position
+
+    def _getSceneTransformationToAdjustedPosition(self, position):
+        matrix = self.getSceneTransformationMatrix()
+        matrix = vectorops.reshape(matrix, (4, 4))
+        inv_matrix = np.linalg.inv(matrix)
+        new_position = vectorops.mxvectormult(inv_matrix.tolist(), [*position, 1])
+        new_position = vectorops.div(new_position[:3], new_position[3])
+        return new_position
+
     def _resetAlignSettings(self):
         self._alignSettings = dict(euler_angles=[0.0, 0.0, 0.0], scale=[1.0, 1.0, 1.0], offset=[0.0, 0.0, 0.0])
 
@@ -131,7 +151,7 @@ class MeshAlignmentModel(object):
                                  0.0,              0.0,              0.0,              1.0]
         self._scene.setTransformationMatrix(transformation_matrix)
         if self._alignSettingsChangeCallback is not None:
-            self._alignSettingsChangeCallback()
+            self._alignSettingsChangeCallback(transformation_matrix)
 
     def _updateAlignModeGraphic(self):
         if self._scene is not None:

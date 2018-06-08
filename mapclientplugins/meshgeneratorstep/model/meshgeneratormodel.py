@@ -296,6 +296,20 @@ class MeshGeneratorModel(MeshAlignmentModel):
     def getMeshDimension(self):
         return self._getMesh().getDimension()
 
+    def getNodeLocation(self, node_id):
+        # mesh = self._getMesh()
+        fm = self._region.getFieldmodule()
+        fm.beginChange()
+        coordinates = fm.findFieldByName('coordinates')
+        nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+        node = nodes.findNodeByIdentifier(node_id)
+        fc = fm.createFieldcache()
+        fc.setNode(node)
+        _, position = coordinates.evaluateReal(fc, 3)
+        fm.endChange()
+
+        return self._getSceneTransformationFromAdjustedPosition(position)
+
     def getSettings(self):
         return self._settings
 

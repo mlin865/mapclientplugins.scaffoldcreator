@@ -2,24 +2,29 @@ from opencmiss.zinc.field import Field
 from opencmiss.zinc.glyph import Glyph
 
 from opencmiss.utils.zinc import createFiniteElementField
+from opencmiss.utils.maths import vectorops
 
-
-FIDUCIAL_MARKER_LABELS = ['LV apex', 'RV apex', 'LAD CFX junction', 'RV wall extent']
+import numpy as np
 
 
 class FiducialMarkerModel(object):
 
     def __init__(self, region):
+        self._get_labels = None
+        self._get_plane_info = None
+        self._enabled = False
         self._parent_region = region
         self._region_name = 'fiducial'
         self._markers = {}
         self._settings = {'display-fiducial-markers': True,
-                          'active-marker-label': FIDUCIAL_MARKER_LABELS[0]}
+                          'active-marker-label': ''}
         self._clear()
-        self._reset()
 
     def registerGetPlaneInfoMethod(self, method):
         self._get_plane_info = method
+
+    def registerGetFiducialLabelsMethod(self, method):
+        self._get_labels = method
 
     def getPlaneDescription(self):
         plane_normal, _, point_on_plane = self._get_plane_info()
@@ -45,28 +50,81 @@ class FiducialMarkerModel(object):
     def setSettings(self, settings):
         self._settings.update(settings)
 
+    def isEnabled(self):
+        return self._enabled
+
     def setNodeLocation(self, position):
+        adjusted_position = self._getSceneTransformationToAdjustedPosition(position)
         marker = self._markers[self._settings['active-marker-label']]
-        marker.setPosition(position)
+        marker.setPosition(adjusted_position)
+
+    def getMarkerLocation(self, label):
+        marker = self._markers[label]
+        return self._getSceneTransformationFromAdjustedPosition(marker.getPosition())
+
+    def setMarkerLocation(self, label, position):
+        new_position = self._getSceneTransformationToAdjustedPosition(position)
+        marker = self._markers[label]
+        marker.setPosition(new_position)
+
+    def _getSceneTransformationFromAdjustedPosition(self, position):
+        matrix = self.getSceneTransformationMatrix()
+        matrix = vectorops.reshape(matrix, (4, 4))
+        new_position = vectorops.mxvectormult(matrix, [*position, 1])
+        new_position = vectorops.div(new_position[:3], new_position[3])
+        return new_position
+
+    def _getSceneTransformationToAdjustedPosition(self, position):
+        matrix = self.getSceneTransformationMatrix()
+        matrix = vectorops.reshape(matrix, (4, 4))
+        inv_matrix = np.linalg.inv(matrix)
+        new_position = vectorops.mxvectormult(inv_matrix.tolist(), [*position, 1])
+        new_position = vectorops.div(new_position[:3], new_position[3])
+        return new_position
+
+    def isReadyForFitting(self):
+        for marker_label in self._markers:
+            marker = self._markers[marker_label]
+            if not marker.isDefined():
+                return False
+
+        return True if len(self._markers) > 0 else False
+
+    def reset(self):
+        transformation_matrix = None
+        if self._region:
+            transformation_matrix = self.getSceneTransformationMatrix()
+            self._parent_region.removeChild(self._region)
+        self._region = self._parent_region.createChild(self._region_name)
+        if transformation_matrix is not None:
+            self.setSceneTransformationMatrix(transformation_matrix)
+        self._scene = self._region.getScene()
+        labels = self._get_labels()
+        if labels is not None:
+            self._createModel(labels)
+            self._enabled = True
+        else:
+            self._enabled = False
+
+    def getSceneTransformationMatrix(self):
+        scene = self._region.getScene()
+        _, matrix = scene.getTransformationMatrix()
+        return matrix
+
+    def setSceneTransformationMatrix(self, matrix):
+        if self._region is not None:
+            scene = self._region.getScene()
+            scene.setTransformationMatrix(matrix)
+
+    def _createModel(self, labels):
+        for label in labels:
+            self._markers[label] = FiducialMarker(self._region, label)
 
     def _clear(self):
         self._region = None
         self._scene = None
         self._get_plane_info = None
-
-    def _reset(self):
-        if self._region:
-            self._parent_region.removeChild(self._region)
-        self._region = self._parent_region.createChild(self._region_name)
-        self._scene = self._region.getScene()
-        self._createModel()
-        # self._createGraphics()
-
-    def _createModel(self):
-        # self._coordinate_field = createFiniteElementField(self._region)
-        # fieldmodule = self._region.getFieldmodule()
-        for label in FIDUCIAL_MARKER_LABELS:
-            self._markers[label] = FiducialMarker(self._region, label)
+        self._get_labels = None
 
 
 def _createGraphics(scene, coordinate_field, label):
@@ -124,3 +182,16 @@ class FiducialMarker(object):
         self._coordinate_field.assignReal(fieldcache, position)
         # self._label_field.assignString(fieldcache, self._label)
         self._fieldmodule.endChange()
+
+    def getPosition(self):
+        fieldcache = self._fieldmodule.createFieldcache()
+        self._fieldmodule.beginChange()
+        fieldcache.setNode(self._node)
+        _, position = self._coordinate_field.evaluateReal(fieldcache, 3)
+        # self._label_field.assignString(fieldcache, self._label)
+        self._fieldmodule.endChange()
+
+        return position
+
+    def isDefined(self):
+        return self._node is not None

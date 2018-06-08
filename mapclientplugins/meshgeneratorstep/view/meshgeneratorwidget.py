@@ -4,11 +4,11 @@ Created on Aug 29, 2017
 @author: Richard Christie
 """
 import types
+import numpy as np
 
 from PySide import QtGui, QtCore
 from functools import partial
 
-from mapclientplugins.meshgeneratorstep.model.fiducialmarkermodel import FIDUCIAL_MARKER_LABELS
 from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
 from opencmiss.utils.maths import vectorops
 
@@ -25,6 +25,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._generator_model = model.getGeneratorModel()
         self._plane_model = model.getPlaneModel()
         self._fiducial_marker_model = model.getFiducialMarkerModel()
+        self._annotation_model = model.getMeshAnnotationModel()
         self._ui.sceneviewer_widget.setContext(model.getContext())
         self._ui.sceneviewer_widget.setModel(self._plane_model)
         self._model.registerSceneChangeCallback(self._sceneChanged)
@@ -103,8 +104,48 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.timeLoop_checkBox.clicked.connect(self._timeLoopClicked)
         self._ui.displayFiducialMarkers_checkBox.clicked.connect(self._displayFiducialMarkersClicked)
         self._ui.fiducialMarker_comboBox.currentIndexChanged.connect(self._fiducialMarkerChanged)
+        self._ui.fiducialMarkerTransform_pushButton.clicked.connect(self._fiducialMarkerTransformClicked)
         # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
         # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
+
+    def _fitToScaffold(self):
+        # Get the fiducial marker points and their corresponding mesh points.
+        labels = self._annotation_model.getFiducialMarkerLabels()
+        node_locations = []
+        marker_locations = []
+        for label in labels:
+            node_id = self._annotation_model.getNode(label)
+            node_location = self._generator_model.getNodeLocation(node_id)
+            marker_location = self._fiducial_marker_model.getMarkerLocation(label)
+            node_locations.append(node_location)
+            marker_locations.append(marker_location)
+
+        # Formulate matrices
+        source = np.matrix(marker_locations)
+        target = np.matrix(node_locations)
+
+        rotation_mx, translation_vec = rigid_transform_3D(source.T, target.T)
+
+        N = source.shape[0]
+        alt_transformed_source = rotation_mx*source.T + np.tile(translation_vec, (1, N))
+
+        transformed_source = alt_transformed_source.T.tolist()
+        for index, label in enumerate(labels):
+            position = transformed_source[index]
+            self._fiducial_marker_model.setMarkerLocation(label, position)
+
+        plane_node_locations = np.matrix(self._plane_model.getNodeLocations())
+
+        M = plane_node_locations.shape[0]
+        new_plane_node_locations = rotation_mx*plane_node_locations.T + np.tile(translation_vec, (1, M))
+        self._plane_model.setNodeLocations(new_plane_node_locations.T.tolist())
+
+    def _fiducialMarkerTransformClicked(self):
+        ready = self._fiducial_marker_model.isReadyForFitting()
+        if ready:
+            self._fitToScaffold()
+        else:
+            print('Fiducial markers are not ready for fitting.')
 
     def _fiducialMarkerChanged(self):
         self._fiducial_marker_model.setActiveMarker(self._ui.fiducialMarker_comboBox.currentText())
@@ -113,7 +154,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._fiducial_marker_model.setDisplayFiducialMarkers(self._ui.displayFiducialMarkers_checkBox.isChecked())
 
     def _populateFiducialMarkersComboBox(self):
-        self._ui.fiducialMarker_comboBox.addItems(FIDUCIAL_MARKER_LABELS)
+        fiducial_marker_labels = self._annotation_model.getFiducialMarkerLabels()
+        if fiducial_marker_labels is not None:
+            self._ui.fiducialMarker_comboBox.addItems(self._annotation_model.getFiducialMarkerLabels())
 
     def _createFMAItem(self, parent, text, fma_id):
         item = QtGui.QTreeWidgetItem(parent)
@@ -166,6 +209,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def setImageInfo(self, image_info):
         self._plane_model.setImageInfo(image_info)
+        self._fiducial_marker_model.reset()
         self._have_images = image_info is not None
         self._updateUi()
 
@@ -243,6 +287,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _meshTypeChanged(self, index):
         meshTypeName = self._ui.meshType_comboBox.itemText(index)
         self._generator_model.setMeshTypeByName(meshTypeName)
+        self._annotation_model.setMeshTypeByName(meshTypeName)
+        self._fiducial_marker_model.reset()
         self._refreshMeshTypeOptions()
 
     def _meshTypeOptionCheckBoxClicked(self, checkBox):
@@ -284,6 +330,12 @@ class MeshGeneratorWidget(QtGui.QWidget):
                 lineEdit.returnPressed.connect(callback)
                 lineEdit.editingFinished.connect(callback)
                 layout.addWidget(lineEdit)
+
+        fiducial_markers = self._annotation_model.getFiducialMarkerLabels()
+        self._fiducial_marker_model.reset()
+        self._ui.fiducialMarker_comboBox.clear()
+        if fiducial_markers is not None:
+            self._ui.fiducialMarker_comboBox.addItems(fiducial_markers)
 
     def _refreshOptions(self):
         self._ui.identifier_label.setText('Identifier:  ' + self._model.getIdentifier())
@@ -367,16 +419,20 @@ class MeshGeneratorWidget(QtGui.QWidget):
             self._ui.sceneviewer_widget.viewAll()
 
     def keyPressEvent(self, event):
-        if event.modifiers() & QtCore.Qt.CTRL and QtGui.QApplication.mouseButtons() == QtCore.Qt.NoButton:
+        if event.modifiers() & QtCore.Qt.CTRL and \
+                self._fiducial_marker_model.isEnabled() and \
+                        QtGui.QApplication.mouseButtons() == QtCore.Qt.NoButton:
             self._marker_mode_active = True
             self._ui.sceneviewer_widget._model = self._fiducial_marker_model
             self._original_mousePressEvent = self._ui.sceneviewer_widget.mousePressEvent
             self._original_mouseMoveEvent = self._ui.sceneviewer_widget.mouseMoveEvent
             self._original_mouseReleaseEvent = self._ui.sceneviewer_widget.mouseReleaseEvent
-            self._ui.sceneviewer_widget._calculatePointOnPlane = types.MethodType(_calculatePointOnPlane, self._ui.sceneviewer_widget)
+            self._ui.sceneviewer_widget._calculatePointOnPlane = \
+                types.MethodType(_calculatePointOnPlane, self._ui.sceneviewer_widget)
             self._ui.sceneviewer_widget.mousePressEvent = types.MethodType(mousePressEvent, self._ui.sceneviewer_widget)
             self._ui.sceneviewer_widget.mouseMoveEvent = types.MethodType(mouseMoveEvent, self._ui.sceneviewer_widget)
-            self._ui.sceneviewer_widget.mouseReleaseEvent = types.MethodType(mouseReleaseEvent, self._ui.sceneviewer_widget)
+            self._ui.sceneviewer_widget.mouseReleaseEvent = \
+                types.MethodType(mouseReleaseEvent, self._ui.sceneviewer_widget)
             self._model.printLog()
 
     def keyReleaseEvent(self, event):
@@ -421,3 +477,32 @@ def _calculatePointOnPlane(self, x, y):
     point_on_plane = calculateLinePlaneIntersection(near_plane_point, far_plane_point, plane_point, plane_normal)
 
     return point_on_plane
+
+
+def rigid_transform_3D(A, B):
+    assert len(A) == len(B)
+
+    N = A.shape[1]  # total points
+    centroid_A = np.mean(A, axis=1)
+    centroid_B = np.mean(B, axis=1)
+
+    # centre the points
+    AA = A - np.tile(centroid_A, (1, N))
+    BB = B - np.tile(centroid_B, (1, N))
+
+    # dot is matrix multiplication for array
+    H = AA * BB.T
+
+    U, S, Vt = np.linalg.svd(H)
+
+    R = Vt.T * U.T
+
+    # special reflection case
+    if np.linalg.det(R) < 0:
+        Vt[2, :] *= -1
+        R = Vt.T * U.T
+
+    t = -R * centroid_A + centroid_B
+
+    return R, t
+

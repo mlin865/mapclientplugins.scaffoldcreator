@@ -9,6 +9,7 @@ from opencmiss.zinc.material import Material
 from mapclientplugins.meshgeneratorstep.model.meshgeneratormodel import MeshGeneratorModel
 from mapclientplugins.meshgeneratorstep.model.meshplanemodel import MeshPlaneModel
 from mapclientplugins.meshgeneratorstep.model.fiducialmarkermodel import FiducialMarkerModel
+from mapclientplugins.meshgeneratorstep.model.meshannotationmodel import MeshAnnotationModel
 
 
 class MasterModel(object):
@@ -26,9 +27,13 @@ class MasterModel(object):
         self._initialise()
         self._region = self._context.createRegion()
         self._generator_model = MeshGeneratorModel(self._region, self._materialmodule)
+        self._annotation_model = MeshAnnotationModel()
         self._plane_model = MeshPlaneModel(self._region)
         self._fiducial_marker_model = FiducialMarkerModel(self._region)
         self._fiducial_marker_model.registerGetPlaneInfoMethod(self._plane_model.getPlaneInfo)
+        self._fiducial_marker_model.registerGetFiducialLabelsMethod(self._annotation_model.getFiducialMarkerLabels)
+        self._plane_model.setAlignSettingsChangeCallback(self._fiducial_marker_model.setSceneTransformationMatrix)
+
         self._settings = {
             'frames-per-second': 25,
             'time-loop': False
@@ -105,6 +110,9 @@ class MasterModel(object):
     def getFiducialMarkerModel(self):
         return self._fiducial_marker_model
 
+    def getMeshAnnotationModel(self):
+        return self._annotation_model
+
     def getScene(self):
         return self._region.getScene()
 
@@ -179,6 +187,8 @@ class MasterModel(object):
         self._generator_model.setSettings(settings['generator_settings'])
         self._plane_model.setSettings(settings['image_plane_settings'])
         self._fiducial_marker_model.setSettings(settings['fiducial-markers'])
+        self._annotation_model.setMeshTypeByName(self._generator_model.getMeshTypeName())
+        # self._annotation_model.setMeshTypeByName(self._generator_model.getMeshTypeName())
 
     def _saveSettings(self):
         settings = self._getSettings()
