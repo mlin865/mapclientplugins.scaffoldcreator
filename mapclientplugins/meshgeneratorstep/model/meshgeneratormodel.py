@@ -10,7 +10,7 @@ from opencmiss.zinc.field import Field
 from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.node import Node
-from scaffoldmaker.scaffoldmaker import Scaffoldmaker
+from scaffoldmaker.scaffolds import Scaffolds
 
 from mapclientplugins.meshgeneratorstep.model.meshalignmentmodel import MeshAlignmentModel
 
@@ -50,9 +50,9 @@ class MeshGeneratorModel(MeshAlignmentModel):
         self._discoverAllMeshTypes()
 
     def _discoverAllMeshTypes(self):
-        scaffoldmaker = Scaffoldmaker()
-        self._meshTypes = scaffoldmaker.getMeshTypes()
-        self._currentMeshType = scaffoldmaker.getDefaultMeshType()
+        scaffolds = Scaffolds()
+        self._meshTypes = scaffolds.getMeshTypes()
+        self._currentMeshType = scaffolds.getDefaultMeshType()
         self._settings['meshTypeName'] = self._currentMeshType.getName()
         self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions()
 
