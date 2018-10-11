@@ -39,6 +39,7 @@ class MeshGeneratorModel(MeshAlignmentModel):
             'displayAxes' : True,
             'displayElementNumbers' : True,
             'displayLines' : True,
+            'displayLinesExterior' : False,
             'displayNodeDerivatives' : False,
             'displayNodeNumbers' : True,
             'displaySurfaces' : True,
@@ -216,6 +217,14 @@ class MeshGeneratorModel(MeshAlignmentModel):
     def setDisplayLines(self, show):
         self._setVisibility('displayLines', show)
 
+    def isDisplayLinesExterior(self):
+        return self._settings['displayLinesExterior']
+
+    def setDisplayLinesExterior(self, isExterior):
+        self._settings['displayLinesExterior'] = isExterior
+        lines = self._region.getScene().findGraphicsByName('displayLines')
+        lines.setExterior(self.isDisplayLinesExterior())
+
     def isDisplayNodeDerivatives(self):
         return self._getVisibility('displayNodeDerivatives')
 
@@ -390,6 +399,7 @@ class MeshGeneratorModel(MeshAlignmentModel):
         axes.setVisibilityFlag(self.isDisplayAxes())
         lines = scene.createGraphicsLines()
         lines.setCoordinateField(coordinates)
+        lines.setExterior(self.isDisplayLinesExterior())
         lines.setName('displayLines')
         lines.setVisibilityFlag(self.isDisplayLines())
         nodeNumbers = scene.createGraphicsPoints()
