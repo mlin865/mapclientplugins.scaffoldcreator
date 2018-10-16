@@ -7,8 +7,6 @@ from opencmiss.zinc.context import Context
 from opencmiss.zinc.material import Material
 
 from mapclientplugins.meshgeneratorstep.model.meshgeneratormodel import MeshGeneratorModel
-from mapclientplugins.meshgeneratorstep.model.meshplanemodel import MeshPlaneModel
-from mapclientplugins.meshgeneratorstep.model.fiducialmarkermodel import FiducialMarkerModel
 from mapclientplugins.meshgeneratorstep.model.meshannotationmodel import MeshAnnotationModel
 
 
@@ -28,11 +26,6 @@ class MasterModel(object):
         self._region = self._context.createRegion()
         self._generator_model = MeshGeneratorModel(self._region, self._materialmodule)
         self._annotation_model = MeshAnnotationModel()
-        self._plane_model = MeshPlaneModel(self._region)
-        self._fiducial_marker_model = FiducialMarkerModel(self._region)
-        self._fiducial_marker_model.registerGetPlaneInfoMethod(self._plane_model.getPlaneInfo)
-        self._fiducial_marker_model.registerGetFiducialLabelsMethod(self._annotation_model.getFiducialMarkerLabels)
-        self._plane_model.setAlignSettingsChangeCallback(self._fiducial_marker_model.setSceneTransformationMatrix)
 
         self._settings = {
             'frames-per-second': 25,
@@ -74,26 +67,7 @@ class MasterModel(object):
         glyphmodule.defineStandardGlyphs()
 
     def _makeConnections(self):
-        self._timer.timeout.connect(self._timeout)
-
-    def _timeout(self):
-        self._current_time += 1000/self._settings['frames-per-second']/1000
-        duration = self._plane_model.getFrameCount() / self._settings['frames-per-second']
-        if self._settings['time-loop'] and self._current_time > duration:
-            self._current_time -= duration
-        self._timekeeper.setTime(self._scaleCurrentTimeToTimekeeperTime())
-        self._timeValueUpdate(self._current_time)
-        if not self._plane_model.isDisabled():
-            frame_index = self._plane_model.getFrameIndexForTime(self._current_time, self._settings['frames-per-second']) + 1
-            self._frameIndexUpdate(frame_index)
-
-    def _scaleCurrentTimeToTimekeeperTime(self):
-        scaled_time = 0.0
-        duration = self._plane_model.getFrameCount() / self._settings['frames-per-second']
-        if duration > 0:
-            scaled_time = self._current_time/duration
-
-        return scaled_time
+        pass
 
     def getIdentifier(self):
         return self._identifier
@@ -104,12 +78,6 @@ class MasterModel(object):
     def getGeneratorModel(self):
         return self._generator_model
 
-    def getPlaneModel(self):
-        return self._plane_model
-
-    def getFiducialMarkerModel(self):
-        return self._fiducial_marker_model
-
     def getMeshAnnotationModel(self):
         return self._annotation_model
 
@@ -118,42 +86,6 @@ class MasterModel(object):
 
     def getContext(self):
         return self._context
-
-    def setFrameIndex(self, frame_index):
-        frame_value = frame_index - 1
-        self._current_time = self._plane_model.getTimeForFrameIndex(frame_value, self._settings['frames-per-second'])
-        self._timekeeper.setTime(self._scaleCurrentTimeToTimekeeperTime())
-        self._timeValueUpdate(self._current_time)
-
-    def setTimeValue(self, time):
-        self._current_time = time
-        self._timekeeper.setTime(self._scaleCurrentTimeToTimekeeperTime())
-        frame_index = self._plane_model.getFrameIndexForTime(time, self._settings['frames-per-second']) + 1
-        self._frameIndexUpdate(frame_index)
-
-    def setFramesPerSecond(self, value):
-        self._settings['frames-per-second'] = value
-
-    def getFramesPerSecond(self):
-        return self._settings['frames-per-second']
-
-    def setTimeLoop(self, state):
-        self._settings['time-loop'] = state
-
-    def isTimeLoop(self):
-        return self._settings['time-loop']
-
-    def play(self):
-        self._timer.start(1000/self._settings['frames-per-second'])
-
-    def stop(self):
-        self._timer.stop()
-
-    def registerFrameIndexUpdateCallback(self, frameIndexUpdateCallback):
-        self._frameIndexUpdate = frameIndexUpdateCallback
-
-    def registerTimeValueUpdateCallback(self, timeValueUpdateCallback):
-        self._timeValueUpdate = timeValueUpdateCallback
 
     def registerSceneChangeCallback(self, sceneChangeCallback):
         self._generator_model.registerSceneChangeCallback(sceneChangeCallback)
@@ -165,8 +97,6 @@ class MasterModel(object):
     def _getSettings(self):
         settings = self._settings
         settings['generator_settings'] = self._generator_model.getSettings()
-        settings['image_plane_settings'] = self._plane_model.getSettings()
-        settings['fiducial-markers'] = self._fiducial_marker_model.getSettings()
         return settings
 
     def loadSettings(self):
@@ -177,16 +107,10 @@ class MasterModel(object):
             if not 'generator_settings' in settings:
                 # migrate from old settings before named generator_settings
                 settings = {'generator_settings': settings}
-            if 'image_plane_settings' not in settings:
-                settings.update({'image_plane_settings': self._plane_model.getSettings()})
-            if 'fiducial-markers' not in settings:
-                settings.update({'fiducial-markers': self._fiducial_marker_model.getSettings()})
         except:
             # no settings saved yet, following gets defaults
             settings = self._getSettings()
         self._generator_model.setSettings(settings['generator_settings'])
-        self._plane_model.setSettings(settings['image_plane_settings'])
-        self._fiducial_marker_model.setSettings(settings['fiducial-markers'])
         self._annotation_model.setMeshTypeByName(self._generator_model.getMeshTypeName())
         # self._annotation_model.setMeshTypeByName(self._generator_model.getMeshTypeName())
 
