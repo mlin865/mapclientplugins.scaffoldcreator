@@ -130,7 +130,6 @@ class MeshGeneratorWidget(QtGui.QWidget):
         meshTypeName = self._ui.meshType_comboBox.itemText(index)
         self._generator_model.setMeshTypeByName(meshTypeName)
         self._annotation_model.setMeshTypeByName(meshTypeName)
-        self._fiducial_marker_model.reset()
         self._refreshMeshTypeOptions()
 
     def _meshTypeOptionCheckBoxClicked(self, checkBox):
