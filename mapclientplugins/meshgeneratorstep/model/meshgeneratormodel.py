@@ -10,7 +10,7 @@ from opencmiss.zinc.field import Field
 from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.node import Node
-from scaffoldmaker.scaffoldmaker import Scaffoldmaker
+from scaffoldmaker.scaffolds import Scaffolds
 
 from mapclientplugins.meshgeneratorstep.model.meshalignmentmodel import MeshAlignmentModel
 
@@ -39,6 +39,7 @@ class MeshGeneratorModel(MeshAlignmentModel):
             'displayAxes' : True,
             'displayElementNumbers' : True,
             'displayLines' : True,
+            'displayLinesExterior' : False,
             'displayNodeDerivatives' : False,
             'displayNodeNumbers' : True,
             'displaySurfaces' : True,
@@ -50,9 +51,9 @@ class MeshGeneratorModel(MeshAlignmentModel):
         self._discoverAllMeshTypes()
 
     def _discoverAllMeshTypes(self):
-        scaffoldmaker = Scaffoldmaker()
-        self._meshTypes = scaffoldmaker.getMeshTypes()
-        self._currentMeshType = scaffoldmaker.getDefaultMeshType()
+        scaffolds = Scaffolds()
+        self._meshTypes = scaffolds.getMeshTypes()
+        self._currentMeshType = scaffolds.getDefaultMeshType()
         self._settings['meshTypeName'] = self._currentMeshType.getName()
         self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions()
 
@@ -216,6 +217,14 @@ class MeshGeneratorModel(MeshAlignmentModel):
     def setDisplayLines(self, show):
         self._setVisibility('displayLines', show)
 
+    def isDisplayLinesExterior(self):
+        return self._settings['displayLinesExterior']
+
+    def setDisplayLinesExterior(self, isExterior):
+        self._settings['displayLinesExterior'] = isExterior
+        lines = self._region.getScene().findGraphicsByName('displayLines')
+        lines.setExterior(self.isDisplayLinesExterior())
+
     def isDisplayNodeDerivatives(self):
         return self._getVisibility('displayNodeDerivatives')
 
@@ -331,7 +340,7 @@ class MeshGeneratorModel(MeshAlignmentModel):
         fm = self._region.getFieldmodule()
         fm.beginChange()
         # logger = self._context.getLogger()
-        self._currentMeshType.generateMesh(self._region, self._settings['meshTypeOptions'])
+        annotationGroups = self._currentMeshType.generateMesh(self._region, self._settings['meshTypeOptions'])
         # loggerMessageCount = logger.getNumberOfMessages()
         # if loggerMessageCount > 0:
         #     for i in range(1, loggerMessageCount + 1):
@@ -361,6 +370,9 @@ class MeshGeneratorModel(MeshAlignmentModel):
             #size2 = nodes.getSize()
             #print('deleted', size1 - size2, 'nodes')
         fm.defineAllFaces()
+        if annotationGroups is not None:
+            for annotationGroup in annotationGroups:
+                annotationGroup.addSubelements()
         if self._settings['scale'] != '1*1*1':
             coordinates = fm.findFieldByName('coordinates').castFiniteElement()
             scale = fm.createFieldConstant(self._scale)
@@ -400,6 +412,7 @@ class MeshGeneratorModel(MeshAlignmentModel):
         axes.setVisibilityFlag(self.isDisplayAxes())
         lines = scene.createGraphicsLines()
         lines.setCoordinateField(coordinates)
+        lines.setExterior(self.isDisplayLinesExterior())
         lines.setName('displayLines')
         lines.setVisibilityFlag(self.isDisplayLines())
         nodeNumbers = scene.createGraphicsPoints()

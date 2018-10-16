@@ -30,7 +30,7 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>353</width>
+       <width>368</width>
        <height>197</height>
       </size>
      </property>
@@ -75,9 +75,9 @@
           <property name="geometry">
            <rect>
             <x>0</x>
-            <y>-32</y>
-            <width>316</width>
-            <height>830</height>
+            <y>0</y>
+            <width>331</width>
+            <height>832</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -221,10 +221,46 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="displayLines_checkBox">
-                  <property name="text">
-                   <string>Lines</string>
+                 <widget class="QFrame" name="displayLines_frame">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
                   </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_5">
+                   <property name="margin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QCheckBox" name="displayLines_checkBox">
+                     <property name="text">
+                      <string>Lines</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="displayLinesExterior_checkBox">
+                     <property name="text">
+                      <string>Exterior</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="displayLinesDummy2_label">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="displayLinesDummy1_label">
+                     <property name="text">
+                      <string/>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                 <item>
