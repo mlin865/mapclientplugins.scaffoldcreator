@@ -28,12 +28,8 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#file_location'))
-        self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
-                      'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
-                      'http://physiomeproject.org/workflow/1.0/rdf-schema#images'))
         # Port data:
         self._portData0 = None # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
-        self._images_info = None
         # Config:
         self._config = {}
         self._config['identifier'] = ''
@@ -48,7 +44,6 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         """
         self._model = MasterModel(self._location, self._config['identifier'])
         self._view = MeshGeneratorWidget(self._model)
-        self._view.setImageInfo(self._images_info)
         # self._view.setWindowFlags(QtCore.Qt.Widget)
         self._view.registerDoneExecution(self._myDoneExecution)
         self._setCurrentWidget(self._view)
@@ -70,7 +65,7 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         return self._portData0 # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
 
     def setPortData(self, index, data):
-        self._images_info = data
+        pass
 
     def configure(self):
         """

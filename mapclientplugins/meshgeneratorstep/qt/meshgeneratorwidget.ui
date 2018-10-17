@@ -30,7 +30,7 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>368</width>
+       <width>353</width>
        <height>197</height>
       </size>
      </property>
@@ -76,8 +76,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>331</width>
-            <height>832</height>
+            <width>333</width>
+            <height>775</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -221,46 +221,10 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QFrame" name="displayLines_frame">
-                  <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
+                 <widget class="QCheckBox" name="displayLines_checkBox">
+                  <property name="text">
+                   <string>Lines</string>
                   </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_5">
-                   <property name="margin">
-                    <number>0</number>
-                   </property>
-                   <item>
-                    <widget class="QCheckBox" name="displayLines_checkBox">
-                     <property name="text">
-                      <string>Lines</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QCheckBox" name="displayLinesExterior_checkBox">
-                     <property name="text">
-                      <string>Exterior</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="displayLinesDummy2_label">
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="displayLinesDummy1_label">
-                     <property name="text">
-                      <string/>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
                  </widget>
                 </item>
                 <item>
@@ -334,213 +298,6 @@
                   </property>
                  </widget>
                 </item>
-                <item>
-                 <widget class="QCheckBox" name="displayImagePlane_checkBox">
-                  <property name="text">
-                   <string>Image plane</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="displayFiducialMarkers_checkBox">
-                  <property name="text">
-                   <string>Fiducial markers</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="time_groupBox">
-               <property name="title">
-                <string>Time:</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_4">
-                <item row="1" column="1">
-                 <widget class="QPushButton" name="timePlayStop_pushButton">
-                  <property name="text">
-                   <string>Play</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="timeValue_label">
-                  <property name="text">
-                   <string>Time value:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QDoubleSpinBox" name="timeValue_doubleSpinBox">
-                  <property name="maximum">
-                   <double>12000.000000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="2">
-                 <widget class="QCheckBox" name="timeLoop_checkBox">
-                  <property name="text">
-                   <string>Loop</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="video_groupBox">
-               <property name="title">
-                <string>Video:</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_2">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="frameIndex_label">
-                  <property name="text">
-                   <string>Frame index:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QSpinBox" name="framesPerSecond_spinBox">
-                  <property name="minimum">
-                   <number>1</number>
-                  </property>
-                  <property name="value">
-                   <number>25</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="framesPerSecond_label">
-                  <property name="text">
-                   <string>Frames per second:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QSpinBox" name="frameIndex_spinBox">
-                  <property name="minimum">
-                   <number>1</number>
-                  </property>
-                  <property name="maximum">
-                   <number>10000</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="2">
-                 <widget class="QFrame" name="numFrames_frame">
-                  <property name="frameShape">
-                   <enum>QFrame::StyledPanel</enum>
-                  </property>
-                  <property name="frameShadow">
-                   <enum>QFrame::Raised</enum>
-                  </property>
-                  <layout class="QHBoxLayout" name="horizontalLayout_4">
-                   <property name="margin">
-                    <number>0</number>
-                   </property>
-                   <item>
-                    <widget class="QLabel" name="numFrames_label">
-                     <property name="text">
-                      <string># frames:</string>
-                     </property>
-                    </widget>
-                   </item>
-                   <item>
-                    <widget class="QLabel" name="numFramesValue_label">
-                     <property name="text">
-                      <string>TextLabel</string>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="alignment_groupBox">
-               <property name="title">
-                <string>Alignment:</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout">
-                <item row="1" column="1" colspan="2">
-                 <widget class="QComboBox" name="activeModel_comboBox">
-                  <item>
-                   <property name="text">
-                    <string>Image Plane</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>Generated Mesh</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="activeModel_label">
-                  <property name="text">
-                   <string>Active Model:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <widget class="QPushButton" name="toImage_pushButton">
-                  <property name="text">
-                   <string>To Image</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="0">
-                 <widget class="QLabel" name="toImage_label">
-                  <property name="text">
-                   <string>Align View:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QCheckBox" name="fixImagePlane_checkBox">
-                  <property name="text">
-                   <string>Fix image plane</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="fiducialMarkers_groupBox">
-               <property name="title">
-                <string>Fiducial markers:</string>
-               </property>
-               <layout class="QGridLayout" name="gridLayout_3">
-                <item row="0" column="1">
-                 <widget class="QComboBox" name="fiducialMarker_comboBox"/>
-                </item>
-                <item row="0" column="0">
-                 <widget class="QLabel" name="fiducialMarkerLabels_label">
-                  <property name="text">
-                   <string>Labels:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="fiducialMarkerTransform_label">
-                  <property name="text">
-                   <string>Transform:</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QPushButton" name="fiducialMarkerTransform_pushButton">
-                  <property name="text">
-                   <string>To Scaffold</string>
-                  </property>
-                 </widget>
-                </item>
                </layout>
               </widget>
              </item>
@@ -603,7 +360,7 @@
     </widget>
    </item>
    <item>
-    <widget class="AlignmentSceneviewerWidget" name="sceneviewer_widget" native="true">
+    <widget class="SceneviewerWidget" name="sceneviewer_widget" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
        <horstretch>4</horstretch>
@@ -616,12 +373,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>AlignmentSceneviewerWidget</class>
+   <class>SceneviewerWidget</class>
    <extends>QWidget</extends>
-   <header>opencmiss/zincwidgets/alignmentsceneviewerwidget.h</header>
+   <header>opencmiss/zincwidgets/sceneviewerwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections/>
 </ui>

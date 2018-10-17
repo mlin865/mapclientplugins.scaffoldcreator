@@ -12,12 +12,10 @@ from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.node import Node
 from scaffoldmaker.scaffolds import Scaffolds
 
-from mapclientplugins.meshgeneratorstep.model.meshalignmentmodel import MeshAlignmentModel
-
 STRING_FLOAT_FORMAT = '{:.8g}'
 
 
-class MeshGeneratorModel(MeshAlignmentModel):
+class MeshGeneratorModel(object):
     """
     Framework for generating meshes of a number of types, with mesh type specific options
     """
@@ -305,6 +303,19 @@ class MeshGeneratorModel(MeshAlignmentModel):
     def getMeshDimension(self):
         return self._getMesh().getDimension()
 
+    def getNodeLocation(self, node_id):
+        fm = self._region.getFieldmodule()
+        fm.beginChange()
+        coordinates = fm.findFieldByName('coordinates')
+        nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+        node = nodes.findNodeByIdentifier(node_id)
+        fc = fm.createFieldcache()
+        fc.setNode(node)
+        _, position = coordinates.evaluateReal(fc, 3)
+        fm.endChange()
+
+        return self._getSceneTransformationFromAdjustedPosition(position)
+
     def getSettings(self):
         return self._settings
 
@@ -473,7 +484,6 @@ class MeshGeneratorModel(MeshAlignmentModel):
         xiAxes.setName('displayXiAxes')
         xiAxes.setVisibilityFlag(self.isDisplayXiAxes())
 
-        self.applyAlignment()
         scene.endChange()
 
     def writeModel(self, file_name):
