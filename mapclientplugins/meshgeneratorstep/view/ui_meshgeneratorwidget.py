@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mapclientplugins\meshgeneratorstep\qt\meshgeneratorwidget.ui'
 #
-# Created: Wed Oct 17 11:36:35 2018
+# Created: Thu Oct 18 10:40:26 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,7 +26,7 @@ class Ui_MeshGeneratorWidget(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.dockWidget.sizePolicy().hasHeightForWidth())
         self.dockWidget.setSizePolicy(sizePolicy)
-        self.dockWidget.setMinimumSize(QtCore.QSize(353, 197))
+        self.dockWidget.setMinimumSize(QtCore.QSize(368, 197))
         self.dockWidget.setFeatures(QtGui.QDockWidget.DockWidgetFloatable|QtGui.QDockWidget.DockWidgetMovable)
         self.dockWidget.setAllowedAreas(QtCore.Qt.AllDockWidgetAreas)
         self.dockWidget.setObjectName("dockWidget")
@@ -50,7 +50,7 @@ class Ui_MeshGeneratorWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents_2 = QtGui.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 333, 775))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 348, 775))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -132,9 +132,28 @@ class Ui_MeshGeneratorWidget(object):
         self.displayAxes_checkBox = QtGui.QCheckBox(self.displayOptions_groupBox)
         self.displayAxes_checkBox.setObjectName("displayAxes_checkBox")
         self.verticalLayout_7.addWidget(self.displayAxes_checkBox)
-        self.displayLines_checkBox = QtGui.QCheckBox(self.displayOptions_groupBox)
+        self.displayLines_frame = QtGui.QFrame(self.displayOptions_groupBox)
+        self.displayLines_frame.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.displayLines_frame.setFrameShadow(QtGui.QFrame.Raised)
+        self.displayLines_frame.setObjectName("displayLines_frame")
+        self.horizontalLayout_5 = QtGui.QHBoxLayout(self.displayLines_frame)
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.displayLines_checkBox = QtGui.QCheckBox(self.displayLines_frame)
         self.displayLines_checkBox.setObjectName("displayLines_checkBox")
-        self.verticalLayout_7.addWidget(self.displayLines_checkBox)
+        self.horizontalLayout_5.addWidget(self.displayLines_checkBox)
+        self.displayLinesExterior_checkBox = QtGui.QCheckBox(self.displayLines_frame)
+        self.displayLinesExterior_checkBox.setObjectName("displayLinesExterior_checkBox")
+        self.horizontalLayout_5.addWidget(self.displayLinesExterior_checkBox)
+        self.displayLinesDummy1_label = QtGui.QLabel(self.displayLines_frame)
+        self.displayLinesDummy1_label.setText("")
+        self.displayLinesDummy1_label.setObjectName("displayLinesDummy1_label")
+        self.horizontalLayout_5.addWidget(self.displayLinesDummy1_label)
+        self.displayLinesDummy2_label = QtGui.QLabel(self.displayLines_frame)
+        self.displayLinesDummy2_label.setText("")
+        self.displayLinesDummy2_label.setObjectName("displayLinesDummy2_label")
+        self.horizontalLayout_5.addWidget(self.displayLinesDummy2_label)
+        self.verticalLayout_7.addWidget(self.displayLines_frame)
         self.displaySurfaces_frame = QtGui.QFrame(self.displayOptions_groupBox)
         self.displaySurfaces_frame.setFrameShape(QtGui.QFrame.StyledPanel)
         self.displaySurfaces_frame.setFrameShadow(QtGui.QFrame.Raised)
@@ -216,6 +235,7 @@ class Ui_MeshGeneratorWidget(object):
         self.displayOptions_groupBox.setTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Display options:", None, QtGui.QApplication.UnicodeUTF8))
         self.displayAxes_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Axes", None, QtGui.QApplication.UnicodeUTF8))
         self.displayLines_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Lines", None, QtGui.QApplication.UnicodeUTF8))
+        self.displayLinesExterior_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Exterior", None, QtGui.QApplication.UnicodeUTF8))
         self.displaySurfaces_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Surfaces", None, QtGui.QApplication.UnicodeUTF8))
         self.displaySurfacesExterior_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Exterior", None, QtGui.QApplication.UnicodeUTF8))
         self.displaySurfacesTranslucent_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Transluc.", None, QtGui.QApplication.UnicodeUTF8))

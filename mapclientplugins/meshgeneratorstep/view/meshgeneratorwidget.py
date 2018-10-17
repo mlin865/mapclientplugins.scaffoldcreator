@@ -73,6 +73,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayAxes_checkBox.clicked.connect(self._displayAxesClicked)
         self._ui.displayElementNumbers_checkBox.clicked.connect(self._displayElementNumbersClicked)
         self._ui.displayLines_checkBox.clicked.connect(self._displayLinesClicked)
+        self._ui.displayLinesExterior_checkBox.clicked.connect(self._displayLinesExteriorClicked)
         self._ui.displayNodeDerivatives_checkBox.clicked.connect(self._displayNodeDerivativesClicked)
         self._ui.displayNodeNumbers_checkBox.clicked.connect(self._displayNodeNumbersClicked)
         self._ui.displaySurfaces_checkBox.clicked.connect(self._displaySurfacesClicked)
@@ -179,6 +180,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayAxes_checkBox.setChecked(self._generator_model.isDisplayAxes())
         self._ui.displayElementNumbers_checkBox.setChecked(self._generator_model.isDisplayElementNumbers())
         self._ui.displayLines_checkBox.setChecked(self._generator_model.isDisplayLines())
+        self._ui.displayLinesExterior_checkBox.setChecked(self._generator_model.isDisplayLinesExterior())
         self._ui.displayNodeDerivatives_checkBox.setChecked(self._generator_model.isDisplayNodeDerivatives())
         self._ui.displayNodeNumbers_checkBox.setChecked(self._generator_model.isDisplayNodeNumbers())
         self._ui.displaySurfaces_checkBox.setChecked(self._generator_model.isDisplaySurfaces())
@@ -209,6 +211,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _displayLinesClicked(self):
         self._generator_model.setDisplayLines(self._ui.displayLines_checkBox.isChecked())
         self._autoPerturbLines()
+
+    def _displayLinesExteriorClicked(self):
+        self._generator_model.setDisplayLinesExterior(self._ui.displayLinesExterior_checkBox.isChecked())
 
     def _displayNodeDerivativesClicked(self):
         self._generator_model.setDisplayNodeDerivatives(self._ui.displayNodeDerivatives_checkBox.isChecked())
