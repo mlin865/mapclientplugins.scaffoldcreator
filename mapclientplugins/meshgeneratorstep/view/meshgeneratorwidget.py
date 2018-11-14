@@ -134,12 +134,17 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._refreshMeshTypeOptions()
 
     def _meshTypeOptionCheckBoxClicked(self, checkBox):
-        self._generator_model.setMeshTypeOption(checkBox.objectName(), checkBox.isChecked())
+        dependentChanges = self._generator_model.setMeshTypeOption(checkBox.objectName(), checkBox.isChecked())
+        if dependentChanges:
+            self._refreshMeshTypeOptions()
 
     def _meshTypeOptionLineEditChanged(self, lineEdit):
-        self._generator_model.setMeshTypeOption(lineEdit.objectName(), lineEdit.text())
-        finalValue = self._generator_model.getMeshTypeOption(lineEdit.objectName())
-        lineEdit.setText(str(finalValue))
+        dependentChanges = self._generator_model.setMeshTypeOption(lineEdit.objectName(), lineEdit.text())
+        if dependentChanges:
+            self._refreshMeshTypeOptions()
+        else:
+            finalValue = self._generator_model.getMeshTypeOption(lineEdit.objectName())
+            lineEdit.setText(str(finalValue))
 
     def _refreshMeshTypeOptions(self):
         layout = self._ui.meshTypeOptions_frame.layout()
@@ -169,7 +174,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
                 lineEdit.setObjectName(key)
                 lineEdit.setText(str(value))
                 callback = partial(self._meshTypeOptionLineEditChanged, lineEdit)
-                lineEdit.returnPressed.connect(callback)
+                #lineEdit.returnPressed.connect(callback)
                 lineEdit.editingFinished.connect(callback)
                 layout.addWidget(lineEdit)
 

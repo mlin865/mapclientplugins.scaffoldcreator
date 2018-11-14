@@ -86,6 +86,11 @@ class MeshGeneratorModel(object):
         return self._settings['meshTypeOptions'][key]
 
     def setMeshTypeOption(self, key, value):
+        '''
+        :return: True if other dependent options have changed, otherwise False.
+        This happens when 
+        On True return client is expected to refresh all option values in UI.
+        '''
         oldValue = self._settings['meshTypeOptions'][key]
         # print('setMeshTypeOption: key ', key, ' value ', str(value))
         newValue = None
@@ -104,10 +109,11 @@ class MeshGeneratorModel(object):
             print('setMeshTypeOption: Invalid value')
             return
         self._settings['meshTypeOptions'][key] = newValue
-        self._currentMeshType.checkOptions(self._settings['meshTypeOptions'])
+        dependentChanges = self._currentMeshType.checkOptions(self._settings['meshTypeOptions'])
         # print('final value = ', self._settings['meshTypeOptions'][key])
         if self._settings['meshTypeOptions'][key] != oldValue:
             self._generateMesh()
+        return dependentChanges
 
     def getDeleteElementsRangesText(self):
         return self._settings['deleteElementRanges']
