@@ -307,30 +307,67 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="displayElementNumbers_checkBox">
-                  <property name="text">
-                   <string>Element numbers</string>
+                 <widget class="QFrame" name="displayNodes_frame">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
                   </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_6">
+                   <property name="margin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QCheckBox" name="displayNodeNumbers_checkBox">
+                     <property name="text">
+                      <string>Node numbers</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="displayNodeDerivatives_checkBox">
+                     <property name="text">
+                      <string>Node derivatives</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="displayNodeNumbers_checkBox">
-                  <property name="text">
-                   <string>Node numbers</string>
+                 <widget class="QFrame" name="displayElements_frame">
+                  <property name="frameShape">
+                   <enum>QFrame::StyledPanel</enum>
                   </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <layout class="QHBoxLayout" name="horizontalLayout_4">
+                   <property name="margin">
+                    <number>0</number>
+                   </property>
+                   <item>
+                    <widget class="QCheckBox" name="displayElementNumbers_checkBox">
+                     <property name="text">
+                      <string>Element numbers</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="displayXiAxes_checkBox">
+                     <property name="text">
+                      <string>Xi axes</string>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="displayNodeDerivatives_checkBox">
+                 <widget class="QCheckBox" name="displayAnnotationPoints_checkBox">
                   <property name="text">
-                   <string>Node derivatives</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="displayXiAxes_checkBox">
-                  <property name="text">
-                   <string>Xi axes</string>
+                   <string>Annotation points</string>
                   </property>
                  </widget>
                 </item>

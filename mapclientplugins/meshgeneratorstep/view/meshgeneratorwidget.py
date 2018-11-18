@@ -70,6 +70,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.deleteElementsRanges_lineEdit.editingFinished.connect(self._deleteElementRangesLineEditChanged)
         self._ui.scale_lineEdit.returnPressed.connect(self._scaleLineEditChanged)
         self._ui.scale_lineEdit.editingFinished.connect(self._scaleLineEditChanged)
+        self._ui.displayAnnotationPoints_checkBox.clicked.connect(self._displayAnnotationPointsClicked)
         self._ui.displayAxes_checkBox.clicked.connect(self._displayAxesClicked)
         self._ui.displayElementNumbers_checkBox.clicked.connect(self._displayElementNumbersClicked)
         self._ui.displayLines_checkBox.clicked.connect(self._displayLinesClicked)
@@ -182,6 +183,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.identifier_label.setText('Identifier:  ' + self._model.getIdentifier())
         self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
         self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
+        self._ui.displayAnnotationPoints_checkBox.setChecked(self._generator_model.isDisplayAnnotationPoints())
         self._ui.displayAxes_checkBox.setChecked(self._generator_model.isDisplayAxes())
         self._ui.displayElementNumbers_checkBox.setChecked(self._generator_model.isDisplayElementNumbers())
         self._ui.displayLines_checkBox.setChecked(self._generator_model.isDisplayLines())
@@ -206,6 +208,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _scaleLineEditChanged(self):
         self._generator_model.setScaleText(self._ui.scale_lineEdit.text())
         self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
+
+    def _displayAnnotationPointsClicked(self):
+        self._generator_model.setDisplayAnnotationPoints(self._ui.displayAnnotationPoints_checkBox.isChecked())
 
     def _displayAxesClicked(self):
         self._generator_model.setDisplayAxes(self._ui.displayAxes_checkBox.isChecked())

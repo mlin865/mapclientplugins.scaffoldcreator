@@ -11,6 +11,7 @@ from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.node import Node
 from scaffoldmaker.scaffolds import Scaffolds
+from scaffoldmaker.utils.zinc_utils import *
 
 STRING_FLOAT_FORMAT = '{:.8g}'
 
@@ -34,6 +35,7 @@ class MeshGeneratorModel(object):
             'meshTypeOptions' : { },
             'deleteElementRanges' : '',
             'scale' : '*'.join(STRING_FLOAT_FORMAT.format(value) for value in self._scale),
+            'displayAnnotationPoints' : False,
             'displayAxes' : True,
             'displayElementNumbers' : True,
             'displayLines' : True,
@@ -202,6 +204,13 @@ class MeshGeneratorModel(object):
         self._settings[graphicsName] = show
         graphics = self._region.getScene().findGraphicsByName(graphicsName)
         graphics.setVisibilityFlag(show)
+
+    def isDisplayAnnotationPoints(self):
+        return self._getVisibility('displayAnnotationPoints')
+
+    def setDisplayAnnotationPoints(self, show):
+        self._setVisibility('displayAnnotationPoints', show)
+        self._setVisibility('displayAnnotationPointsEmbedded', show)
 
     def isDisplayAxes(self):
         return self._getVisibility('displayAxes')
@@ -404,6 +413,10 @@ class MeshGeneratorModel(object):
             elementDerivativeFields.append(fm.createFieldDerivative(coordinates, d + 1))
         elementDerivativesField = fm.createFieldConcatenate(elementDerivativeFields)
         cmiss_number = fm.findFieldByName('cmiss_number')
+        dataCoordinates = getOrCreateCoordinateField(fm, 'data_coordinates')
+        dataLabel = getOrCreateLabelField(fm, 'data_label')
+        dataElementXi = getOrCreateElementXiField(fm, 'data_element_xi')
+        dataHostCoordinates = fm.createFieldEmbedded(coordinates, dataElementXi)
         # make graphics
         scene = region.getScene()
         scene.beginChange()
@@ -489,6 +502,31 @@ class MeshGeneratorModel(object):
         xiAxes.setMaterial(self._materialmodule.findMaterialByName('yellow'))
         xiAxes.setName('displayXiAxes')
         xiAxes.setVisibilityFlag(self.isDisplayXiAxes())
+
+        # annotation points
+        annotationPoints = scene.createGraphicsPoints()
+        annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_DATAPOINTS)
+        annotationPoints.setCoordinateField(dataCoordinates)
+        pointattr = annotationPoints.getGraphicspointattributes()
+        pointattr.setLabelText(1, '  ')
+        pointattr.setLabelField(dataLabel)
+        pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
+        pointattr.setBaseSize(2*width)
+        annotationPoints.setMaterial(self._materialmodule.findMaterialByName('green'))
+        annotationPoints.setName('displayAnnotationPoints')
+        annotationPoints.setVisibilityFlag(self.isDisplayAnnotationPoints())
+
+        annotationPoints = scene.createGraphicsPoints()
+        annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_DATAPOINTS)
+        annotationPoints.setCoordinateField(dataHostCoordinates)
+        pointattr = annotationPoints.getGraphicspointattributes()
+        pointattr.setLabelText(1, '  ')
+        pointattr.setLabelField(dataLabel)
+        pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
+        pointattr.setBaseSize(2*width)
+        annotationPoints.setMaterial(self._materialmodule.findMaterialByName('yellow'))
+        annotationPoints.setName('displayAnnotationPointsEmbedded')
+        annotationPoints.setVisibilityFlag(self.isDisplayAnnotationPoints())
 
         scene.endChange()
 
