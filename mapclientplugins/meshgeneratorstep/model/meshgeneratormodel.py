@@ -399,8 +399,27 @@ class MeshGeneratorModel(object):
         if self._sceneChangeCallback is not None:
             self._sceneChangeCallback()
 
+    def _getNodeCoordinatesRange(self, coordinates):
+        '''
+        :return: min, max range of coordinates field over nodes.
+        '''
+        fm = coordinates.getFieldmodule()
+        fm.beginChange()
+        nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+        minCoordinates = fm.createFieldNodesetMinimum(coordinates, nodes)
+        maxCoordinates = fm.createFieldNodesetMaximum(coordinates, nodes)
+        componentsCount = coordinates.getNumberOfComponents()
+        cache = fm.createFieldcache()
+        result, min = minCoordinates.evaluateReal(cache, componentsCount)
+        result, max = maxCoordinates.evaluateReal(cache, componentsCount)
+        minCoordinates = maxCoordinates = None
+        cache = None
+        fm.endChange()
+        return min, max
+
     def _createGraphics(self, region):
         fm = region.getFieldmodule()
+        fm.beginChange()
         meshDimension = self.getMeshDimension()
         coordinates = fm.findFieldByName('coordinates')
         nodeDerivativeFields = [
@@ -417,6 +436,19 @@ class MeshGeneratorModel(object):
         dataLabel = getOrCreateLabelField(fm, 'data_label')
         dataElementXi = getOrCreateElementXiField(fm, 'data_element_xi')
         dataHostCoordinates = fm.createFieldEmbedded(coordinates, dataElementXi)
+        # fixed width glyph size is based on shortest non-zero side
+        min, max = self._getNodeCoordinatesRange(coordinates)
+        componentsCount = coordinates.getNumberOfComponents()
+        minScale = 1.0
+        first = True
+        for c in range(componentsCount):
+            scale = max[c] - min[c]
+            if scale > 0.0:
+                if first or (scale < minScale):
+                    minScale = scale
+                    first = False
+        width = 0.01*minScale
+
         # make graphics
         scene = region.getScene()
         scene.beginChange()
@@ -458,17 +490,6 @@ class MeshGeneratorModel(object):
         surfaces.setMaterial(surfacesMaterial)
         surfaces.setName('displaySurfaces')
         surfaces.setVisibilityFlag(self.isDisplaySurfaces())
-
-        # derivative arrow width is based on shortest non-zero side
-        minScale = 1.0
-        first = True
-        for i in range(coordinates.getNumberOfComponents()):
-            absScale = abs(self._scale[i])
-            if absScale > 0.0:
-                if first or (absScale < minScale):
-                    minScale = absScale
-                    first = False
-        width = 0.01*minScale
 
         nodeDerivativeMaterialNames = [ 'gold', 'silver', 'green' ]
         for i in range(meshDimension):
@@ -528,6 +549,7 @@ class MeshGeneratorModel(object):
         annotationPoints.setName('displayAnnotationPointsEmbedded')
         annotationPoints.setVisibilityFlag(self.isDisplayAnnotationPoints())
 
+        fm.endChange()
         scene.endChange()
 
     def writeModel(self, file_name):
