@@ -73,7 +73,7 @@ class MasterModel(object):
         return self._identifier
 
     def getOutputModelFilename(self):
-        return self._filenameStem + '.ex2'
+        return self._filenameStem + '.exf'
 
     def getGeneratorModel(self):
         return self._generator_model
@@ -93,6 +93,7 @@ class MasterModel(object):
     def done(self):
         self._saveSettings()
         self._generator_model.writeModel(self.getOutputModelFilename())
+        self._generator_model.exportToVtk(self._filenameStem)
 
     def _getSettings(self):
         settings = self._settings

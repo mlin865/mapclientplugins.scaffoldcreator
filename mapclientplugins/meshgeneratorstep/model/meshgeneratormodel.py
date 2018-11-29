@@ -4,6 +4,7 @@ Created on 9 Mar, 2018 from mapclientplugins.meshgeneratorstep.
 @author: Richard Christie
 """
 
+import os
 import string
 
 from opencmiss.zinc.field import Field
@@ -11,6 +12,7 @@ from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.node import Node
 from scaffoldmaker.scaffolds import Scaffolds
+from scaffoldmaker.utils.exportvtk import ExportVtk
 from scaffoldmaker.utils.zinc_utils import *
 
 STRING_FLOAT_FORMAT = '{:.8g}'
@@ -27,6 +29,7 @@ class MeshGeneratorModel(object):
         self._parent_region = region
         self._materialmodule = material_module
         self._region = None
+        self._annotationGroups = None
         self._sceneChangeCallback = None
         self._deleteElementRanges = []
         self._scale = [ 1.0, 1.0, 1.0 ]
@@ -386,6 +389,7 @@ class MeshGeneratorModel(object):
         if annotationGroups is not None:
             for annotationGroup in annotationGroups:
                 annotationGroup.addSubelements()
+        self._annotationGroups = annotationGroups
         if self._settings['scale'] != '1*1*1':
             coordinates = fm.findFieldByName('coordinates').castFiniteElement()
             scale = fm.createFieldConstant(self._scale)
@@ -554,3 +558,9 @@ class MeshGeneratorModel(object):
 
     def writeModel(self, file_name):
         self._region.writeFile(file_name)
+
+    def exportToVtk(self, filenameStem):
+        base_name = os.path.basename(filenameStem)
+        description = 'Scaffold ' + self._currentMeshType.getName() + ': ' + base_name
+        exportvtk = ExportVtk(self._region, description, self._annotationGroups)
+        exportvtk.writeFile(filenameStem + '.vtk')
