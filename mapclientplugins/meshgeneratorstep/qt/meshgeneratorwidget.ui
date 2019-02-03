@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1093</width>
-    <height>872</height>
+    <width>1789</width>
+    <height>1858</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -30,8 +30,8 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>368</width>
-       <height>197</height>
+       <width>441</width>
+       <height>354</height>
       </size>
      </property>
      <property name="features">
@@ -76,8 +76,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>348</width>
-            <height>775</height>
+            <width>738</width>
+            <height>1591</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -145,6 +145,9 @@
                 <property name="topMargin">
                  <number>3</number>
                 </property>
+                <property name="bottomMargin">
+                 <number>3</number>
+                </property>
                 <item row="0" column="0">
                  <widget class="QLabel" name="meshType_label">
                   <property name="text">
@@ -154,6 +157,37 @@
                 </item>
                 <item row="0" column="1">
                  <widget class="QComboBox" name="meshType_comboBox"/>
+                </item>
+               </layout>
+              </widget>
+             </item>
+             <item>
+              <widget class="QFrame" name="parameterSet_frame">
+               <property name="minimumSize">
+                <size>
+                 <width>0</width>
+                 <height>0</height>
+                </size>
+               </property>
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
+               </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QFormLayout" name="formLayout">
+                <property name="topMargin">
+                 <number>3</number>
+                </property>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="parameterSet_label">
+                  <property name="text">
+                   <string>Parameter set:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QComboBox" name="parameterSet_comboBox"/>
                 </item>
                </layout>
               </widget>
@@ -394,7 +428,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QFrame" name="frame">
+        <widget class="QFrame" name="bottom_frame">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
          </property>

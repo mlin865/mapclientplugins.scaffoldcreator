@@ -23,9 +23,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._model.registerSceneChangeCallback(self._sceneChanged)
         self._doneCallback = None
         # self._populateAnnotationTree()
-        meshTypeNames = self._generator_model.getAllMeshTypeNames()
-        for meshTypeName in meshTypeNames:
-            self._ui.meshType_comboBox.addItem(meshTypeName)
+        self._refreshMeshTypeNames()
+        self._refreshParameterSetNames()
         self._makeConnections()
 
     def _graphicsInitialized(self):
@@ -66,6 +65,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.done_button.clicked.connect(self._doneButtonClicked)
         self._ui.viewAll_button.clicked.connect(self._viewAll)
         self._ui.meshType_comboBox.currentIndexChanged.connect(self._meshTypeChanged)
+        self._ui.parameterSet_comboBox.currentIndexChanged.connect(self._parameterSetChanged)
         self._ui.deleteElementsRanges_lineEdit.returnPressed.connect(self._deleteElementRangesLineEditChanged)
         self._ui.deleteElementsRanges_lineEdit.editingFinished.connect(self._deleteElementRangesLineEditChanged)
         self._ui.scale_lineEdit.returnPressed.connect(self._scaleLineEditChanged)
@@ -84,6 +84,33 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayXiAxes_checkBox.clicked.connect(self._displayXiAxesClicked)
         # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
         # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
+                
+    def _refreshMeshTypeNames(self):
+        meshTypeNames = self._generator_model.getAllMeshTypeNames()
+        for meshTypeName in meshTypeNames:
+            self._ui.meshType_comboBox.addItem(meshTypeName)
+
+    def _refreshParameterSetNames(self):
+        self._ui.parameterSet_comboBox.blockSignals(True)
+        self._ui.parameterSet_comboBox.clear()
+        currentIndex = 0
+        currentParameterSetName = self._generator_model.getCurrentParameterSetName()
+        index = 0
+        for parameterSetName in self._generator_model.getMeshTypeParameterSetNames():
+            self._ui.parameterSet_comboBox.addItem(parameterSetName)
+            if parameterSetName == currentParameterSetName:
+                currentIndex = index
+            index += 1
+        self._ui.parameterSet_comboBox.setCurrentIndex(currentIndex)
+        self._ui.parameterSet_comboBox.blockSignals(False)
+        
+    def _updateForCustomParameterSet(self):
+        '''
+        Call to update parameter set names in combobox if doesn't match number in model due to custom parameter set.
+        '''
+        if (self._generator_model.getCurrentParameterSetName() != self._ui.parameterSet_comboBox.currentText()) or \
+            (len(self._generator_model.getMeshTypeParameterSetNames()) != self._ui.parameterSet_comboBox.count()):
+            self._refreshParameterSetNames()
 
     def _createFMAItem(self, parent, text, fma_id):
         item = QtGui.QTreeWidgetItem(parent)
@@ -132,12 +159,19 @@ class MeshGeneratorWidget(QtGui.QWidget):
         meshTypeName = self._ui.meshType_comboBox.itemText(index)
         self._generator_model.setMeshTypeByName(meshTypeName)
         self._annotation_model.setMeshTypeByName(meshTypeName)
+        self._refreshParameterSetNames()
+        self._refreshMeshTypeOptions()
+
+    def _parameterSetChanged(self, index):
+        parameterSetName = self._ui.parameterSet_comboBox.itemText(index)
+        self._generator_model.setParameterSetName(parameterSetName)
         self._refreshMeshTypeOptions()
 
     def _meshTypeOptionCheckBoxClicked(self, checkBox):
         dependentChanges = self._generator_model.setMeshTypeOption(checkBox.objectName(), checkBox.isChecked())
         if dependentChanges:
             self._refreshMeshTypeOptions()
+        self._updateForCustomParameterSet()
 
     def _meshTypeOptionLineEditChanged(self, lineEdit):
         dependentChanges = self._generator_model.setMeshTypeOption(lineEdit.objectName(), lineEdit.text())
@@ -146,6 +180,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         else:
             finalValue = self._generator_model.getMeshTypeOption(lineEdit.objectName())
             lineEdit.setText(str(finalValue))
+        self._updateForCustomParameterSet()
 
     def _refreshMeshTypeOptions(self):
         layout = self._ui.meshTypeOptions_frame.layout()
@@ -199,6 +234,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.meshType_comboBox.blockSignals(True)
         self._ui.meshType_comboBox.setCurrentIndex(index)
         self._ui.meshType_comboBox.blockSignals(False)
+        self._refreshParameterSetNames()
         self._refreshMeshTypeOptions()
 
     def _deleteElementRangesLineEditChanged(self):

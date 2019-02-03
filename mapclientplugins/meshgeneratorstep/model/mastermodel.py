@@ -113,7 +113,6 @@ class MasterModel(object):
             settings = self._getSettings()
         self._generator_model.setSettings(settings['generator_settings'])
         self._annotation_model.setMeshTypeByName(self._generator_model.getMeshTypeName())
-        # self._annotation_model.setMeshTypeByName(self._generator_model.getMeshTypeName())
 
     def _saveSettings(self):
         settings = self._getSettings()

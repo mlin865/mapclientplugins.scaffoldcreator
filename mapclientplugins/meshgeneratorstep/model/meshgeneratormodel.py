@@ -4,6 +4,7 @@ Created on 9 Mar, 2018 from mapclientplugins.meshgeneratorstep.
 @author: Richard Christie
 """
 
+import copy
 import os
 import string
 
@@ -51,6 +52,8 @@ class MeshGeneratorModel(object):
             'displaySurfacesWireframe' : False,
             'displayXiAxes' : False
         }
+        self._customMeshTypeOptions = None  # temporary storage of last custom mesh type options, to switch back to
+        self._currentParameterSetName = None
         self._discoverAllMeshTypes()
 
     def _discoverAllMeshTypes(self):
@@ -59,6 +62,7 @@ class MeshGeneratorModel(object):
         self._currentMeshType = scaffolds.getDefaultMeshType()
         self._settings['meshTypeName'] = self._currentMeshType.getName()
         self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions()
+        self._currentParameterSetName = self._currentMeshType.getParameterSetNames()[0]
 
     def getAllMeshTypeNames(self):
         meshTypeNames = []
@@ -82,10 +86,32 @@ class MeshGeneratorModel(object):
                 self._currentMeshType = meshType
                 self._settings['meshTypeName'] = self._currentMeshType.getName()
                 self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions()
+                self._customMeshTypeOptions = None
+                self._currentParameterSetName = self._currentMeshType.getParameterSetNames()[0]
                 self._generateMesh()
 
     def getMeshTypeOrderedOptionNames(self):
         return self._currentMeshType.getOrderedOptionNames()
+
+    def getMeshTypeParameterSetNames(self):
+        parameterSetNames = self._currentMeshType.getParameterSetNames()
+        if self._customMeshTypeOptions:
+            parameterSetNames.insert(0, 'Custom')
+        return parameterSetNames
+
+    def setParameterSetName(self, parameterSetName):
+        if parameterSetName == 'Custom':
+            self._settings['meshTypeOptions'] = copy.copy(self._customMeshTypeOptions)
+        else:
+            self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions(parameterSetName)
+        self._currentParameterSetName = parameterSetName
+        self._generateMesh()
+
+    def getCurrentParameterSetName(self):
+        '''
+        :return: Name of currently active parameter set.
+        '''
+        return self._currentParameterSetName
 
     def getMeshTypeOption(self, key):
         return self._settings['meshTypeOptions'][key]
@@ -117,6 +143,8 @@ class MeshGeneratorModel(object):
         dependentChanges = self._currentMeshType.checkOptions(self._settings['meshTypeOptions'])
         # print('final value = ', self._settings['meshTypeOptions'][key])
         if self._settings['meshTypeOptions'][key] != oldValue:
+            self._customMeshTypeOptions = copy.copy(self._settings['meshTypeOptions'])
+            self._currentParameterSetName = 'Custom'
             self._generateMesh()
         return dependentChanges
 
@@ -338,6 +366,9 @@ class MeshGeneratorModel(object):
         return self._settings
 
     def setSettings(self, settings):
+        '''
+        Called on loading settings from file.
+        '''
         self._settings.update(settings)
         self._currentMeshType = self._getMeshTypeByName(self._settings['meshTypeName'])
         self._parseDeleteElementsRangesText(self._settings['deleteElementRanges'])
@@ -346,6 +377,16 @@ class MeshGeneratorModel(object):
         self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions()
         self._settings['meshTypeOptions'].update(savedMeshTypeOptions)
         self._parseScaleText(self._settings['scale'])
+        # work out whether settings are a particular named parameter set or custom
+        self._currentParameterSetName = None
+        for parameterSetName in reversed(self._currentMeshType.getParameterSetNames()):
+            tmpMeshTypeOptions = self._currentMeshType.getDefaultOptions(parameterSetName)
+            if self._settings['meshTypeOptions'] == tmpMeshTypeOptions:
+                self._currentParameterSetName = parameterSetName
+                break
+        if not self._currentParameterSetName:
+            self._customMeshTypeOptions = copy.copy(self._settings['meshTypeOptions'])
+            self._currentParameterSetName = 'Custom'
         self._generateMesh()
 
     def _generateMesh(self):
