@@ -41,11 +41,11 @@ class MeshGeneratorModel(object):
             'scale' : '*'.join(STRING_FLOAT_FORMAT.format(value) for value in self._scale),
             'displayAnnotationPoints' : False,
             'displayAxes' : True,
-            'displayElementNumbers' : True,
+            'displayElementNumbers' : False,
             'displayLines' : True,
             'displayLinesExterior' : False,
             'displayNodeDerivatives' : False,
-            'displayNodeNumbers' : True,
+            'displayNodeNumbers' : False,
             'displaySurfaces' : True,
             'displaySurfacesExterior' : True,
             'displaySurfacesTranslucent' : True,
@@ -371,11 +371,11 @@ class MeshGeneratorModel(object):
         '''
         self._settings.update(settings)
         self._currentMeshType = self._getMeshTypeByName(self._settings['meshTypeName'])
-        self._parseDeleteElementsRangesText(self._settings['deleteElementRanges'])
         # merge any new options for this generator
         savedMeshTypeOptions = self._settings['meshTypeOptions']
         self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions()
         self._settings['meshTypeOptions'].update(savedMeshTypeOptions)
+        self._parseDeleteElementsRangesText(self._settings['deleteElementRanges'])
         self._parseScaleText(self._settings['scale'])
         # work out whether settings are a particular named parameter set or custom
         self._currentParameterSetName = None
@@ -481,18 +481,21 @@ class MeshGeneratorModel(object):
         dataLabel = getOrCreateLabelField(fm, 'data_label')
         dataElementXi = getOrCreateElementXiField(fm, 'data_element_xi')
         dataHostCoordinates = fm.createFieldEmbedded(coordinates, dataElementXi)
-        # fixed width glyph size is based on shortest non-zero side
+        # fixed width glyph size is based on longest side
         min, max = self._getNodeCoordinatesRange(coordinates)
         componentsCount = coordinates.getNumberOfComponents()
-        minScale = 1.0
-        first = True
-        for c in range(componentsCount):
-            scale = max[c] - min[c]
-            if scale > 0.0:
-                if first or (scale < minScale):
-                    minScale = scale
+        if componentsCount == 1:
+            maxScale = max - min
+        else:
+            first = True
+            for c in range(componentsCount):
+                scale = max[c] - min[c]
+                if first or (scale > maxScale):
+                    maxScale = scale
                     first = False
-        width = 0.01*minScale
+        if maxScale == 0.0:
+            maxScale = 1.0
+        width = 0.01*maxScale
 
         # make graphics
         scene = region.getScene()
