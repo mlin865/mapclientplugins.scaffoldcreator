@@ -8,6 +8,7 @@ from PySide import QtGui, QtCore
 from functools import partial
 
 from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
+from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 
 
 class MeshGeneratorWidget(QtGui.QWidget):
@@ -173,6 +174,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
             self._refreshMeshTypeOptions()
         self._updateForCustomParameterSet()
 
+    def _meshTypeOptionScaffoldPackageButtonPressed(self, pushButton):
+        optionName = pushButton.objectName()
+        print('Edit ScaffoldPackage', optionName)
+
     def _meshTypeOptionLineEditChanged(self, lineEdit):
         dependentChanges = self._generator_model.setMeshTypeOption(lineEdit.objectName(), lineEdit.text())
         if dependentChanges:
@@ -206,13 +211,21 @@ class MeshGeneratorWidget(QtGui.QWidget):
                 label.setObjectName(key)
                 label.setText(key)
                 layout.addWidget(label)
-                lineEdit = QtGui.QLineEdit(self._ui.meshTypeOptions_frame)
-                lineEdit.setObjectName(key)
-                lineEdit.setText(str(value))
-                callback = partial(self._meshTypeOptionLineEditChanged, lineEdit)
-                #lineEdit.returnPressed.connect(callback)
-                lineEdit.editingFinished.connect(callback)
-                layout.addWidget(lineEdit)
+                if isinstance(value, ScaffoldPackage):
+                    pushButton = QtGui.QPushButton()
+                    pushButton.setObjectName(key)
+                    pushButton.setText('Edit >>')
+                    callback = partial(self._meshTypeOptionScaffoldPackageButtonPressed, pushButton)
+                    pushButton.clicked.connect(callback)
+                    layout.addWidget(pushButton)
+                else:
+                    lineEdit = QtGui.QLineEdit(self._ui.meshTypeOptions_frame)
+                    lineEdit.setObjectName(key)
+                    lineEdit.setText(str(value))
+                    callback = partial(self._meshTypeOptionLineEditChanged, lineEdit)
+                    #lineEdit.returnPressed.connect(callback)
+                    lineEdit.editingFinished.connect(callback)
+                    layout.addWidget(lineEdit)
 
     def _refreshOptions(self):
         self._ui.identifier_label.setText('Identifier:  ' + self._model.getIdentifier())
