@@ -13,6 +13,7 @@ from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.node import Node
 from scaffoldmaker.scaffolds import Scaffolds
+from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 from scaffoldmaker.utils.exportvtk import ExportVtk
 from scaffoldmaker.utils.zinc_utils import *
 
@@ -53,68 +54,193 @@ class MeshGeneratorModel(object):
             'displayXiAxes' : False
         }
         self._customMeshTypeOptions = None  # temporary storage of last custom mesh type options, to switch back to
-        self._currentParameterSetName = None
-        self._discoverAllMeshTypes()
-
-    def _discoverAllMeshTypes(self):
+        self._parameterSetName = None
+        self._scaffoldPackages = []
+        self._scaffoldPackageOptionNames = []
+        # discover all mesh types and set the current from the default
         scaffolds = Scaffolds()
-        self._meshTypes = scaffolds.getMeshTypes()
-        self._currentMeshType = scaffolds.getDefaultMeshType()
-        self._settings['meshTypeName'] = self._currentMeshType.getName()
-        self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions()
-        self._currentParameterSetName = self._currentMeshType.getParameterSetNames()[0]
+        self._allMeshTypes = scaffolds.getMeshTypes()
+        # list of nested scaffold packages to that being edited, with their parent option names
+        self._scaffoldPackages = []
+        self._scaffoldPackageOptionNames = []
+        self._setScaffoldType(scaffolds.getDefaultMeshType())
 
-    def getAllMeshTypeNames(self):
-        meshTypeNames = []
-        for meshType in self._meshTypes:
-            meshTypeNames.append(meshType.getName())
-        return meshTypeNames
-
-    def getMeshTypeName(self):
-        return self._settings['meshTypeName']
-
-    def _getMeshTypeByName(self, name):
-        for meshType in self._meshTypes:
-            if meshType.getName() == name:
-                return meshType
-        return None
+    def _setScaffoldType(self, scaffoldType):
+        parentScaffoldType = self.getParentScaffoldType()
+        if parentScaffoldType:
+            optionName = self._scaffoldPackageOptionNames[-1]
+            self._scaffoldPackages[-1].deepcopy(parentScaffoldType.getOptionScaffoldPackage(optionName, scaffoldType))
+        else:
+            self._currentMeshType = scaffoldType
+            self._settings['meshTypeName'] = scaffoldType.getName()
+            self._settings['meshTypeOptions'] = scaffoldType.getDefaultOptions()
+        self._customMeshTypeOptions = None
+        self._parameterSetName = self.getEditScaffoldParameterSetNames()[0]
 
     def setMeshTypeByName(self, name):
         meshType = self._getMeshTypeByName(name)
         if meshType is not None:
-            if meshType != self._currentMeshType:
-                self._currentMeshType = meshType
-                self._settings['meshTypeName'] = self._currentMeshType.getName()
-                self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions()
-                self._customMeshTypeOptions = None
-                self._currentParameterSetName = self._currentMeshType.getParameterSetNames()[0]
+            parentScaffoldType = self.getParentScaffoldType()
+            assert (not parentScaffoldType) or (meshType in parentScaffoldType.getOptionValidScaffoldTypes(self._scaffoldPackageOptionNames[-1])), 'Invalid scaffold type for parent scaffold'
+            if meshType != self.getEditScaffoldType():
+                self._setScaffoldType(meshType)
                 self._generateMesh()
 
-    def getMeshTypeOrderedOptionNames(self):
-        return self._currentMeshType.getOrderedOptionNames()
+    def getAvailableMeshTypeNames(self):
+        meshTypeNames = []
+        parentScaffoldType = self.getParentScaffoldType()
+        validScaffoldTypes = parentScaffoldType.getOptionValidScaffoldTypes(self._scaffoldPackageOptionNames[-1]) if parentScaffoldType else None
+        for meshType in self._allMeshTypes:
+            if (not parentScaffoldType) or (meshType in validScaffoldTypes):
+                meshTypeNames.append(meshType.getName())
+        return meshTypeNames
 
-    def getMeshTypeParameterSetNames(self):
-        parameterSetNames = self._currentMeshType.getParameterSetNames()
+    def _getMeshTypeByName(self, name):
+        for meshType in self._allMeshTypes:
+            if meshType.getName() == name:
+                return meshType
+        return None
+
+    def getMeshTypeName(self):
+        return self.getEditScaffoldType().getName()
+
+    def getRootScaffoldType(self):
+        '''
+        Get root scaffold type being edited, NOT including nested scaffolds.
+        '''
+        return self._currentMeshType
+
+    def getEditScaffoldType(self):
+        '''
+        Get scaffold type currently being edited, including nested scaffolds.
+        '''
+        if self._scaffoldPackages:
+            return self._scaffoldPackages[-1].getScaffoldType()
+        return self._currentMeshType
+
+    def getEditScaffoldSettings(self):
+        '''
+        Get settings for scaffold type currently being edited, including nested scaffolds.
+        '''
+        if self._scaffoldPackages:
+            return self._scaffoldPackages[-1].getScaffoldSettings()
+        return self._settings['meshTypeOptions']
+
+    def getEditScaffoldOptionDisplayName(self):
+        '''
+        Get option display name for sub scaffold package being edited.
+        '''
+        return '/'.join(self._scaffoldPackageOptionNames)
+
+    def getEditScaffoldOrderedOptionNames(self):
+        return self.getEditScaffoldType().getOrderedOptionNames()
+
+    def getEditScaffoldParameterSetNames(self):
+        if self._scaffoldPackages:
+            # may need to change if scaffolds nested two deep
+            return self.getParentScaffoldType().getOptionScaffoldTypeParameterSetNames( \
+                self._scaffoldPackageOptionNames[-1], self._scaffoldPackages[-1])
+        return self._currentMeshType.getParameterSetNames()
+
+    def getEditScaffoldDefaultOptions(self, parameterSetName):
+        '''
+        :return: Settings dict for root scaffold, ScaffoldPackage for sub-scaffold.
+        '''
+        if self._scaffoldPackages:
+            # may need to change if scaffolds nested two deep
+            return self.getParentScaffoldType().getOptionScaffoldPackage( \
+                self._scaffoldPackageOptionNames[-1], self._scaffoldPackages[-1], parameterSetName)
+        return self._currentMeshType.getDefaultOptions(parameterSetName)
+
+    def getEditScaffoldOption(self, key):
+        return self.getEditScaffoldSettings()[key]
+
+    def getParentScaffoldType(self):
+        '''
+        :return: Parent scaffold type or None if top scaffold.
+        '''
+        if self._scaffoldPackages:
+            if len(self._scaffoldPackages) > 1:
+                return self._scaffoldPackages[-2].getScaffoldType()
+            return self._currentMeshType
+        return None
+
+    def getParentScaffoldOption(self, key):
+        assert self._scaffoldPackages
+        if len(self._scaffoldPackages) > 1:
+            parentScaffoldSettings = self._scaffoldPackages[-2].getScaffoldSettings()
+        else:
+            parentScaffoldSettings = self._settings['meshTypeOptions']
+        return parentScaffoldSettings[key]
+
+    def _checkCustomParameterSet(self):
+        '''
+        Work out whether settings are a particular named parameter set or custom
+        '''
+        self._customMeshTypeOptions = None
+        self._parameterSetName = None
+        if self._scaffoldPackages:
+            scaffoldSettings = self.getParentScaffoldOption(self._scaffoldPackageOptionNames[-1])
+        else:
+            scaffoldSettings = self._settings['meshTypeOptions']
+        for parameterSetName in reversed(self.getAvailableParameterSetNames()):
+            tmpScaffoldSettings = self.getEditScaffoldDefaultOptions(parameterSetName)
+            if scaffoldSettings == tmpScaffoldSettings:
+                self._parameterSetName = parameterSetName
+                break
+        if not self._parameterSetName:
+            self._customMeshTypeOptions = copy.deepcopy(scaffoldSettings)
+            self._parameterSetName = 'Custom'
+
+    def _clearMeshEdits(self):
+        if self._scaffoldPackages:
+            self._scaffoldPackages[-1].setMeshEdits(None)
+
+    def editScaffoldPackageOption(self, optionName):
+        '''
+        Switch to editing a nested scaffold.
+        '''
+        settings = self.getEditScaffoldSettings()
+        scaffoldPackage = settings.get(optionName)
+        assert isinstance(scaffoldPackage, ScaffoldPackage), 'Option is not a ScaffoldPackage'
+        self._scaffoldPackages.append(scaffoldPackage)
+        self._scaffoldPackageOptionNames.append(optionName)
+        self._checkCustomParameterSet()
+        self._generateMesh()
+
+    def endEditScaffoldPackageOption(self):
+        '''
+        End editing of the last ScaffoldPackage, moving up to parent or top scaffold type.
+        '''
+        assert self._scaffoldPackages, 'No currently edited ScaffoldPackage'
+        self._scaffoldPackages.pop()
+        self._scaffoldPackageOptionNames.pop()
+        self._checkCustomParameterSet()
+        self._generateMesh()
+
+    def getAvailableParameterSetNames(self):
+        parameterSetNames = self.getEditScaffoldParameterSetNames()
         if self._customMeshTypeOptions:
             parameterSetNames.insert(0, 'Custom')
         return parameterSetNames
 
-    def setParameterSetName(self, parameterSetName):
-        if parameterSetName == 'Custom':
-            self._settings['meshTypeOptions'] = copy.copy(self._customMeshTypeOptions)
-        else:
-            self._settings['meshTypeOptions'] = self._currentMeshType.getDefaultOptions(parameterSetName)
-        self._currentParameterSetName = parameterSetName
-        self._generateMesh()
-
-    def getCurrentParameterSetName(self):
+    def getParameterSetName(self):
         '''
         :return: Name of currently active parameter set.
         '''
-        return self._currentParameterSetName
+        return self._parameterSetName
 
-    def getMeshTypeOption(self, key):
-        return self._settings['meshTypeOptions'][key]
+    def setParameterSetName(self, parameterSetName):
+        if parameterSetName == 'Custom':
+            scaffoldSettings = copy.deepcopy(self._customMeshTypeOptions)
+        else:
+            scaffoldSettings = self.getEditScaffoldDefaultOptions(parameterSetName)
+        if self._scaffoldPackages:
+            self._scaffoldPackages[-1].deepcopy(scaffoldSettings)
+        else:
+            self._settings['meshTypeOptions'] = scaffoldSettings
+        self._parameterSetName = parameterSetName
+        self._generateMesh()
 
     def setMeshTypeOption(self, key, value):
         '''
@@ -122,7 +248,9 @@ class MeshGeneratorModel(object):
         This happens when 
         On True return client is expected to refresh all option values in UI.
         '''
-        oldValue = self._settings['meshTypeOptions'][key]
+        scaffoldType = self.getEditScaffoldType()
+        settings = self.getEditScaffoldSettings()
+        oldValue = settings[key]
         # print('setMeshTypeOption: key ', key, ' value ', str(value))
         newValue = None
         try:
@@ -139,12 +267,13 @@ class MeshGeneratorModel(object):
         except:
             print('setMeshTypeOption: Invalid value')
             return
-        self._settings['meshTypeOptions'][key] = newValue
-        dependentChanges = self._currentMeshType.checkOptions(self._settings['meshTypeOptions'])
-        # print('final value = ', self._settings['meshTypeOptions'][key])
-        if self._settings['meshTypeOptions'][key] != oldValue:
-            self._customMeshTypeOptions = copy.copy(self._settings['meshTypeOptions'])
-            self._currentParameterSetName = 'Custom'
+        settings[key] = newValue
+        dependentChanges = scaffoldType.checkOptions(settings)
+        # print('final value = ', settings[key])
+        if settings[key] != oldValue:
+            self._customMeshTypeOptions = copy.deepcopy(settings)
+            self._parameterSetName = 'Custom'
+            self._clearMeshEdits()
             self._generateMesh()
         return dependentChanges
 
@@ -377,19 +506,15 @@ class MeshGeneratorModel(object):
         self._settings['meshTypeOptions'].update(savedMeshTypeOptions)
         self._parseDeleteElementsRangesText(self._settings['deleteElementRanges'])
         self._parseScaleText(self._settings['scale'])
-        # work out whether settings are a particular named parameter set or custom
-        self._currentParameterSetName = None
-        for parameterSetName in reversed(self._currentMeshType.getParameterSetNames()):
-            tmpMeshTypeOptions = self._currentMeshType.getDefaultOptions(parameterSetName)
-            if self._settings['meshTypeOptions'] == tmpMeshTypeOptions:
-                self._currentParameterSetName = parameterSetName
-                break
-        if not self._currentParameterSetName:
-            self._customMeshTypeOptions = copy.copy(self._settings['meshTypeOptions'])
-            self._currentParameterSetName = 'Custom'
+        self._scaffoldPackages = []
+        self._scaffoldPackageOptionNames = []
+        self._checkCustomParameterSet()
         self._generateMesh()
 
     def _generateMesh(self):
+        scaffoldType = self.getEditScaffoldType()
+        scaffoldSettings = self.getEditScaffoldSettings()
+        isRootScaffold = not self._scaffoldPackages
         if self._region:
             self._parent_region.removeChild(self._region)
         self._region = self._parent_region.createChild(self._region_name)
@@ -397,7 +522,10 @@ class MeshGeneratorModel(object):
         fm = self._region.getFieldmodule()
         fm.beginChange()
         # logger = self._context.getLogger()
-        annotationGroups = self._currentMeshType.generateMesh(self._region, self._settings['meshTypeOptions'])
+        if self._scaffoldPackages:
+            annotationGroups = self._scaffoldPackages[-1].generate(self._region)
+        else:
+            annotationGroups = scaffoldType.generateMesh(self._region, scaffoldSettings)
         # loggerMessageCount = logger.getNumberOfMessages()
         # if loggerMessageCount > 0:
         #     for i in range(1, loggerMessageCount + 1):
@@ -406,7 +534,7 @@ class MeshGeneratorModel(object):
         mesh = self._getMesh()
         # meshDimension = mesh.getDimension()
         nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
-        if len(self._deleteElementRanges) > 0:
+        if isRootScaffold and (len(self._deleteElementRanges) > 0):
             deleteElementIdentifiers = []
             elementIter = mesh.createElementiterator()
             element = elementIter.next()
@@ -431,7 +559,7 @@ class MeshGeneratorModel(object):
             for annotationGroup in annotationGroups:
                 annotationGroup.addSubelements()
         self._annotationGroups = annotationGroups
-        if self._settings['scale'] != '1*1*1':
+        if isRootScaffold and (self._settings['scale'] != '1*1*1'):
             coordinates = fm.findFieldByName('coordinates').castFiniteElement()
             scale = fm.createFieldConstant(self._scale)
             newCoordinates = fm.createFieldMultiply(coordinates, scale)

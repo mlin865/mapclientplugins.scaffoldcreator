@@ -65,6 +65,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.sceneviewer_widget.graphicsInitialized.connect(self._graphicsInitialized)
         self._ui.done_button.clicked.connect(self._doneButtonClicked)
         self._ui.viewAll_button.clicked.connect(self._viewAll)
+        self._ui.subscaffoldBack_pushButton.clicked.connect(self._subscaffoldBackButtonPressed)
         self._ui.meshType_comboBox.currentIndexChanged.connect(self._meshTypeChanged)
         self._ui.parameterSet_comboBox.currentIndexChanged.connect(self._parameterSetChanged)
         self._ui.deleteElementsRanges_lineEdit.returnPressed.connect(self._deleteElementRangesLineEditChanged)
@@ -85,32 +86,36 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayXiAxes_checkBox.clicked.connect(self._displayXiAxesClicked)
         # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
         # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
-                
-    def _refreshMeshTypeNames(self):
-        meshTypeNames = self._generator_model.getAllMeshTypeNames()
-        for meshTypeName in meshTypeNames:
-            self._ui.meshType_comboBox.addItem(meshTypeName)
 
-    def _refreshParameterSetNames(self):
-        self._ui.parameterSet_comboBox.blockSignals(True)
-        self._ui.parameterSet_comboBox.clear()
+    def _refreshComboBoxNames(self, comboBox, names, currentName):
+        comboBox.blockSignals(True)
+        comboBox.clear()
         currentIndex = 0
-        currentParameterSetName = self._generator_model.getCurrentParameterSetName()
         index = 0
-        for parameterSetName in self._generator_model.getMeshTypeParameterSetNames():
-            self._ui.parameterSet_comboBox.addItem(parameterSetName)
-            if parameterSetName == currentParameterSetName:
+        for name in names:
+            comboBox.addItem(name)
+            if name == currentName:
                 currentIndex = index
             index += 1
-        self._ui.parameterSet_comboBox.setCurrentIndex(currentIndex)
-        self._ui.parameterSet_comboBox.blockSignals(False)
-        
+        comboBox.setCurrentIndex(currentIndex)
+        comboBox.blockSignals(False)
+
+    def _refreshMeshTypeNames(self):
+        self._refreshComboBoxNames(self._ui.meshType_comboBox,
+            self._generator_model.getAvailableMeshTypeNames(),
+            self._generator_model.getMeshTypeName())
+
+    def _refreshParameterSetNames(self):
+        self._refreshComboBoxNames(self._ui.parameterSet_comboBox,
+            self._generator_model.getAvailableParameterSetNames(),
+            self._generator_model.getParameterSetName())
+
     def _updateForCustomParameterSet(self):
         '''
         Call to update parameter set names in combobox if doesn't match number in model due to custom parameter set.
         '''
-        if (self._generator_model.getCurrentParameterSetName() != self._ui.parameterSet_comboBox.currentText()) or \
-            (len(self._generator_model.getMeshTypeParameterSetNames()) != self._ui.parameterSet_comboBox.count()):
+        if (self._generator_model.getParameterSetName() != self._ui.parameterSet_comboBox.currentText()) or \
+            (len(self._generator_model.getAvailableParameterSetNames()) != self._ui.parameterSet_comboBox.count()):
             self._refreshParameterSetNames()
 
     def _createFMAItem(self, parent, text, fma_id):
@@ -174,16 +179,35 @@ class MeshGeneratorWidget(QtGui.QWidget):
             self._refreshMeshTypeOptions()
         self._updateForCustomParameterSet()
 
+    def _subscaffoldBackButtonPressed(self):
+        self._generator_model.endEditScaffoldPackageOption()
+        if self._generator_model.getEditScaffoldType() == self._generator_model.getRootScaffoldType():
+            # show/hide widgets
+            self._ui.done_button.setEnabled(True)
+            self._ui.subscaffold_frame.setVisible(False)
+            self._ui.modifyOptions_frame.setVisible(True)
+        self._refreshMeshTypeNames()
+        self._refreshParameterSetNames()
+        self._refreshMeshTypeOptions()
+
     def _meshTypeOptionScaffoldPackageButtonPressed(self, pushButton):
         optionName = pushButton.objectName()
-        print('Edit ScaffoldPackage', optionName)
+        self._generator_model.editScaffoldPackageOption(optionName)
+        # show/hide widgets
+        self._ui.done_button.setEnabled(False)
+        self._ui.subscaffold_label.setText(self._generator_model.getEditScaffoldOptionDisplayName())
+        self._ui.subscaffold_frame.setVisible(True)
+        self._ui.modifyOptions_frame.setVisible(False)
+        self._refreshMeshTypeNames()
+        self._refreshParameterSetNames()
+        self._refreshMeshTypeOptions()
 
     def _meshTypeOptionLineEditChanged(self, lineEdit):
         dependentChanges = self._generator_model.setMeshTypeOption(lineEdit.objectName(), lineEdit.text())
         if dependentChanges:
             self._refreshMeshTypeOptions()
         else:
-            finalValue = self._generator_model.getMeshTypeOption(lineEdit.objectName())
+            finalValue = self._generator_model.getEditScaffoldOption(lineEdit.objectName())
             lineEdit.setText(str(finalValue))
         self._updateForCustomParameterSet()
 
@@ -194,9 +218,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
             child = layout.takeAt(0)
             if child.widget():
               child.widget().deleteLater()
-        optionNames = self._generator_model.getMeshTypeOrderedOptionNames()
+        optionNames = self._generator_model.getEditScaffoldOrderedOptionNames()
         for key in optionNames:
-            value = self._generator_model.getMeshTypeOption(key)
+            value = self._generator_model.getEditScaffoldOption(key)
             # print('key ', key, ' value ', value)
             if type(value) is bool:
                 checkBox = QtGui.QCheckBox(self._ui.meshTypeOptions_frame)
@@ -249,6 +273,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.meshType_comboBox.blockSignals(False)
         self._refreshParameterSetNames()
         self._refreshMeshTypeOptions()
+        self._ui.done_button.setEnabled(True)
+        self._ui.subscaffold_frame.setVisible(False)
+        self._ui.modifyOptions_frame.setVisible(True)
 
     def _deleteElementRangesLineEditChanged(self):
         self._generator_model.setDeleteElementsRangesText(self._ui.deleteElementsRanges_lineEdit.text())
