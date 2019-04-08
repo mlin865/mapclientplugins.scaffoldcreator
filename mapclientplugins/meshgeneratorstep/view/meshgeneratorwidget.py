@@ -74,18 +74,38 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.scale_lineEdit.editingFinished.connect(self._scaleLineEditChanged)
         self._ui.displayAnnotationPoints_checkBox.clicked.connect(self._displayAnnotationPointsClicked)
         self._ui.displayAxes_checkBox.clicked.connect(self._displayAxesClicked)
+        self._ui.displayElementAxes_checkBox.clicked.connect(self._displayElementAxesClicked)
         self._ui.displayElementNumbers_checkBox.clicked.connect(self._displayElementNumbersClicked)
         self._ui.displayLines_checkBox.clicked.connect(self._displayLinesClicked)
         self._ui.displayLinesExterior_checkBox.clicked.connect(self._displayLinesExteriorClicked)
+        self._ui.displayNodeDerivativeLabelsD1_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD1Clicked)
+        self._ui.displayNodeDerivativeLabelsD2_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD2Clicked)
+        self._ui.displayNodeDerivativeLabelsD3_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD3Clicked)
+        self._ui.displayNodeDerivativeLabelsD12_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD12Clicked)
+        self._ui.displayNodeDerivativeLabelsD13_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD13Clicked)
+        self._ui.displayNodeDerivativeLabelsD23_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD23Clicked)
+        self._ui.displayNodeDerivativeLabelsD123_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD123Clicked)
         self._ui.displayNodeDerivatives_checkBox.clicked.connect(self._displayNodeDerivativesClicked)
         self._ui.displayNodeNumbers_checkBox.clicked.connect(self._displayNodeNumbersClicked)
+        self._ui.displayNodePoints_checkBox.clicked.connect(self._displayNodePointsClicked)
         self._ui.displaySurfaces_checkBox.clicked.connect(self._displaySurfacesClicked)
         self._ui.displaySurfacesExterior_checkBox.clicked.connect(self._displaySurfacesExteriorClicked)
         self._ui.displaySurfacesTranslucent_checkBox.clicked.connect(self._displaySurfacesTranslucentClicked)
         self._ui.displaySurfacesWireframe_checkBox.clicked.connect(self._displaySurfacesWireframeClicked)
-        self._ui.displayXiAxes_checkBox.clicked.connect(self._displayXiAxesClicked)
-        # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
-        # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
+
+    def keyPressEvent(self, event):
+        if (event.key() == QtCore.Qt.Key_S) and (event.isAutoRepeat() == False):
+            self._ui.sceneviewer_widget._selectionKeyPressed = True
+            event.setAccepted(True)
+        else:
+            event.ignore()
+
+    def keyReleaseEvent(self, event):
+        if (event.key() == QtCore.Qt.Key_S) and (event.isAutoRepeat() == False):
+            self._ui.sceneviewer_widget._selectionKeyPressed = False
+            event.setAccepted(True)
+        else:
+            event.ignore()
 
     def _refreshComboBoxNames(self, comboBox, names, currentName):
         comboBox.blockSignals(True)
@@ -258,15 +278,23 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayAnnotationPoints_checkBox.setChecked(self._generator_model.isDisplayAnnotationPoints())
         self._ui.displayAxes_checkBox.setChecked(self._generator_model.isDisplayAxes())
         self._ui.displayElementNumbers_checkBox.setChecked(self._generator_model.isDisplayElementNumbers())
+        self._ui.displayElementAxes_checkBox.setChecked(self._generator_model.isDisplayElementAxes())
         self._ui.displayLines_checkBox.setChecked(self._generator_model.isDisplayLines())
         self._ui.displayLinesExterior_checkBox.setChecked(self._generator_model.isDisplayLinesExterior())
+        self._ui.displayNodeDerivativeLabelsD1_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D1'))
+        self._ui.displayNodeDerivativeLabelsD2_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D2'))
+        self._ui.displayNodeDerivativeLabelsD3_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D3'))
+        self._ui.displayNodeDerivativeLabelsD12_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D12'))
+        self._ui.displayNodeDerivativeLabelsD13_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D13'))
+        self._ui.displayNodeDerivativeLabelsD23_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D23'))
+        self._ui.displayNodeDerivativeLabelsD123_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D123'))
         self._ui.displayNodeDerivatives_checkBox.setChecked(self._generator_model.isDisplayNodeDerivatives())
         self._ui.displayNodeNumbers_checkBox.setChecked(self._generator_model.isDisplayNodeNumbers())
+        self._ui.displayNodePoints_checkBox.setChecked(self._generator_model.isDisplayNodePoints())
         self._ui.displaySurfaces_checkBox.setChecked(self._generator_model.isDisplaySurfaces())
         self._ui.displaySurfacesExterior_checkBox.setChecked(self._generator_model.isDisplaySurfacesExterior())
         self._ui.displaySurfacesTranslucent_checkBox.setChecked(self._generator_model.isDisplaySurfacesTranslucent())
         self._ui.displaySurfacesWireframe_checkBox.setChecked(self._generator_model.isDisplaySurfacesWireframe())
-        self._ui.displayXiAxes_checkBox.setChecked(self._generator_model.isDisplayXiAxes())
         index = self._ui.meshType_comboBox.findText(self._generator_model.getMeshTypeName())
         self._ui.meshType_comboBox.blockSignals(True)
         self._ui.meshType_comboBox.setCurrentIndex(index)
@@ -291,6 +319,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _displayAxesClicked(self):
         self._generator_model.setDisplayAxes(self._ui.displayAxes_checkBox.isChecked())
 
+    def _displayElementAxesClicked(self):
+        self._generator_model.setDisplayElementAxes(self._ui.displayElementAxes_checkBox.isChecked())
+
     def _displayElementNumbersClicked(self):
         self._generator_model.setDisplayElementNumbers(self._ui.displayElementNumbers_checkBox.isChecked())
 
@@ -304,8 +335,32 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _displayNodeDerivativesClicked(self):
         self._generator_model.setDisplayNodeDerivatives(self._ui.displayNodeDerivatives_checkBox.isChecked())
 
+    def _displayNodeDerivativeLabelsD1Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D1', self._ui.displayNodeDerivativeLabelsD1_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD2Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D2', self._ui.displayNodeDerivativeLabelsD2_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD3Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D3', self._ui.displayNodeDerivativeLabelsD3_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD12Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D12', self._ui.displayNodeDerivativeLabelsD12_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD13Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D13', self._ui.displayNodeDerivativeLabelsD13_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD23Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D23', self._ui.displayNodeDerivativeLabelsD23_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD123Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D123', self._ui.displayNodeDerivativeLabelsD123_checkBox.isChecked())
+
     def _displayNodeNumbersClicked(self):
         self._generator_model.setDisplayNodeNumbers(self._ui.displayNodeNumbers_checkBox.isChecked())
+
+    def _displayNodePointsClicked(self):
+        self._generator_model.setDisplayNodePoints(self._ui.displayNodePoints_checkBox.isChecked())
 
     def _displaySurfacesClicked(self):
         self._generator_model.setDisplaySurfaces(self._ui.displaySurfaces_checkBox.isChecked())
@@ -320,9 +375,6 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _displaySurfacesWireframeClicked(self):
         self._generator_model.setDisplaySurfacesWireframe(self._ui.displaySurfacesWireframe_checkBox.isChecked())
-
-    def _displayXiAxesClicked(self):
-        self._generator_model.setDisplayXiAxes(self._ui.displayXiAxes_checkBox.isChecked())
 
     def _annotationItemChanged(self, item):
         print(item.text(0))
