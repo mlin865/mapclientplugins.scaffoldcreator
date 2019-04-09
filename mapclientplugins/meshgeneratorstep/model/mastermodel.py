@@ -8,7 +8,7 @@ from opencmiss.zinc.material import Material
 
 from mapclientplugins.meshgeneratorstep.model.meshgeneratormodel import MeshGeneratorModel
 from mapclientplugins.meshgeneratorstep.model.meshannotationmodel import MeshAnnotationModel
-
+from scaffoldmaker.scaffolds import Scaffolds_decodeJSON, Scaffolds_JSONEncoder
 
 class MasterModel(object):
 
@@ -104,7 +104,8 @@ class MasterModel(object):
         try:
             settings = self._settings
             with open(self._filenameStem + '-settings.json', 'r') as f:
-                settings.update(json.loads(f.read()))
+                savedSettings = json.loads(f.read(), object_hook=Scaffolds_decodeJSON)
+                settings.update(savedSettings)
             if not 'generator_settings' in settings:
                 # migrate from old settings before named generator_settings
                 settings = {'generator_settings': settings}
@@ -112,10 +113,11 @@ class MasterModel(object):
             # no settings saved yet, following gets defaults
             settings = self._getSettings()
         self._generator_model.setSettings(settings['generator_settings'])
-        self._annotation_model.setMeshTypeByName(self._generator_model.getMeshTypeName())
+        self._annotation_model.setScaffoldTypeByName(self._generator_model.getEditScaffoldTypeName())
 
     def _saveSettings(self):
+        self._generator_model.updateSettingsBeforeWrite()
         settings = self._getSettings()
         with open(self._filenameStem + '-settings.json', 'w') as f:
-            f.write(json.dumps(settings, default=lambda o: o.__dict__, sort_keys=True, indent=4))
+            f.write(json.dumps(settings, cls=Scaffolds_JSONEncoder, sort_keys=True, indent=4))
 

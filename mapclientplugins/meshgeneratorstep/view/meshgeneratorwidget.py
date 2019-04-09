@@ -1,13 +1,12 @@
 """
-Created on Aug 29, 2017
-
-@author: Richard Christie
+Dialog/UI for interacting with meshgeneratormodel.
 """
 
 from PySide import QtGui, QtCore
 from functools import partial
 
 from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
+from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 
 
 class MeshGeneratorWidget(QtGui.QWidget):
@@ -20,10 +19,12 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._generator_model = model.getGeneratorModel()
         self._annotation_model = model.getMeshAnnotationModel()
         self._ui.sceneviewer_widget.setContext(model.getContext())
+        self._ui.sceneviewer_widget.setGeneratorModel(model.getGeneratorModel())
+        self._model.getGeneratorModel().registerCustomParametersCallback(self._customParametersChange)
         self._model.registerSceneChangeCallback(self._sceneChanged)
         self._doneCallback = None
         # self._populateAnnotationTree()
-        self._refreshMeshTypeNames()
+        self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
         self._makeConnections()
 
@@ -43,6 +44,12 @@ class MeshGeneratorWidget(QtGui.QWidget):
             sceneviewer.setTransparencyMode(sceneviewer.TRANSPARENCY_MODE_SLOW)
             self._autoPerturbLines()
             self._viewAll()
+
+    def _customParametersChange(self):
+        """
+        Callback when scaffold options or mesh edits are made, so custom parameter set now in use.
+        """
+        self._refreshParameterSetNames()
 
     def _sceneChanged(self):
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
@@ -64,7 +71,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.sceneviewer_widget.graphicsInitialized.connect(self._graphicsInitialized)
         self._ui.done_button.clicked.connect(self._doneButtonClicked)
         self._ui.viewAll_button.clicked.connect(self._viewAll)
-        self._ui.meshType_comboBox.currentIndexChanged.connect(self._meshTypeChanged)
+        self._ui.subscaffoldBack_pushButton.clicked.connect(self._subscaffoldBackButtonPressed)
+        self._ui.meshType_comboBox.currentIndexChanged.connect(self._scaffoldTypeChanged)
         self._ui.parameterSet_comboBox.currentIndexChanged.connect(self._parameterSetChanged)
         self._ui.deleteElementsRanges_lineEdit.returnPressed.connect(self._deleteElementRangesLineEditChanged)
         self._ui.deleteElementsRanges_lineEdit.editingFinished.connect(self._deleteElementRangesLineEditChanged)
@@ -72,45 +80,61 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.scale_lineEdit.editingFinished.connect(self._scaleLineEditChanged)
         self._ui.displayAnnotationPoints_checkBox.clicked.connect(self._displayAnnotationPointsClicked)
         self._ui.displayAxes_checkBox.clicked.connect(self._displayAxesClicked)
+        self._ui.displayElementAxes_checkBox.clicked.connect(self._displayElementAxesClicked)
         self._ui.displayElementNumbers_checkBox.clicked.connect(self._displayElementNumbersClicked)
         self._ui.displayLines_checkBox.clicked.connect(self._displayLinesClicked)
         self._ui.displayLinesExterior_checkBox.clicked.connect(self._displayLinesExteriorClicked)
+        self._ui.displayNodeDerivativeLabelsD1_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD1Clicked)
+        self._ui.displayNodeDerivativeLabelsD2_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD2Clicked)
+        self._ui.displayNodeDerivativeLabelsD3_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD3Clicked)
+        self._ui.displayNodeDerivativeLabelsD12_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD12Clicked)
+        self._ui.displayNodeDerivativeLabelsD13_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD13Clicked)
+        self._ui.displayNodeDerivativeLabelsD23_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD23Clicked)
+        self._ui.displayNodeDerivativeLabelsD123_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD123Clicked)
         self._ui.displayNodeDerivatives_checkBox.clicked.connect(self._displayNodeDerivativesClicked)
         self._ui.displayNodeNumbers_checkBox.clicked.connect(self._displayNodeNumbersClicked)
+        self._ui.displayNodePoints_checkBox.clicked.connect(self._displayNodePointsClicked)
         self._ui.displaySurfaces_checkBox.clicked.connect(self._displaySurfacesClicked)
         self._ui.displaySurfacesExterior_checkBox.clicked.connect(self._displaySurfacesExteriorClicked)
         self._ui.displaySurfacesTranslucent_checkBox.clicked.connect(self._displaySurfacesTranslucentClicked)
         self._ui.displaySurfacesWireframe_checkBox.clicked.connect(self._displaySurfacesWireframeClicked)
-        self._ui.displayXiAxes_checkBox.clicked.connect(self._displayXiAxesClicked)
-        # self._ui.treeWidgetAnnotation.itemSelectionChanged.connect(self._annotationSelectionChanged)
-        # self._ui.treeWidgetAnnotation.itemChanged.connect(self._annotationItemChanged)
-                
-    def _refreshMeshTypeNames(self):
-        meshTypeNames = self._generator_model.getAllMeshTypeNames()
-        for meshTypeName in meshTypeNames:
-            self._ui.meshType_comboBox.addItem(meshTypeName)
 
-    def _refreshParameterSetNames(self):
-        self._ui.parameterSet_comboBox.blockSignals(True)
-        self._ui.parameterSet_comboBox.clear()
+    def keyPressEvent(self, event):
+        if (event.key() == QtCore.Qt.Key_S) and (event.isAutoRepeat() == False):
+            self._ui.sceneviewer_widget._selectionKeyPressed = True
+            event.setAccepted(True)
+        else:
+            event.ignore()
+
+    def keyReleaseEvent(self, event):
+        if (event.key() == QtCore.Qt.Key_S) and (event.isAutoRepeat() == False):
+            self._ui.sceneviewer_widget._selectionKeyPressed = False
+            event.setAccepted(True)
+        else:
+            event.ignore()
+
+    def _refreshComboBoxNames(self, comboBox, names, currentName):
+        comboBox.blockSignals(True)
+        comboBox.clear()
         currentIndex = 0
-        currentParameterSetName = self._generator_model.getCurrentParameterSetName()
         index = 0
-        for parameterSetName in self._generator_model.getMeshTypeParameterSetNames():
-            self._ui.parameterSet_comboBox.addItem(parameterSetName)
-            if parameterSetName == currentParameterSetName:
+        for name in names:
+            comboBox.addItem(name)
+            if name == currentName:
                 currentIndex = index
             index += 1
-        self._ui.parameterSet_comboBox.setCurrentIndex(currentIndex)
-        self._ui.parameterSet_comboBox.blockSignals(False)
-        
-    def _updateForCustomParameterSet(self):
-        '''
-        Call to update parameter set names in combobox if doesn't match number in model due to custom parameter set.
-        '''
-        if (self._generator_model.getCurrentParameterSetName() != self._ui.parameterSet_comboBox.currentText()) or \
-            (len(self._generator_model.getMeshTypeParameterSetNames()) != self._ui.parameterSet_comboBox.count()):
-            self._refreshParameterSetNames()
+        comboBox.setCurrentIndex(currentIndex)
+        comboBox.blockSignals(False)
+
+    def _refreshScaffoldTypeNames(self):
+        self._refreshComboBoxNames(self._ui.meshType_comboBox,
+            self._generator_model.getAvailableScaffoldTypeNames(),
+            self._generator_model.getEditScaffoldTypeName())
+
+    def _refreshParameterSetNames(self):
+        self._refreshComboBoxNames(self._ui.parameterSet_comboBox,
+            self._generator_model.getAvailableParameterSetNames(),
+            self._generator_model.getParameterSetName())
 
     def _createFMAItem(self, parent, text, fma_id):
         item = QtGui.QTreeWidgetItem(parent)
@@ -155,43 +179,64 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._model = None
         self._doneCallback()
 
-    def _meshTypeChanged(self, index):
-        meshTypeName = self._ui.meshType_comboBox.itemText(index)
-        self._generator_model.setMeshTypeByName(meshTypeName)
-        self._annotation_model.setMeshTypeByName(meshTypeName)
+    def _scaffoldTypeChanged(self, index):
+        scaffoldTypeName = self._ui.meshType_comboBox.itemText(index)
+        self._generator_model.setScaffoldTypeByName(scaffoldTypeName)
+        self._annotation_model.setScaffoldTypeByName(scaffoldTypeName)
+        self._refreshScaffoldOptions()
         self._refreshParameterSetNames()
-        self._refreshMeshTypeOptions()
 
     def _parameterSetChanged(self, index):
         parameterSetName = self._ui.parameterSet_comboBox.itemText(index)
         self._generator_model.setParameterSetName(parameterSetName)
-        self._refreshMeshTypeOptions()
+        self._refreshScaffoldOptions()
 
     def _meshTypeOptionCheckBoxClicked(self, checkBox):
-        dependentChanges = self._generator_model.setMeshTypeOption(checkBox.objectName(), checkBox.isChecked())
+        dependentChanges = self._generator_model.setScaffoldOption(checkBox.objectName(), checkBox.isChecked())
         if dependentChanges:
-            self._refreshMeshTypeOptions()
-        self._updateForCustomParameterSet()
+            self._refreshScaffoldOptions()
+
+    def _subscaffoldBackButtonPressed(self):
+        self._generator_model.endEditScaffoldPackageOption()
+        if self._generator_model.editingRootScaffoldPackage():
+            # show/hide widgets
+            self._ui.done_button.setEnabled(True)
+            self._ui.subscaffold_frame.setVisible(False)
+            self._ui.modifyOptions_frame.setVisible(True)
+        self._refreshScaffoldTypeNames()
+        self._refreshParameterSetNames()
+        self._refreshScaffoldOptions()
+
+    def _meshTypeOptionScaffoldPackageButtonPressed(self, pushButton):
+        optionName = pushButton.objectName()
+        self._generator_model.editScaffoldPackageOption(optionName)
+        # show/hide widgets
+        self._ui.done_button.setEnabled(False)
+        self._ui.subscaffold_label.setText(self._generator_model.getEditScaffoldOptionDisplayName())
+        self._ui.subscaffold_frame.setVisible(True)
+        self._ui.modifyOptions_frame.setVisible(False)
+        self._refreshScaffoldTypeNames()
+        self._refreshParameterSetNames()
+        self._refreshScaffoldOptions()
 
     def _meshTypeOptionLineEditChanged(self, lineEdit):
-        dependentChanges = self._generator_model.setMeshTypeOption(lineEdit.objectName(), lineEdit.text())
+        dependentChanges = self._generator_model.setScaffoldOption(lineEdit.objectName(), lineEdit.text())
         if dependentChanges:
-            self._refreshMeshTypeOptions()
+            self._refreshScaffoldOptions()
         else:
-            finalValue = self._generator_model.getMeshTypeOption(lineEdit.objectName())
+            finalValue = self._generator_model.getEditScaffoldOption(lineEdit.objectName())
             lineEdit.setText(str(finalValue))
-        self._updateForCustomParameterSet()
 
-    def _refreshMeshTypeOptions(self):
+    def _refreshScaffoldOptions(self):
         layout = self._ui.meshTypeOptions_frame.layout()
         # remove all current mesh type widgets
         while layout.count():
             child = layout.takeAt(0)
             if child.widget():
               child.widget().deleteLater()
-        optionNames = self._generator_model.getMeshTypeOrderedOptionNames()
+        optionNames = self._generator_model.getEditScaffoldOrderedOptionNames()
         for key in optionNames:
-            value = self._generator_model.getMeshTypeOption(key)
+            value = self._generator_model.getEditScaffoldOption(key)
             # print('key ', key, ' value ', value)
             if type(value) is bool:
                 checkBox = QtGui.QCheckBox(self._ui.meshTypeOptions_frame)
@@ -206,13 +251,21 @@ class MeshGeneratorWidget(QtGui.QWidget):
                 label.setObjectName(key)
                 label.setText(key)
                 layout.addWidget(label)
-                lineEdit = QtGui.QLineEdit(self._ui.meshTypeOptions_frame)
-                lineEdit.setObjectName(key)
-                lineEdit.setText(str(value))
-                callback = partial(self._meshTypeOptionLineEditChanged, lineEdit)
-                #lineEdit.returnPressed.connect(callback)
-                lineEdit.editingFinished.connect(callback)
-                layout.addWidget(lineEdit)
+                if isinstance(value, ScaffoldPackage):
+                    pushButton = QtGui.QPushButton()
+                    pushButton.setObjectName(key)
+                    pushButton.setText('Edit >>')
+                    callback = partial(self._meshTypeOptionScaffoldPackageButtonPressed, pushButton)
+                    pushButton.clicked.connect(callback)
+                    layout.addWidget(pushButton)
+                else:
+                    lineEdit = QtGui.QLineEdit(self._ui.meshTypeOptions_frame)
+                    lineEdit.setObjectName(key)
+                    lineEdit.setText(str(value))
+                    callback = partial(self._meshTypeOptionLineEditChanged, lineEdit)
+                    #lineEdit.returnPressed.connect(callback)
+                    lineEdit.editingFinished.connect(callback)
+                    layout.addWidget(lineEdit)
 
     def _refreshOptions(self):
         self._ui.identifier_label.setText('Identifier:  ' + self._model.getIdentifier())
@@ -221,21 +274,32 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayAnnotationPoints_checkBox.setChecked(self._generator_model.isDisplayAnnotationPoints())
         self._ui.displayAxes_checkBox.setChecked(self._generator_model.isDisplayAxes())
         self._ui.displayElementNumbers_checkBox.setChecked(self._generator_model.isDisplayElementNumbers())
+        self._ui.displayElementAxes_checkBox.setChecked(self._generator_model.isDisplayElementAxes())
         self._ui.displayLines_checkBox.setChecked(self._generator_model.isDisplayLines())
         self._ui.displayLinesExterior_checkBox.setChecked(self._generator_model.isDisplayLinesExterior())
+        self._ui.displayNodeDerivativeLabelsD1_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D1'))
+        self._ui.displayNodeDerivativeLabelsD2_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D2'))
+        self._ui.displayNodeDerivativeLabelsD3_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D3'))
+        self._ui.displayNodeDerivativeLabelsD12_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D12'))
+        self._ui.displayNodeDerivativeLabelsD13_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D13'))
+        self._ui.displayNodeDerivativeLabelsD23_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D23'))
+        self._ui.displayNodeDerivativeLabelsD123_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D123'))
         self._ui.displayNodeDerivatives_checkBox.setChecked(self._generator_model.isDisplayNodeDerivatives())
         self._ui.displayNodeNumbers_checkBox.setChecked(self._generator_model.isDisplayNodeNumbers())
+        self._ui.displayNodePoints_checkBox.setChecked(self._generator_model.isDisplayNodePoints())
         self._ui.displaySurfaces_checkBox.setChecked(self._generator_model.isDisplaySurfaces())
         self._ui.displaySurfacesExterior_checkBox.setChecked(self._generator_model.isDisplaySurfacesExterior())
         self._ui.displaySurfacesTranslucent_checkBox.setChecked(self._generator_model.isDisplaySurfacesTranslucent())
         self._ui.displaySurfacesWireframe_checkBox.setChecked(self._generator_model.isDisplaySurfacesWireframe())
-        self._ui.displayXiAxes_checkBox.setChecked(self._generator_model.isDisplayXiAxes())
-        index = self._ui.meshType_comboBox.findText(self._generator_model.getMeshTypeName())
+        index = self._ui.meshType_comboBox.findText(self._generator_model.getEditScaffoldTypeName())
         self._ui.meshType_comboBox.blockSignals(True)
         self._ui.meshType_comboBox.setCurrentIndex(index)
         self._ui.meshType_comboBox.blockSignals(False)
         self._refreshParameterSetNames()
-        self._refreshMeshTypeOptions()
+        self._refreshScaffoldOptions()
+        self._ui.done_button.setEnabled(True)
+        self._ui.subscaffold_frame.setVisible(False)
+        self._ui.modifyOptions_frame.setVisible(True)
 
     def _deleteElementRangesLineEditChanged(self):
         self._generator_model.setDeleteElementsRangesText(self._ui.deleteElementsRanges_lineEdit.text())
@@ -251,6 +315,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _displayAxesClicked(self):
         self._generator_model.setDisplayAxes(self._ui.displayAxes_checkBox.isChecked())
 
+    def _displayElementAxesClicked(self):
+        self._generator_model.setDisplayElementAxes(self._ui.displayElementAxes_checkBox.isChecked())
+
     def _displayElementNumbersClicked(self):
         self._generator_model.setDisplayElementNumbers(self._ui.displayElementNumbers_checkBox.isChecked())
 
@@ -264,8 +331,32 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _displayNodeDerivativesClicked(self):
         self._generator_model.setDisplayNodeDerivatives(self._ui.displayNodeDerivatives_checkBox.isChecked())
 
+    def _displayNodeDerivativeLabelsD1Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D1', self._ui.displayNodeDerivativeLabelsD1_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD2Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D2', self._ui.displayNodeDerivativeLabelsD2_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD3Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D3', self._ui.displayNodeDerivativeLabelsD3_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD12Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D12', self._ui.displayNodeDerivativeLabelsD12_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD13Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D13', self._ui.displayNodeDerivativeLabelsD13_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD23Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D23', self._ui.displayNodeDerivativeLabelsD23_checkBox.isChecked())
+
+    def _displayNodeDerivativeLabelsD123Clicked(self):
+        self._generator_model.setDisplayNodeDerivativeLabels('D123', self._ui.displayNodeDerivativeLabelsD123_checkBox.isChecked())
+
     def _displayNodeNumbersClicked(self):
         self._generator_model.setDisplayNodeNumbers(self._ui.displayNodeNumbers_checkBox.isChecked())
+
+    def _displayNodePointsClicked(self):
+        self._generator_model.setDisplayNodePoints(self._ui.displayNodePoints_checkBox.isChecked())
 
     def _displaySurfacesClicked(self):
         self._generator_model.setDisplaySurfaces(self._ui.displaySurfaces_checkBox.isChecked())
@@ -280,9 +371,6 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _displaySurfacesWireframeClicked(self):
         self._generator_model.setDisplaySurfacesWireframe(self._ui.displaySurfacesWireframe_checkBox.isChecked())
-
-    def _displayXiAxesClicked(self):
-        self._generator_model.setDisplayXiAxes(self._ui.displayXiAxes_checkBox.isChecked())
 
     def _annotationItemChanged(self, item):
         print(item.text(0))
