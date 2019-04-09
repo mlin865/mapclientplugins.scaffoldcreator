@@ -113,9 +113,10 @@ class MasterModel(object):
             # no settings saved yet, following gets defaults
             settings = self._getSettings()
         self._generator_model.setSettings(settings['generator_settings'])
-        self._annotation_model.setMeshTypeByName(self._generator_model.getMeshTypeName())
+        self._annotation_model.setScaffoldTypeByName(self._generator_model.getEditScaffoldTypeName())
 
     def _saveSettings(self):
+        self._generator_model.updateSettingsBeforeWrite()
         settings = self._getSettings()
         with open(self._filenameStem + '-settings.json', 'w') as f:
             f.write(json.dumps(settings, cls=Scaffolds_JSONEncoder, sort_keys=True, indent=4))

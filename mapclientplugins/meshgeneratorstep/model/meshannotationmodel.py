@@ -38,7 +38,7 @@ class MeshAnnotationModel(object):
     def __init__(self):
         self._mesh_type = ''
 
-    def setMeshTypeByName(self, name):
+    def setScaffoldTypeByName(self, name):
         self._mesh_type = name
 
     def getNode(self, label):
