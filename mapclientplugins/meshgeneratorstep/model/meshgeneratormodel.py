@@ -1,7 +1,5 @@
 """
-Created on 9 Mar, 2018 from mapclientplugins.meshgeneratorstep.
-
-@author: Richard Christie
+Mesh generator class. Generates Zinc meshes using scaffoldmaker.
 """
 
 from __future__ import division

@@ -1,7 +1,5 @@
 """
-Created on Aug 29, 2017
-
-@author: Richard Christie
+Dialog/UI for interacting with meshgeneratormodel.
 """
 
 from PySide import QtGui, QtCore

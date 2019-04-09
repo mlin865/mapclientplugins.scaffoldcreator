@@ -1,6 +1,5 @@
 '''
 Derived SceneviewerWidget capable of editing node coordinate positions and derivatives.
-Created on July 15, 2015
 '''
 
 import math
