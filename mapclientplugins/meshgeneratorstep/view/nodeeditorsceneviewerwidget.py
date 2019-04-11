@@ -32,10 +32,10 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
         '''
         :return: Node, Graphics OR None, None if none found.
         '''
-        oldNodeSelectMode = self._nodeSelectMode
-        oldDataSelectMode = self._dataSelectMode
-        oldElemSelectMode = self._elemSelectMode
-        self.setSelectModeNode()
+        scenefiltermodule = self._context.getScenefiltermodule()
+        scenefiltermodule.beginChange()
+        oldSelectionfilter = self.getSelectionfilter()
+        self.setSelectionfilter(scenefiltermodule.createScenefilterFieldDomainType(Field.DOMAIN_TYPE_NODES))
         #print('pick',x,y,self._selectTol, 'DpiX', self.physicalDpiX(), self.logicalDpiX(), 'DpiY', self.physicalDpiY(), self.logicalDpiY())
         #print('  width', self.width(), 'widthMM',self.widthMM(),'dpi',25.4*self.width()/self.widthMM(),
         #      'height', self.height(), 'heightMM',self.heightMM(),'dpi',25.4*self.height()/self.heightMM())
@@ -53,9 +53,8 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
         else:
             node = None
             graphics = None
-        self._nodeSelectMode = oldNodeSelectMode
-        self._dataSelectMode = oldDataSelectMode
-        self._elemSelectMode = oldElemSelectMode
+        self.setSelectionfilter(oldSelectionfilter)
+        scenefiltermodule.endChange()
         return node, graphics
 
     def selectNode(self, node):
