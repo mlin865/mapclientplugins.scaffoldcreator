@@ -121,7 +121,7 @@ class MeshGeneratorModel(object):
             self._scaffoldPackages[0].__init__(scaffoldType)
         else:
             # nested ScaffoldPackage
-            self._scaffoldPackages[-1].deepcopy(parentScaffoldType.getOptionScaffoldPackage(self._scaffoldPackageOptionNames[-1], scaffoldType))
+            self._scaffoldPackages[-1].deepcopy(self.getParentScaffoldType().getOptionScaffoldPackage(self._scaffoldPackageOptionNames[-1], scaffoldType))
         self._customScaffoldPackage = None
         self._unsavedNodeEdits = False
         self._parameterSetName = self.getEditScaffoldParameterSetNames()[0]
