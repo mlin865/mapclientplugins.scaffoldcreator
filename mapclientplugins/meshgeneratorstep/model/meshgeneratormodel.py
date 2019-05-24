@@ -186,7 +186,7 @@ class MeshGeneratorModel(object):
             return self._scaffoldPackages[0].getScaffoldType().getParameterSetNames()
         # may need to change if scaffolds nested two deep
         return self.getParentScaffoldType().getOptionScaffoldTypeParameterSetNames( \
-            self._scaffoldPackageOptionNames[-1], self._scaffoldPackages[-1])
+            self._scaffoldPackageOptionNames[-1], self._scaffoldPackages[-1].getScaffoldType())
 
     def getDefaultScaffoldPackageForParameterSetName(self, parameterSetName):
         '''
@@ -197,7 +197,7 @@ class MeshGeneratorModel(object):
             return ScaffoldPackage(scaffoldType, { 'scaffoldSettings' : scaffoldType.getDefaultOptions(parameterSetName) })
         # may need to change if scaffolds nested two deep
         return self.getParentScaffoldType().getOptionScaffoldPackage( \
-            self._scaffoldPackageOptionNames[-1], self._scaffoldPackages[-1], parameterSetName)
+            self._scaffoldPackageOptionNames[-1], self._scaffoldPackages[-1].getScaffoldType(), parameterSetName)
 
     def getEditScaffoldOption(self, key):
         return self.getEditScaffoldSettings()[key]
