@@ -691,10 +691,10 @@ class MeshGeneratorModel(object):
             elementDerivativeFields.append(fm.createFieldDerivative(coordinates, d + 1))
         elementDerivativesField = fm.createFieldConcatenate(elementDerivativeFields)
         cmiss_number = fm.findFieldByName('cmiss_number')
-        dataCoordinates = getOrCreateCoordinateField(fm, 'data_coordinates')
-        dataLabel = getOrCreateLabelField(fm, 'data_label')
-        dataElementXi = getOrCreateElementXiField(fm, 'data_element_xi')
-        dataHostCoordinates = fm.createFieldEmbedded(coordinates, dataElementXi)
+        fiducialCoordinates = getOrCreateCoordinateField(fm, 'fiducial_coordinates')
+        fiducialLabel = getOrCreateLabelField(fm, 'fiducial_label')
+        fiducialElementXi = getOrCreateElementXiField(fm, 'fiducial_element_xi')
+        fiducialHostCoordinates = fm.createFieldEmbedded(coordinates, fiducialElementXi)
 
         # get sizing for axes
         axesScale = 1.0
@@ -837,10 +837,10 @@ class MeshGeneratorModel(object):
         # annotation points
         annotationPoints = scene.createGraphicsPoints()
         annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_DATAPOINTS)
-        annotationPoints.setCoordinateField(dataCoordinates)
+        annotationPoints.setCoordinateField(fiducialCoordinates)
         pointattr = annotationPoints.getGraphicspointattributes()
         pointattr.setLabelText(1, '  ')
-        pointattr.setLabelField(dataLabel)
+        pointattr.setLabelField(fiducialLabel)
         pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
         pointattr.setBaseSize(2*glyphWidth)
         annotationPoints.setMaterial(self._materialmodule.findMaterialByName('green'))
@@ -849,10 +849,10 @@ class MeshGeneratorModel(object):
 
         annotationPoints = scene.createGraphicsPoints()
         annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_DATAPOINTS)
-        annotationPoints.setCoordinateField(dataHostCoordinates)
+        annotationPoints.setCoordinateField(fiducialHostCoordinates)
         pointattr = annotationPoints.getGraphicspointattributes()
         pointattr.setLabelText(1, '  ')
-        pointattr.setLabelField(dataLabel)
+        pointattr.setLabelField(fiducialLabel)
         pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
         pointattr.setBaseSize(2*glyphWidth)
         annotationPoints.setMaterial(self._materialmodule.findMaterialByName('yellow'))
