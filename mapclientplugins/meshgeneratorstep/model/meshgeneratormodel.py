@@ -7,6 +7,7 @@ import copy
 import os
 import string
 
+from opencmiss.utils.zinc.field import getOrCreateFieldCoordinates, getOrCreateFieldStoredMeshLocation, getOrCreateFieldStoredString
 from opencmiss.zinc.field import Field
 from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
@@ -691,9 +692,9 @@ class MeshGeneratorModel(object):
             elementDerivativeFields.append(fm.createFieldDerivative(coordinates, d + 1))
         elementDerivativesField = fm.createFieldConcatenate(elementDerivativeFields)
         cmiss_number = fm.findFieldByName('cmiss_number')
-        fiducialCoordinates = getOrCreateCoordinateField(fm, 'fiducial_coordinates')
-        fiducialLabel = getOrCreateLabelField(fm, 'fiducial_label')
-        fiducialElementXi = getOrCreateElementXiField(fm, 'fiducial_element_xi')
+        fiducialCoordinates = getOrCreateFieldCoordinates(fm, 'fiducial_coordinates')
+        fiducialLabel = getOrCreateFieldStoredString(fm, 'fiducial_label')
+        fiducialElementXi = getOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name='fiducial_element_xi')
         fiducialHostCoordinates = fm.createFieldEmbedded(coordinates, fiducialElementXi)
 
         # get sizing for axes
