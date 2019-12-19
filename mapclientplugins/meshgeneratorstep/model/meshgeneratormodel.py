@@ -7,7 +7,9 @@ import copy
 import os
 import string
 
-from opencmiss.utils.zinc.field import getOrCreateFieldCoordinates, getOrCreateFieldStoredMeshLocation, getOrCreateFieldStoredString
+from opencmiss.utils.zinc.field import findOrCreateFieldCoordinates, findOrCreateFieldStoredMeshLocation, findOrCreateFieldStoredString
+from opencmiss.utils.zinc.finiteelement import evaluateFieldNodesetRange
+from opencmiss.utils.zinc.general import ChangeManager
 from opencmiss.zinc.field import Field
 from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
@@ -101,19 +103,18 @@ class MeshGeneratorModel(object):
         Someone is about to edit a node, and must add the modified node to this nodesetGroup.
         '''
         fm = self._region.getFieldmodule()
-        fm.beginChange()
-        group = fm.findFieldByName('meshEdits').castGroup()
-        if not group.isValid():
-            group = fm.createFieldGroup()
-            group.setName('meshEdits')
-            group.setManaged(True)
-        self._unsavedNodeEdits = True
-        self._useCustomScaffoldPackage()
-        fieldNodeGroup = group.getFieldNodeGroup(nodeset)
-        if not fieldNodeGroup.isValid():
-            fieldNodeGroup = group.createFieldNodeGroup(nodeset)
-        nodesetGroup = fieldNodeGroup.getNodesetGroup()
-        fm.endChange()
+        with ChangeManager(fm):
+            group = fm.findFieldByName('meshEdits').castGroup()
+            if not group.isValid():
+                group = fm.createFieldGroup()
+                group.setName('meshEdits')
+                group.setManaged(True)
+            self._unsavedNodeEdits = True
+            self._useCustomScaffoldPackage()
+            fieldNodeGroup = group.getFieldNodeGroup(nodeset)
+            if not fieldNodeGroup.isValid():
+                fieldNodeGroup = group.createFieldNodeGroup(nodeset)
+            nodesetGroup = fieldNodeGroup.getNodesetGroup()
         return nodesetGroup
 
     def _setScaffoldType(self, scaffoldType):
@@ -552,15 +553,13 @@ class MeshGeneratorModel(object):
 
     def getNodeLocation(self, node_id):
         fm = self._region.getFieldmodule()
-        fm.beginChange()
-        coordinates = fm.findFieldByName('coordinates')
-        nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
-        node = nodes.findNodeByIdentifier(node_id)
-        fc = fm.createFieldcache()
-        fc.setNode(node)
-        _, position = coordinates.evaluateReal(fc, 3)
-        fm.endChange()
-
+        with ChangeManager(fm):
+            coordinates = fm.findFieldByName('coordinates')
+            nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+            node = nodes.findNodeByIdentifier(node_id)
+            fc = fm.createFieldcache()
+            fc.setNode(node)
+            _, position = coordinates.evaluateReal(fc, 3)
         return self._getSceneTransformationFromAdjustedPosition(position)
 
     def getSettings(self):
@@ -595,273 +594,253 @@ class MeshGeneratorModel(object):
         self._region = self._parent_region.createChild(self._region_name)
         self._scene = self._region.getScene()
         fm = self._region.getFieldmodule()
-        fm.beginChange()
-        # logger = self._context.getLogger()
-        if isRootScaffold:
-            # do not apply mesh edits since can delete elements and scale root scaffold first
-            annotationGroups = self.getEditScaffoldType().generateMesh(self._region, self.getEditScaffoldSettings())
-        else:
-            annotationGroups = scaffoldPackage.generate(self._region)
-        # loggerMessageCount = logger.getNumberOfMessages()
-        # if loggerMessageCount > 0:
-        #     for i in range(1, loggerMessageCount + 1):
-        #         print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
-        #     logger.removeAllMessages()
-        mesh = self._getMesh()
-        # meshDimension = mesh.getDimension()
-        nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
-        if isRootScaffold and (len(self._deleteElementRanges) > 0):
-            deleteElementIdentifiers = []
-            elementIter = mesh.createElementiterator()
-            element = elementIter.next()
-            while element.isValid():
-                identifier = element.getIdentifier()
-                for deleteElementRange in self._deleteElementRanges:
-                    if (identifier >= deleteElementRange[0]) and (identifier <= deleteElementRange[1]):
-                        deleteElementIdentifiers.append(identifier)
+        with ChangeManager(fm):
+            # logger = self._context.getLogger()
+            if isRootScaffold:
+                # do not apply mesh edits since can delete elements and scale root scaffold first
+                annotationGroups = self.getEditScaffoldType().generateMesh(self._region, self.getEditScaffoldSettings())
+            else:
+                annotationGroups = scaffoldPackage.generate(self._region)
+            # loggerMessageCount = logger.getNumberOfMessages()
+            # if loggerMessageCount > 0:
+            #     for i in range(1, loggerMessageCount + 1):
+            #         print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
+            #     logger.removeAllMessages()
+            mesh = self._getMesh()
+            # meshDimension = mesh.getDimension()
+            nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+            if isRootScaffold and (len(self._deleteElementRanges) > 0):
+                deleteElementIdentifiers = []
+                elementIter = mesh.createElementiterator()
                 element = elementIter.next()
-            #print('delete elements ', deleteElementIdentifiers)
-            for identifier in deleteElementIdentifiers:
-                element = mesh.findElementByIdentifier(identifier)
-                mesh.destroyElement(element)
-            del element
-            # destroy all orphaned nodes
-            #size1 = nodes.getSize()
-            nodes.destroyAllNodes()
-            #size2 = nodes.getSize()
-            #print('deleted', size1 - size2, 'nodes')
-        fm.defineAllFaces()
-        if annotationGroups is not None:
-            for annotationGroup in annotationGroups:
-                annotationGroup.addSubelements()
-        self._annotationGroups = annotationGroups
-        if isRootScaffold and (self._settings['scale'] != '1*1*1'):
-            coordinates = fm.findFieldByName('coordinates').castFiniteElement()
-            scale = fm.createFieldConstant(self._scale)
-            newCoordinates = fm.createFieldMultiply(coordinates, scale)
-            fieldassignment = coordinates.createFieldassignment(newCoordinates)
-            fieldassignment.assign()
-            del newCoordinates
-            del scale
-        if isRootScaffold and scaffoldPackage.getMeshEdits():
-            # apply mesh edits, a Zinc-readable model file containing node edits
-            sir = self._region.createStreaminformationRegion()
-            srm = sir.createStreamresourceMemoryBuffer(scaffoldPackage.getMeshEdits())
-            result = self._region.read(sir)
-        fm.endChange()
+                while element.isValid():
+                    identifier = element.getIdentifier()
+                    for deleteElementRange in self._deleteElementRanges:
+                        if (identifier >= deleteElementRange[0]) and (identifier <= deleteElementRange[1]):
+                            deleteElementIdentifiers.append(identifier)
+                    element = elementIter.next()
+                #print('delete elements ', deleteElementIdentifiers)
+                for identifier in deleteElementIdentifiers:
+                    element = mesh.findElementByIdentifier(identifier)
+                    mesh.destroyElement(element)
+                del element
+                # destroy all orphaned nodes
+                #size1 = nodes.getSize()
+                nodes.destroyAllNodes()
+                #size2 = nodes.getSize()
+                #print('deleted', size1 - size2, 'nodes')
+            fm.defineAllFaces()
+            if annotationGroups is not None:
+                for annotationGroup in annotationGroups:
+                    annotationGroup.addSubelements()
+            self._annotationGroups = annotationGroups
+            if isRootScaffold and (self._settings['scale'] != '1*1*1'):
+                coordinates = fm.findFieldByName('coordinates').castFiniteElement()
+                scale = fm.createFieldConstant(self._scale)
+                newCoordinates = fm.createFieldMultiply(coordinates, scale)
+                fieldassignment = coordinates.createFieldassignment(newCoordinates)
+                fieldassignment.assign()
+                del newCoordinates
+                del scale
+            if isRootScaffold and scaffoldPackage.getMeshEdits():
+                # apply mesh edits, a Zinc-readable model file containing node edits
+                sir = self._region.createStreaminformationRegion()
+                srm = sir.createStreamresourceMemoryBuffer(scaffoldPackage.getMeshEdits())
+                result = self._region.read(sir)
         self._createGraphics(self._region)
         if self._sceneChangeCallback:
             self._sceneChangeCallback()
 
-    def _getNodeCoordinatesRange(self, coordinates):
-        '''
-        :return: min, max range of coordinates field over nodes.
-        '''
-        fm = coordinates.getFieldmodule()
-        fm.beginChange()
-        nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
-        minCoordinates = fm.createFieldNodesetMinimum(coordinates, nodes)
-        maxCoordinates = fm.createFieldNodesetMaximum(coordinates, nodes)
-        componentsCount = coordinates.getNumberOfComponents()
-        cache = fm.createFieldcache()
-        result, minX = minCoordinates.evaluateReal(cache, componentsCount)
-        result, maxX = maxCoordinates.evaluateReal(cache, componentsCount)
-        minCoordinates = maxCoordinates = None
-        cache = None
-        fm.endChange()
-        return minX, maxX
 
     def _createGraphics(self, region):
         fm = region.getFieldmodule()
-        fm.beginChange()
-        meshDimension = self.getMeshDimension()
-        coordinates = fm.findFieldByName('coordinates')
-        componentsCount = coordinates.getNumberOfComponents()
-        # fields in same order as self._nodeDerivativeLabels
-        nodeDerivativeFields = [
-            fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D_DS1, 1),
-            fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D_DS2, 1),
-            fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D_DS3, 1),
-            fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D2_DS1DS2, 1),
-            fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D2_DS1DS3, 1),
-            fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D2_DS2DS3, 1),
-            fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D3_DS1DS2DS3, 1)
-        ]
-        elementDerivativeFields = []
-        for d in range(meshDimension):
-            elementDerivativeFields.append(fm.createFieldDerivative(coordinates, d + 1))
-        elementDerivativesField = fm.createFieldConcatenate(elementDerivativeFields)
-        cmiss_number = fm.findFieldByName('cmiss_number')
-        fiducialCoordinates = getOrCreateFieldCoordinates(fm, 'fiducial_coordinates')
-        fiducialLabel = getOrCreateFieldStoredString(fm, 'fiducial_label')
-        fiducialElementXi = getOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name='fiducial_element_xi')
-        fiducialHostCoordinates = fm.createFieldEmbedded(coordinates, fiducialElementXi)
+        with ChangeManager(fm):
+            meshDimension = self.getMeshDimension()
+            coordinates = fm.findFieldByName('coordinates')
+            componentsCount = coordinates.getNumberOfComponents()
+            # fields in same order as self._nodeDerivativeLabels
+            nodeDerivativeFields = [
+                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D_DS1, 1),
+                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D_DS2, 1),
+                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D_DS3, 1),
+                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D2_DS1DS2, 1),
+                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D2_DS1DS3, 1),
+                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D2_DS2DS3, 1),
+                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D3_DS1DS2DS3, 1)
+            ]
+            elementDerivativeFields = []
+            for d in range(meshDimension):
+                elementDerivativeFields.append(fm.createFieldDerivative(coordinates, d + 1))
+            elementDerivativesField = fm.createFieldConcatenate(elementDerivativeFields)
+            cmiss_number = fm.findFieldByName('cmiss_number')
+            fiducialCoordinates = findOrCreateFieldCoordinates(fm, 'fiducial_coordinates')
+            fiducialLabel = findOrCreateFieldStoredString(fm, 'fiducial_label')
+            fiducialElementXi = findOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name='fiducial_element_xi')
+            fiducialHostCoordinates = fm.createFieldEmbedded(coordinates, fiducialElementXi)
 
-        # get sizing for axes
-        axesScale = 1.0
-        minX, maxX = self._getNodeCoordinatesRange(coordinates)
-        if componentsCount == 1:
-            maxRange = maxX - minX
-        else:
-            maxRange = maxX[0] - minX[0]
-            for c in range(1, componentsCount):
-                maxRange = max(maxRange, maxX[c] - minX[c])
-        if maxRange > 0.0:
-            while axesScale*10.0 < maxRange:
-                axesScale *= 10.0
-            while axesScale*0.1 > maxRange:
-                axesScale *= 0.1
-
-        # fixed width glyph size is based on average element size in all dimensions
-        mesh1d = fm.findMeshByDimension(1)
-        meanLineLength = 0.0
-        lineCount = mesh1d.getSize()
-        if lineCount > 0:
-            one = fm.createFieldConstant(1.0)
-            sumLineLength = fm.createFieldMeshIntegral(one, coordinates, mesh1d)
-            cache = fm.createFieldcache()
-            result, totalLineLength = sumLineLength.evaluateReal(cache, 1)
-            glyphWidth = 0.1*totalLineLength/lineCount
-            del cache
-            del sumLineLength
-            del one
-        if (lineCount == 0) or (glyphWidth == 0.0):
-            # use function of coordinate range if no elements
+            # get sizing for axes
+            axesScale = 1.0
+            nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+            minX, maxX = evaluateFieldNodesetRange(coordinates, nodes)
             if componentsCount == 1:
-                maxScale = maxX - minX
+                maxRange = maxX - minX
             else:
-                first = True
-                for c in range(componentsCount):
-                    scale = maxX[c] - minX[c]
-                    if first or (scale > maxScale):
-                        maxScale = scale
-                        first = False
-            if maxScale == 0.0:
-                maxScale = 1.0
-            glyphWidth = 0.01*maxScale
+                maxRange = maxX[0] - minX[0]
+                for c in range(1, componentsCount):
+                    maxRange = max(maxRange, maxX[c] - minX[c])
+            if maxRange > 0.0:
+                while axesScale*10.0 < maxRange:
+                    axesScale *= 10.0
+                while axesScale*0.1 > maxRange:
+                    axesScale *= 0.1
+
+            # fixed width glyph size is based on average element size in all dimensions
+            mesh1d = fm.findMeshByDimension(1)
+            meanLineLength = 0.0
+            lineCount = mesh1d.getSize()
+            if lineCount > 0:
+                one = fm.createFieldConstant(1.0)
+                sumLineLength = fm.createFieldMeshIntegral(one, coordinates, mesh1d)
+                cache = fm.createFieldcache()
+                result, totalLineLength = sumLineLength.evaluateReal(cache, 1)
+                glyphWidth = 0.1*totalLineLength/lineCount
+                del cache
+                del sumLineLength
+                del one
+            if (lineCount == 0) or (glyphWidth == 0.0):
+                # use function of coordinate range if no elements
+                if componentsCount == 1:
+                    maxScale = maxX - minX
+                else:
+                    first = True
+                    for c in range(componentsCount):
+                        scale = maxX[c] - minX[c]
+                        if first or (scale > maxScale):
+                            maxScale = scale
+                            first = False
+                if maxScale == 0.0:
+                    maxScale = 1.0
+                glyphWidth = 0.01*maxScale
 
         # make graphics
         scene = region.getScene()
-        scene.beginChange()
+        with ChangeManager(scene):
+            axes = scene.createGraphicsPoints()
+            pointattr = axes.getGraphicspointattributes()
+            pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_AXES_XYZ)
+            pointattr.setBaseSize([ axesScale, axesScale, axesScale ])
+            pointattr.setLabelText(1, '  ' + str(axesScale))
+            axes.setMaterial(self._materialmodule.findMaterialByName('grey50'))
+            axes.setName('displayAxes')
+            axes.setVisibilityFlag(self.isDisplayAxes())
 
-        axes = scene.createGraphicsPoints()
-        pointattr = axes.getGraphicspointattributes()
-        pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_AXES_XYZ)
-        pointattr.setBaseSize([ axesScale, axesScale, axesScale ])
-        pointattr.setLabelText(1, '  ' + str(axesScale))
-        axes.setMaterial(self._materialmodule.findMaterialByName('grey50'))
-        axes.setName('displayAxes')
-        axes.setVisibilityFlag(self.isDisplayAxes())
+            lines = scene.createGraphicsLines()
+            lines.setCoordinateField(coordinates)
+            lines.setExterior(self.isDisplayLinesExterior())
+            lines.setName('displayLines')
+            lines.setVisibilityFlag(self.isDisplayLines())
 
-        lines = scene.createGraphicsLines()
-        lines.setCoordinateField(coordinates)
-        lines.setExterior(self.isDisplayLinesExterior())
-        lines.setName('displayLines')
-        lines.setVisibilityFlag(self.isDisplayLines())
+            nodePoints = scene.createGraphicsPoints()
+            nodePoints.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
+            nodePoints.setCoordinateField(coordinates)
+            pointattr = nodePoints.getGraphicspointattributes()
+            pointattr.setBaseSize([glyphWidth, glyphWidth, glyphWidth])
+            pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_SPHERE)
+            nodePoints.setMaterial(self._materialmodule.findMaterialByName('white'))
+            nodePoints.setName('displayNodePoints')
+            nodePoints.setVisibilityFlag(self.isDisplayNodePoints())
 
-        nodePoints = scene.createGraphicsPoints()
-        nodePoints.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
-        nodePoints.setCoordinateField(coordinates)
-        pointattr = nodePoints.getGraphicspointattributes()
-        pointattr.setBaseSize([glyphWidth, glyphWidth, glyphWidth])
-        pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_SPHERE)
-        nodePoints.setMaterial(self._materialmodule.findMaterialByName('white'))
-        nodePoints.setName('displayNodePoints')
-        nodePoints.setVisibilityFlag(self.isDisplayNodePoints())
+            nodeNumbers = scene.createGraphicsPoints()
+            nodeNumbers.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
+            nodeNumbers.setCoordinateField(coordinates)
+            pointattr = nodeNumbers.getGraphicspointattributes()
+            pointattr.setLabelField(cmiss_number)
+            pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_NONE)
+            nodeNumbers.setMaterial(self._materialmodule.findMaterialByName('green'))
+            nodeNumbers.setName('displayNodeNumbers')
+            nodeNumbers.setVisibilityFlag(self.isDisplayNodeNumbers())
 
-        nodeNumbers = scene.createGraphicsPoints()
-        nodeNumbers.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
-        nodeNumbers.setCoordinateField(coordinates)
-        pointattr = nodeNumbers.getGraphicspointattributes()
-        pointattr.setLabelField(cmiss_number)
-        pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_NONE)
-        nodeNumbers.setMaterial(self._materialmodule.findMaterialByName('green'))
-        nodeNumbers.setName('displayNodeNumbers')
-        nodeNumbers.setVisibilityFlag(self.isDisplayNodeNumbers())
+            # names in same order as self._nodeDerivativeLabels 'D1', 'D2', 'D3', 'D12', 'D13', 'D23', 'D123' and nodeDerivativeFields
+            nodeDerivativeMaterialNames = [ 'gold', 'silver', 'green', 'cyan', 'magenta', 'yellow', 'blue' ]
+            derivativeScales = [ 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.25 ]
+            for i in range(len(self._nodeDerivativeLabels)):
+                nodeDerivativeLabel = self._nodeDerivativeLabels[i]
+                nodeDerivatives = scene.createGraphicsPoints()
+                nodeDerivatives.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
+                nodeDerivatives.setCoordinateField(coordinates)
+                pointattr = nodeDerivatives.getGraphicspointattributes()
+                pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_ARROW_SOLID)
+                pointattr.setOrientationScaleField(nodeDerivativeFields[i])
+                pointattr.setBaseSize([0.0, glyphWidth, glyphWidth])
+                pointattr.setScaleFactors([ derivativeScales[i], 0.0, 0.0 ])
+                material = self._materialmodule.findMaterialByName(nodeDerivativeMaterialNames[i])
+                nodeDerivatives.setMaterial(material)
+                nodeDerivatives.setSelectedMaterial(material)
+                nodeDerivatives.setName('displayNodeDerivatives' + nodeDerivativeLabel)
+                nodeDerivatives.setVisibilityFlag(self.isDisplayNodeDerivatives() and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel))
 
-        # names in same order as self._nodeDerivativeLabels 'D1', 'D2', 'D3', 'D12', 'D13', 'D23', 'D123' and nodeDerivativeFields
-        nodeDerivativeMaterialNames = [ 'gold', 'silver', 'green', 'cyan', 'magenta', 'yellow', 'blue' ]
-        derivativeScales = [ 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.25 ]
-        for i in range(len(self._nodeDerivativeLabels)):
-            nodeDerivativeLabel = self._nodeDerivativeLabels[i]
-            nodeDerivatives = scene.createGraphicsPoints()
-            nodeDerivatives.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
-            nodeDerivatives.setCoordinateField(coordinates)
-            pointattr = nodeDerivatives.getGraphicspointattributes()
-            pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_ARROW_SOLID)
-            pointattr.setOrientationScaleField(nodeDerivativeFields[i])
-            pointattr.setBaseSize([0.0, glyphWidth, glyphWidth])
-            pointattr.setScaleFactors([ derivativeScales[i], 0.0, 0.0 ])
-            material = self._materialmodule.findMaterialByName(nodeDerivativeMaterialNames[i])
-            nodeDerivatives.setMaterial(material)
-            nodeDerivatives.setSelectedMaterial(material)
-            nodeDerivatives.setName('displayNodeDerivatives' + nodeDerivativeLabel)
-            nodeDerivatives.setVisibilityFlag(self.isDisplayNodeDerivatives() and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel))
+            elementNumbers = scene.createGraphicsPoints()
+            elementNumbers.setFieldDomainType(Field.DOMAIN_TYPE_MESH_HIGHEST_DIMENSION)
+            elementNumbers.setCoordinateField(coordinates)
+            pointattr = elementNumbers.getGraphicspointattributes()
+            pointattr.setLabelField(cmiss_number)
+            pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_NONE)
+            elementNumbers.setMaterial(self._materialmodule.findMaterialByName('cyan'))
+            elementNumbers.setName('displayElementNumbers')
+            elementNumbers.setVisibilityFlag(self.isDisplayElementNumbers())
+            surfaces = scene.createGraphicsSurfaces()
+            surfaces.setCoordinateField(coordinates)
+            surfaces.setRenderPolygonMode(Graphics.RENDER_POLYGON_MODE_WIREFRAME if self.isDisplaySurfacesWireframe() else Graphics.RENDER_POLYGON_MODE_SHADED)
+            surfaces.setExterior(self.isDisplaySurfacesExterior() if (meshDimension == 3) else False)
+            surfacesMaterial = self._materialmodule.findMaterialByName('trans_blue' if self.isDisplaySurfacesTranslucent() else 'solid_blue')
+            surfaces.setMaterial(surfacesMaterial)
+            surfaces.setName('displaySurfaces')
+            surfaces.setVisibilityFlag(self.isDisplaySurfaces())
 
-        elementNumbers = scene.createGraphicsPoints()
-        elementNumbers.setFieldDomainType(Field.DOMAIN_TYPE_MESH_HIGHEST_DIMENSION)
-        elementNumbers.setCoordinateField(coordinates)
-        pointattr = elementNumbers.getGraphicspointattributes()
-        pointattr.setLabelField(cmiss_number)
-        pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_NONE)
-        elementNumbers.setMaterial(self._materialmodule.findMaterialByName('cyan'))
-        elementNumbers.setName('displayElementNumbers')
-        elementNumbers.setVisibilityFlag(self.isDisplayElementNumbers())
-        surfaces = scene.createGraphicsSurfaces()
-        surfaces.setCoordinateField(coordinates)
-        surfaces.setRenderPolygonMode(Graphics.RENDER_POLYGON_MODE_WIREFRAME if self.isDisplaySurfacesWireframe() else Graphics.RENDER_POLYGON_MODE_SHADED)
-        surfaces.setExterior(self.isDisplaySurfacesExterior() if (meshDimension == 3) else False)
-        surfacesMaterial = self._materialmodule.findMaterialByName('trans_blue' if self.isDisplaySurfacesTranslucent() else 'solid_blue')
-        surfaces.setMaterial(surfacesMaterial)
-        surfaces.setName('displaySurfaces')
-        surfaces.setVisibilityFlag(self.isDisplaySurfaces())
+            elementAxes = scene.createGraphicsPoints()
+            elementAxes.setFieldDomainType(Field.DOMAIN_TYPE_MESH_HIGHEST_DIMENSION)
+            elementAxes.setCoordinateField(coordinates)
+            pointattr = elementAxes.getGraphicspointattributes()
+            pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_AXES_123)
+            pointattr.setOrientationScaleField(elementDerivativesField)
+            if meshDimension == 1:
+                pointattr.setBaseSize([0.0, 2*glyphWidth, 2*glyphWidth])
+                pointattr.setScaleFactors([0.25, 0.0, 0.0])
+            elif meshDimension == 2:
+                pointattr.setBaseSize([0.0, 0.0, 2*glyphWidth])
+                pointattr.setScaleFactors([0.25, 0.25, 0.0])
+            else:
+                pointattr.setBaseSize([0.0, 0.0, 0.0])
+                pointattr.setScaleFactors([0.25, 0.25, 0.25])
+            elementAxes.setMaterial(self._materialmodule.findMaterialByName('yellow'))
+            elementAxes.setName('displayElementAxes')
+            elementAxes.setVisibilityFlag(self.isDisplayElementAxes())
 
-        elementAxes = scene.createGraphicsPoints()
-        elementAxes.setFieldDomainType(Field.DOMAIN_TYPE_MESH_HIGHEST_DIMENSION)
-        elementAxes.setCoordinateField(coordinates)
-        pointattr = elementAxes.getGraphicspointattributes()
-        pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_AXES_123)
-        pointattr.setOrientationScaleField(elementDerivativesField)
-        if meshDimension == 1:
-            pointattr.setBaseSize([0.0, 2*glyphWidth, 2*glyphWidth])
-            pointattr.setScaleFactors([0.25, 0.0, 0.0])
-        elif meshDimension == 2:
-            pointattr.setBaseSize([0.0, 0.0, 2*glyphWidth])
-            pointattr.setScaleFactors([0.25, 0.25, 0.0])
-        else:
-            pointattr.setBaseSize([0.0, 0.0, 0.0])
-            pointattr.setScaleFactors([0.25, 0.25, 0.25])
-        elementAxes.setMaterial(self._materialmodule.findMaterialByName('yellow'))
-        elementAxes.setName('displayElementAxes')
-        elementAxes.setVisibilityFlag(self.isDisplayElementAxes())
+            # annotation points
+            annotationPoints = scene.createGraphicsPoints()
+            annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_DATAPOINTS)
+            annotationPoints.setCoordinateField(fiducialCoordinates)
+            pointattr = annotationPoints.getGraphicspointattributes()
+            pointattr.setLabelText(1, '  ')
+            pointattr.setLabelField(fiducialLabel)
+            pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
+            pointattr.setBaseSize(2*glyphWidth)
+            annotationPoints.setMaterial(self._materialmodule.findMaterialByName('green'))
+            annotationPoints.setName('displayAnnotationPoints')
+            annotationPoints.setVisibilityFlag(self.isDisplayAnnotationPoints())
 
-        # annotation points
-        annotationPoints = scene.createGraphicsPoints()
-        annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_DATAPOINTS)
-        annotationPoints.setCoordinateField(fiducialCoordinates)
-        pointattr = annotationPoints.getGraphicspointattributes()
-        pointattr.setLabelText(1, '  ')
-        pointattr.setLabelField(fiducialLabel)
-        pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
-        pointattr.setBaseSize(2*glyphWidth)
-        annotationPoints.setMaterial(self._materialmodule.findMaterialByName('green'))
-        annotationPoints.setName('displayAnnotationPoints')
-        annotationPoints.setVisibilityFlag(self.isDisplayAnnotationPoints())
+            annotationPoints = scene.createGraphicsPoints()
+            annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_DATAPOINTS)
+            annotationPoints.setCoordinateField(fiducialHostCoordinates)
+            pointattr = annotationPoints.getGraphicspointattributes()
+            pointattr.setLabelText(1, '  ')
+            pointattr.setLabelField(fiducialLabel)
+            pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
+            pointattr.setBaseSize(2*glyphWidth)
+            annotationPoints.setMaterial(self._materialmodule.findMaterialByName('yellow'))
+            annotationPoints.setName('displayAnnotationPointsEmbedded')
+            annotationPoints.setVisibilityFlag(self.isDisplayAnnotationPoints())
 
-        annotationPoints = scene.createGraphicsPoints()
-        annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_DATAPOINTS)
-        annotationPoints.setCoordinateField(fiducialHostCoordinates)
-        pointattr = annotationPoints.getGraphicspointattributes()
-        pointattr.setLabelText(1, '  ')
-        pointattr.setLabelField(fiducialLabel)
-        pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
-        pointattr.setBaseSize(2*glyphWidth)
-        annotationPoints.setMaterial(self._materialmodule.findMaterialByName('yellow'))
-        annotationPoints.setName('displayAnnotationPointsEmbedded')
-        annotationPoints.setVisibilityFlag(self.isDisplayAnnotationPoints())
-
-        fm.endChange()
-        scene.endChange()
 
     def updateSettingsBeforeWrite(self):
         self._updateMeshEdits()
