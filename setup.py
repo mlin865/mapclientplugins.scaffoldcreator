@@ -18,7 +18,12 @@ def readfile(filename, split=False):
 readme = readfile("README.rst", split=True)[3:]  # skip title
 # For requirements not hosted on PyPi place listings
 # into the 'requirements.txt' file.
-requires = []  # minimal requirements listing
+requires = [
+    # minimal requirements listing
+    "opencmiss.utils >= 0.2",
+    "opencmiss.zinc",  # not yet on pypi - need manual install from opencmiss.org
+    "ZincPythonTools @ https://api.github.com/repos/OpenCMISS-Bindings/ZincPythonTools/tarball/master"
+]
 source_license = readfile("LICENSE")
 
 
@@ -32,7 +37,7 @@ class InstallCommand(install):
 
 
 setup(name='mapclientplugins.meshgeneratorstep',
-    version='0.1.0',
+    version='0.1.1',
     description='',
     long_description='\n'.join(readme) + source_license,
     classifiers=[
