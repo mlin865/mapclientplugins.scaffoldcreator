@@ -673,10 +673,11 @@ class MeshGeneratorModel(object):
                 elementDerivativeFields.append(fm.createFieldDerivative(coordinates, d + 1))
             elementDerivativesField = fm.createFieldConcatenate(elementDerivativeFields)
             cmiss_number = fm.findFieldByName('cmiss_number')
-            fiducialCoordinates = findOrCreateFieldCoordinates(fm, 'fiducial_coordinates')
-            fiducialLabel = findOrCreateFieldStoredString(fm, 'fiducial_label')
-            fiducialElementXi = findOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name='fiducial_element_xi')
-            fiducialHostCoordinates = fm.createFieldEmbedded(coordinates, fiducialElementXi)
+            markerGroup = fm.findFieldByName("marker")
+            markerCoordinates = findOrCreateFieldCoordinates(fm, "marker_coordinates")
+            markerName = findOrCreateFieldStoredString(fm, "marker_name")
+            fiducialElementXi = findOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name="marker_location")
+            markerLocation = fm.createFieldEmbedded(coordinates, fiducialElementXi)
 
             # get sizing for axes
             axesScale = 1.0
@@ -818,11 +819,12 @@ class MeshGeneratorModel(object):
 
             # annotation points
             annotationPoints = scene.createGraphicsPoints()
-            annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_DATAPOINTS)
-            annotationPoints.setCoordinateField(fiducialCoordinates)
+            annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
+            annotationPoints.setSubgroupField(markerGroup)
+            annotationPoints.setCoordinateField(markerCoordinates)
             pointattr = annotationPoints.getGraphicspointattributes()
             pointattr.setLabelText(1, '  ')
-            pointattr.setLabelField(fiducialLabel)
+            pointattr.setLabelField(markerName)
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
             pointattr.setBaseSize(2*glyphWidth)
             annotationPoints.setMaterial(self._materialmodule.findMaterialByName('green'))
@@ -831,10 +833,11 @@ class MeshGeneratorModel(object):
 
             annotationPoints = scene.createGraphicsPoints()
             annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_DATAPOINTS)
-            annotationPoints.setCoordinateField(fiducialHostCoordinates)
+            annotationPoints.setSubgroupField(markerGroup)
+            annotationPoints.setCoordinateField(markerLocation)
             pointattr = annotationPoints.getGraphicspointattributes()
             pointattr.setLabelText(1, '  ')
-            pointattr.setLabelField(fiducialLabel)
+            pointattr.setLabelField(markerName)
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
             pointattr.setBaseSize(2*glyphWidth)
             annotationPoints.setMaterial(self._materialmodule.findMaterialByName('yellow'))
