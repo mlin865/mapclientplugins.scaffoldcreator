@@ -416,7 +416,6 @@ class MeshGeneratorModel(object):
 
     def setDisplayAnnotationPoints(self, show):
         self._setVisibility('displayAnnotationPoints', show)
-        self._setVisibility('displayAnnotationPointsEmbedded', show)
 
     def isDisplayAxes(self):
         return self._getVisibility('displayAxes')
@@ -674,10 +673,9 @@ class MeshGeneratorModel(object):
             elementDerivativesField = fm.createFieldConcatenate(elementDerivativeFields)
             cmiss_number = fm.findFieldByName('cmiss_number')
             markerGroup = fm.findFieldByName("marker")
-            markerCoordinates = findOrCreateFieldCoordinates(fm, "marker_coordinates")
             markerName = findOrCreateFieldStoredString(fm, "marker_name")
-            fiducialElementXi = findOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name="marker_location")
-            markerLocation = fm.createFieldEmbedded(coordinates, fiducialElementXi)
+            markerLocation = findOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name="marker_location")
+            markerHostCoordinates = fm.createFieldEmbedded(coordinates, markerLocation)
 
             # get sizing for axes
             axesScale = 1.0
@@ -821,27 +819,14 @@ class MeshGeneratorModel(object):
             annotationPoints = scene.createGraphicsPoints()
             annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
             annotationPoints.setSubgroupField(markerGroup)
-            annotationPoints.setCoordinateField(markerCoordinates)
-            pointattr = annotationPoints.getGraphicspointattributes()
-            pointattr.setLabelText(1, '  ')
-            pointattr.setLabelField(markerName)
-            pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
-            pointattr.setBaseSize(2*glyphWidth)
-            annotationPoints.setMaterial(self._materialmodule.findMaterialByName('green'))
-            annotationPoints.setName('displayAnnotationPoints')
-            annotationPoints.setVisibilityFlag(self.isDisplayAnnotationPoints())
-
-            annotationPoints = scene.createGraphicsPoints()
-            annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_DATAPOINTS)
-            annotationPoints.setSubgroupField(markerGroup)
-            annotationPoints.setCoordinateField(markerLocation)
+            annotationPoints.setCoordinateField(markerHostCoordinates)
             pointattr = annotationPoints.getGraphicspointattributes()
             pointattr.setLabelText(1, '  ')
             pointattr.setLabelField(markerName)
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
             pointattr.setBaseSize(2*glyphWidth)
             annotationPoints.setMaterial(self._materialmodule.findMaterialByName('yellow'))
-            annotationPoints.setName('displayAnnotationPointsEmbedded')
+            annotationPoints.setName('displayAnnotationPoints')
             annotationPoints.setVisibilityFlag(self.isDisplayAnnotationPoints())
 
 
