@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mapclientplugins\meshgeneratorstep\qt\meshgeneratorwidget.ui'
 #
-# Created: Sun May  3 15:50:31 2020
+# Created: Mon May  4 10:59:03 2020
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -12,7 +12,7 @@ from PySide import QtCore, QtGui
 class Ui_MeshGeneratorWidget(object):
     def setupUi(self, MeshGeneratorWidget):
         MeshGeneratorWidget.setObjectName("MeshGeneratorWidget")
-        MeshGeneratorWidget.resize(2401, 1472)
+        MeshGeneratorWidget.resize(2378, 1472)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -62,7 +62,7 @@ class Ui_MeshGeneratorWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
         self.scrollAreaWidgetContents_2 = QtGui.QWidget()
-        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 399, 1117))
+        self.scrollAreaWidgetContents_2.setGeometry(QtCore.QRect(0, 0, 794, 856))
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -156,12 +156,23 @@ class Ui_MeshGeneratorWidget(object):
         self.verticalLayout_6 = QtGui.QVBoxLayout(self.modifyOptions_frame)
         self.verticalLayout_6.setContentsMargins(0, -1, 0, -1)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
-        self.deleteElementsRanges_label = QtGui.QLabel(self.modifyOptions_frame)
+        self.deleteElementsRanges_frame = QtGui.QFrame(self.modifyOptions_frame)
+        self.deleteElementsRanges_frame.setFrameShape(QtGui.QFrame.StyledPanel)
+        self.deleteElementsRanges_frame.setFrameShadow(QtGui.QFrame.Raised)
+        self.deleteElementsRanges_frame.setObjectName("deleteElementsRanges_frame")
+        self.verticalLayout_10 = QtGui.QVBoxLayout(self.deleteElementsRanges_frame)
+        self.verticalLayout_10.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_10.setObjectName("verticalLayout_10")
+        self.deleteElementsRanges_label = QtGui.QLabel(self.deleteElementsRanges_frame)
         self.deleteElementsRanges_label.setObjectName("deleteElementsRanges_label")
-        self.verticalLayout_6.addWidget(self.deleteElementsRanges_label)
-        self.deleteElementsRanges_lineEdit = QtGui.QLineEdit(self.modifyOptions_frame)
+        self.verticalLayout_10.addWidget(self.deleteElementsRanges_label)
+        self.deleteElementsRanges_lineEdit = QtGui.QLineEdit(self.deleteElementsRanges_frame)
         self.deleteElementsRanges_lineEdit.setObjectName("deleteElementsRanges_lineEdit")
-        self.verticalLayout_6.addWidget(self.deleteElementsRanges_lineEdit)
+        self.verticalLayout_10.addWidget(self.deleteElementsRanges_lineEdit)
+        self.deleteElementsSelection_pushButton = QtGui.QPushButton(self.deleteElementsRanges_frame)
+        self.deleteElementsSelection_pushButton.setObjectName("deleteElementsSelection_pushButton")
+        self.verticalLayout_10.addWidget(self.deleteElementsSelection_pushButton)
+        self.verticalLayout_6.addWidget(self.deleteElementsRanges_frame)
         self.rotation_label = QtGui.QLabel(self.modifyOptions_frame)
         self.rotation_label.setObjectName("rotation_label")
         self.verticalLayout_6.addWidget(self.rotation_label)
@@ -448,6 +459,7 @@ class Ui_MeshGeneratorWidget(object):
         self.meshType_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Mesh type:", None, QtGui.QApplication.UnicodeUTF8))
         self.parameterSet_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Parameter set:", None, QtGui.QApplication.UnicodeUTF8))
         self.deleteElementsRanges_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Delete element ID ranges (e.g. 1,2-5,13):", None, QtGui.QApplication.UnicodeUTF8))
+        self.deleteElementsSelection_pushButton.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Delete selected elements", None, QtGui.QApplication.UnicodeUTF8))
         self.rotation_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Rotation in degrees about z, y, x", None, QtGui.QApplication.UnicodeUTF8))
         self.scale_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Scale x, y, z:", None, QtGui.QApplication.UnicodeUTF8))
         self.translation_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Translation x, y, z", None, QtGui.QApplication.UnicodeUTF8))

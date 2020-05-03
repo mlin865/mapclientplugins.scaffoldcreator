@@ -83,6 +83,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.parameterSet_comboBox.currentIndexChanged.connect(self._parameterSetChanged)
         self._ui.deleteElementsRanges_lineEdit.returnPressed.connect(self._deleteElementRangesLineEditChanged)
         self._ui.deleteElementsRanges_lineEdit.editingFinished.connect(self._deleteElementRangesLineEditChanged)
+        self._ui.deleteElementsSelection_pushButton.clicked.connect(self._deleteElementsSelectionButtonPressed)
         self._ui.rotation_lineEdit.returnPressed.connect(self._rotationLineEditChanged)
         self._ui.rotation_lineEdit.editingFinished.connect(self._rotationLineEditChanged)
         self._ui.scale_lineEdit.returnPressed.connect(self._scaleLineEditChanged)
@@ -278,8 +279,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
             self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
         else:
             self._ui.subscaffold_label.setText(self._generator_model.getEditScaffoldOptionDisplayName())
-        self._ui.deleteElementsRanges_label.setVisible(editingRootScaffold)
-        self._ui.deleteElementsRanges_lineEdit.setVisible(editingRootScaffold)
+        self._ui.deleteElementsRanges_frame.setVisible(editingRootScaffold)
         self._ui.rotation_lineEdit.setText(self._generator_model.getRotationText())
         self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
         self._ui.translation_lineEdit.setText(self._generator_model.getTranslationText())
@@ -321,6 +321,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _deleteElementRangesLineEditChanged(self):
         self._generator_model.setDeleteElementsRangesText(self._ui.deleteElementsRanges_lineEdit.text())
+        self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
+
+    def _deleteElementsSelectionButtonPressed(self):
+        self._generator_model.deleteElementsSelection()
         self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
 
     def _rotationLineEditChanged(self):

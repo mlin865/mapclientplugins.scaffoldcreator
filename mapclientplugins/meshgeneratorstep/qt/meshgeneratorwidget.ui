@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>2401</width>
+    <width>2378</width>
     <height>1472</height>
    </rect>
   </property>
@@ -113,8 +113,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>399</width>
-            <height>1117</height>
+            <width>794</width>
+            <height>856</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -283,14 +283,36 @@
                     <number>0</number>
                    </property>
                    <item>
-                    <widget class="QLabel" name="deleteElementsRanges_label">
-                     <property name="text">
-                      <string>Delete element ID ranges (e.g. 1,2-5,13):</string>
+                    <widget class="QFrame" name="deleteElementsRanges_frame">
+                     <property name="frameShape">
+                      <enum>QFrame::StyledPanel</enum>
                      </property>
+                     <property name="frameShadow">
+                      <enum>QFrame::Raised</enum>
+                     </property>
+                     <layout class="QVBoxLayout" name="verticalLayout_10">
+                      <property name="margin">
+                       <number>0</number>
+                      </property>
+                      <item>
+                       <widget class="QLabel" name="deleteElementsRanges_label">
+                        <property name="text">
+                         <string>Delete element ID ranges (e.g. 1,2-5,13):</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLineEdit" name="deleteElementsRanges_lineEdit"/>
+                      </item>
+                      <item>
+                       <widget class="QPushButton" name="deleteElementsSelection_pushButton">
+                        <property name="text">
+                         <string>Delete selected elements</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
                     </widget>
-                   </item>
-                   <item>
-                    <widget class="QLineEdit" name="deleteElementsRanges_lineEdit"/>
                    </item>
                    <item>
                     <widget class="QLabel" name="rotation_label">

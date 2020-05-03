@@ -401,6 +401,15 @@ class MeshGeneratorModel(object):
             except:
                 pass
         elementRanges.sort()
+        # merge adjacent or overlapping ranges:
+        i = 1
+        while i < len(elementRanges):
+            if elementRanges[i][0] <= (elementRanges[i - 1][1] + 1):
+                if elementRanges[i][1] > elementRanges[i - 1][1]:
+                    elementRanges[i - 1][1] = elementRanges[i][1]
+                elementRanges.pop(i)
+            else:
+                i += 1
         elementRangesText = ''
         first = True
         for elementRange in elementRanges:
@@ -419,6 +428,37 @@ class MeshGeneratorModel(object):
     def setDeleteElementsRangesText(self, elementRangesTextIn):
         if self._parseDeleteElementsRangesText(elementRangesTextIn):
             self._generateMesh()
+
+    def deleteElementsSelection(self):
+        '''
+        Add the elements in the scene selection to the delete element ranges and delete.
+        '''
+        fm = self._region.getFieldmodule()
+        scene = self._region.getScene()
+        mesh = self._getMesh()
+        selectionGroup = scene.getSelectionField().castGroup()
+        meshGroup = selectionGroup.getFieldElementGroup(mesh).getMeshGroup()
+        if meshGroup.isValid() and (meshGroup.getSize() > 0):
+            # convert selection to element ranges text
+            # following assumes iteration is in identifier order!
+            elementIter = meshGroup.createElementiterator()
+            element = elementIter.next()
+            lastIdentifier = startIdentifier = element.getIdentifier()
+            elementRangesText = str(startIdentifier)
+            element = elementIter.next()
+            while element.isValid():
+                identifier = element.getIdentifier()
+                if identifier > (lastIdentifier + 1):
+                    if lastIdentifier > startIdentifier:
+                        elementRangesText += "-" + str(lastIdentifier)
+                    startIdentifier = identifier
+                    elementRangesText += "," + str(startIdentifier)
+                lastIdentifier = identifier
+                element = elementIter.next()
+            if lastIdentifier > startIdentifier:
+                elementRangesText += "-" + str(lastIdentifier)
+            # append to current delete element ranges
+            self.setDeleteElementsRangesText(self._settings['deleteElementRanges'] + "," + elementRangesText)
 
     def getRotationText(self):
         return ', '.join(STRING_FLOAT_FORMAT.format(value) for value in self._scaffoldPackages[-1].getRotation())
