@@ -8,6 +8,7 @@ from opencmiss.zinc.material import Material
 
 from mapclientplugins.meshgeneratorstep.model.meshgeneratormodel import MeshGeneratorModel
 from mapclientplugins.meshgeneratorstep.model.meshannotationmodel import MeshAnnotationModel
+from mapclientplugins.meshgeneratorstep.model.segmentationdatamodel import SegmentationDataModel
 from scaffoldmaker.scaffolds import Scaffolds_decodeJSON, Scaffolds_JSONEncoder
 
 class MasterModel(object):
@@ -25,11 +26,11 @@ class MasterModel(object):
         self._initialise()
         self._region = self._context.createRegion()
         self._generator_model = MeshGeneratorModel(self._region, self._materialmodule)
+        self._segmentation_data_model = SegmentationDataModel(self._region, self._materialmodule)
         self._annotation_model = MeshAnnotationModel()
 
         self._settings = {
-            'frames-per-second': 25,
-            'time-loop': False
+            'segmentation_data_settings' : self._segmentation_data_model.getSettings()
         }
         self._makeConnections()
         # self._loadSettings()
@@ -81,6 +82,9 @@ class MasterModel(object):
     def getMeshAnnotationModel(self):
         return self._annotation_model
 
+    def getSegmentationDataModel(self):
+        return self._segmentation_data_model
+
     def getScene(self):
         return self._region.getScene()
 
@@ -92,12 +96,18 @@ class MasterModel(object):
 
     def done(self):
         self._saveSettings()
+        self._generator_model.done()
         self._generator_model.writeModel(self.getOutputModelFilename())
         self._generator_model.exportToVtk(self._filenameStem)
 
     def _getSettings(self):
+        '''
+        Ensures master model settings includes current settings for sub models.
+        :return: Master setting dict.
+        '''
         settings = self._settings
         settings['generator_settings'] = self._generator_model.getSettings()
+        settings['segmentation_data_settings'] = self._segmentation_data_model.getSettings()
         return settings
 
     def loadSettings(self):
@@ -113,7 +123,9 @@ class MasterModel(object):
             # no settings saved yet, following gets defaults
             settings = self._getSettings()
         self._generator_model.setSettings(settings['generator_settings'])
+        self._segmentation_data_model.setSettings(settings['segmentation_data_settings'])
         self._annotation_model.setScaffoldTypeByName(self._generator_model.getEditScaffoldTypeName())
+        self._getSettings()
 
     def _saveSettings(self):
         self._generator_model.updateSettingsBeforeWrite()
@@ -121,3 +133,5 @@ class MasterModel(object):
         with open(self._filenameStem + '-settings.json', 'w') as f:
             f.write(json.dumps(settings, cls=Scaffolds_JSONEncoder, sort_keys=True, indent=4))
 
+    def setSegmentationDataFile(self, data_filename):
+        self._segmentation_data_model.setDataFilename(data_filename)

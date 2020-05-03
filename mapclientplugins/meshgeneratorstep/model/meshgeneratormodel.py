@@ -5,21 +5,47 @@ Mesh generator class. Generates Zinc meshes using scaffoldmaker.
 from __future__ import division
 import copy
 import os
+import math
 import string
 
 from opencmiss.utils.zinc.field import findOrCreateFieldCoordinates, findOrCreateFieldStoredMeshLocation, findOrCreateFieldStoredString
 from opencmiss.utils.zinc.finiteelement import evaluateFieldNodesetRange
 from opencmiss.utils.zinc.general import ChangeManager
+from opencmiss.utils.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrixmult, rotation_matrix_to_euler
 from opencmiss.zinc.field import Field
 from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.node import Node
+from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_WORLD
 from scaffoldmaker.scaffolds import Scaffolds
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 from scaffoldmaker.utils.exportvtk import ExportVtk
 from scaffoldmaker.utils.zinc_utils import *
 
 STRING_FLOAT_FORMAT = '{:.8g}'
+
+
+def parseVector3(vectorText : str, delimiter, defaultValue):
+    """
+    Parse a 3 component vector from a string.
+    Repeats last component if too few.
+    :param vectorText: string containing vector components separated by delimiter.
+    :param delimiter: character delimiter between component values.
+    :param defaultValue: Value to use for invalid components.
+    :return: list of 3 component values parsed from vectorText.
+    """
+    vector = []
+    for valueText in vectorText.split(delimiter):
+        try:
+            vector.append(float(valueText))
+        except:
+            vector.append(defaultValue)
+    if len(vector) > 3:
+        vector = vector[:3]
+    else:
+        for i in range(3 - len(vector)):
+            vector.append(vector[-1])
+    return vector
 
 
 class MeshGeneratorModel(object):
@@ -37,8 +63,8 @@ class MeshGeneratorModel(object):
         self._annotationGroups = None
         self._customParametersCallback = None
         self._sceneChangeCallback = None
+        self._transformationChangeCallback = None
         self._deleteElementRanges = []
-        self._scale = [ 1.0, 1.0, 1.0 ]
         self._nodeDerivativeLabels = [ 'D1', 'D2', 'D3', 'D12', 'D13', 'D23', 'D123' ]
         # list of nested scaffold packages to that being edited, with their parent option names
         # discover all mesh types and set the current from the default
@@ -52,7 +78,6 @@ class MeshGeneratorModel(object):
         self._settings = {
             'scaffoldPackage' : scaffoldPackage,
             'deleteElementRanges' : '',
-            'scale' : '*'.join(STRING_FLOAT_FORMAT.format(value) for value in self._scale),
             'displayNodePoints' : False,
             'displayNodeNumbers' : False,
             'displayNodeDerivatives' : False,
@@ -66,7 +91,7 @@ class MeshGeneratorModel(object):
             'displayElementNumbers' : False,
             'displayElementAxes' : False,
             'displayAxes' : True,
-            'displayAnnotationPoints' : False
+            'displayMarkerPoints' : False
         }
         self._customScaffoldPackage = None  # temporary storage of custom mesh options and edits, to switch back to
         self._unsavedNodeEdits = False  # Whether nodes have been edited since ScaffoldPackage meshEdits last updated
@@ -116,6 +141,33 @@ class MeshGeneratorModel(object):
                 fieldNodeGroup = group.createFieldNodeGroup(nodeset)
             nodesetGroup = fieldNodeGroup.getNodesetGroup()
         return nodesetGroup
+
+    def interactionRotate(self, axis, angle):
+        mat1 = axis_angle_to_rotation_matrix(axis, angle)
+        mat2 = euler_to_rotation_matrix([ deg*math.pi/180.0 for deg in self._scaffoldPackages[-1].getRotation() ])
+        newmat = matrixmult(mat1, mat2)
+        rotation = [ rad*180.0/math.pi for rad in rotation_matrix_to_euler(newmat) ]
+        if self._scaffoldPackages[-1].setRotation(rotation):
+            self._setGraphicsTransformation()
+            if self._transformationChangeCallback:
+                self._transformationChangeCallback()
+
+    def interactionScale(self, uniformScale):
+        scale = self._scaffoldPackages[-1].getScale()
+        if self._scaffoldPackages[-1].setScale([ (scale[i]*uniformScale) for i in range(3) ]):
+            self._setGraphicsTransformation()
+            if self._transformationChangeCallback:
+                self._transformationChangeCallback()
+
+    def interactionTranslate(self, offset):
+        translation = self._scaffoldPackages[-1].getTranslation()
+        if self._scaffoldPackages[-1].setTranslation([ (translation[i] + offset[i]) for i in range(3) ]):
+            self._setGraphicsTransformation()
+            if self._transformationChangeCallback:
+                self._transformationChangeCallback()
+
+    def interactionEnd(self):
+        pass
 
     def _setScaffoldType(self, scaffoldType):
         if len(self._scaffoldPackages) == 1:
@@ -366,42 +418,40 @@ class MeshGeneratorModel(object):
 
     def setDeleteElementsRangesText(self, elementRangesTextIn):
         if self._parseDeleteElementsRangesText(elementRangesTextIn):
-            self._clearMeshEdits()
             self._generateMesh()
+
+    def getRotationText(self):
+        return ', '.join(STRING_FLOAT_FORMAT.format(value) for value in self._scaffoldPackages[-1].getRotation())
+
+    def setRotationText(self, rotationTextIn):
+        rotation = parseVector3(rotationTextIn, delimiter=",", defaultValue=0.0)
+        if self._scaffoldPackages[-1].setRotation(rotation):
+            self._setGraphicsTransformation()
 
     def getScaleText(self):
-        return self._settings['scale']
-
-    def _parseScaleText(self, scaleTextIn):
-        """
-        :return: True if scale changed, otherwise False
-        """
-        scale = []
-        for valueText in scaleTextIn.split('*'):
-            try:
-                scale.append(float(valueText))
-            except:
-                scale.append(1.0)
-        for i in range(3 - len(scale)):
-            scale.append(scale[-1])
-        if len(scale) > 3:
-            scale = scale[:3]
-        scaleText = '*'.join(STRING_FLOAT_FORMAT.format(value) for value in scale)
-        changed = self._scale != scale
-        self._scale = scale
-        self._settings['scale'] = scaleText
-        return changed
+        return ', '.join(STRING_FLOAT_FORMAT.format(value) for value in self._scaffoldPackages[-1].getScale())
 
     def setScaleText(self, scaleTextIn):
-        if self._parseScaleText(scaleTextIn):
-            self._clearMeshEdits()
-            self._generateMesh()
+        scale = parseVector3(scaleTextIn, delimiter=",", defaultValue=1.0)
+        if self._scaffoldPackages[-1].setScale(scale):
+            self._setGraphicsTransformation()
+
+    def getTranslationText(self):
+        return ', '.join(STRING_FLOAT_FORMAT.format(value) for value in self._scaffoldPackages[-1].getTranslation())
+
+    def setTranslationText(self, translationTextIn):
+        translation = parseVector3(translationTextIn, delimiter=",", defaultValue=0.0)
+        if self._scaffoldPackages[-1].setTranslation(translation):
+            self._setGraphicsTransformation()
 
     def registerCustomParametersCallback(self, customParametersCallback):
         self._customParametersCallback = customParametersCallback
 
     def registerSceneChangeCallback(self, sceneChangeCallback):
         self._sceneChangeCallback = sceneChangeCallback
+
+    def registerTransformationChangeCallback(self, transformationChangeCallback):
+        self._transformationChangeCallback = transformationChangeCallback
 
     def _getVisibility(self, graphicsName):
         return self._settings[graphicsName]
@@ -411,11 +461,11 @@ class MeshGeneratorModel(object):
         graphics = self._region.getScene().findGraphicsByName(graphicsName)
         graphics.setVisibilityFlag(show)
 
-    def isDisplayAnnotationPoints(self):
-        return self._getVisibility('displayAnnotationPoints')
+    def isDisplayMarkerPoints(self):
+        return self._getVisibility('displayMarkerPoints')
 
-    def setDisplayAnnotationPoints(self, show):
-        self._setVisibility('displayAnnotationPoints', show)
+    def setDisplayMarkerPoints(self, show):
+        self._setVisibility('displayMarkerPoints', show)
 
     def isDisplayAxes(self):
         return self._getVisibility('displayAxes')
@@ -579,7 +629,11 @@ class MeshGeneratorModel(object):
             settings['scaffoldPackage'] = scaffoldPackage
         self._settings.update(settings)
         self._parseDeleteElementsRangesText(self._settings['deleteElementRanges'])
-        self._parseScaleText(self._settings['scale'])
+        # migrate old scale text, now held in scaffoldPackage
+        oldScaleText = self._settings.get('scale')
+        if oldScaleText:
+            scaffoldPackage.setScale(parseVector3(oldScaleText, delimiter="*", defaultValue=1.0))
+            del self._settings['scale']  # remove so can't overwrite scale next time
         self._scaffoldPackages = [ scaffoldPackage ]
         self._scaffoldPackageOptionNames = [ None ]
         self._checkCustomParameterSet()
@@ -595,11 +649,7 @@ class MeshGeneratorModel(object):
         fm = self._region.getFieldmodule()
         with ChangeManager(fm):
             # logger = self._context.getLogger()
-            if isRootScaffold:
-                # do not apply mesh edits since can delete elements and scale root scaffold first
-                annotationGroups = self.getEditScaffoldType().generateMesh(self._region, self.getEditScaffoldSettings())
-            else:
-                annotationGroups = scaffoldPackage.generate(self._region)
+            annotationGroups = scaffoldPackage.generate(self._region, applyTransformation=False)
             # loggerMessageCount = logger.getNumberOfMessages()
             # if loggerMessageCount > 0:
             #     for i in range(1, loggerMessageCount + 1):
@@ -625,7 +675,7 @@ class MeshGeneratorModel(object):
                 del element
                 # destroy all orphaned nodes
                 #size1 = nodes.getSize()
-                nodes.destroyAllNodes()
+                nodes.destroyAllNodes()  # destroy only nodes in deleted elements, and markers embedded in those elements
                 #size2 = nodes.getSize()
                 #print('deleted', size1 - size2, 'nodes')
             fm.defineAllFaces()
@@ -633,26 +683,28 @@ class MeshGeneratorModel(object):
                 for annotationGroup in annotationGroups:
                     annotationGroup.addSubelements()
             self._annotationGroups = annotationGroups
-            if isRootScaffold and (self._settings['scale'] != '1*1*1'):
-                coordinates = fm.findFieldByName('coordinates').castFiniteElement()
-                scale = fm.createFieldConstant(self._scale)
-                newCoordinates = fm.createFieldMultiply(coordinates, scale)
-                fieldassignment = coordinates.createFieldassignment(newCoordinates)
-                fieldassignment.assign()
-                del newCoordinates
-                del scale
-            if isRootScaffold and scaffoldPackage.getMeshEdits():
-                # apply mesh edits, a Zinc-readable model file containing node edits
-                sir = self._region.createStreaminformationRegion()
-                srm = sir.createStreamresourceMemoryBuffer(scaffoldPackage.getMeshEdits())
-                result = self._region.read(sir)
-        self._createGraphics(self._region)
+        self._createGraphics()
         if self._sceneChangeCallback:
             self._sceneChangeCallback()
 
+    def _setGraphicsTransformation(self):
+        '''
+        Establish 4x4 graphics transformation for current scaffold package.
+        '''
+        transformationMatrix = None
+        for scaffoldPackage in reversed(self._scaffoldPackages):
+            mat = scaffoldPackage.getTransformationMatrix()
+            if mat:
+                transformationMatrix = matrixmult(mat, transformationMatrix) if transformationMatrix else mat
+        scene = self._region.getScene()
+        if transformationMatrix:
+            # flatten to list of 16 components for passing to Zinc
+            scene.setTransformationMatrix(transformationMatrix[0] + transformationMatrix[1] + transformationMatrix[2] + transformationMatrix[3])
+        else:
+            scene.clearTransformation()
 
-    def _createGraphics(self, region):
-        fm = region.getFieldmodule()
+    def _createGraphics(self):
+        fm = self._region.getFieldmodule()
         with ChangeManager(fm):
             meshDimension = self.getMeshDimension()
             coordinates = fm.findFieldByName('coordinates')
@@ -722,9 +774,11 @@ class MeshGeneratorModel(object):
                 glyphWidth = 0.01*maxScale
 
         # make graphics
-        scene = region.getScene()
+        scene = self._region.getScene()
         with ChangeManager(scene):
+            self._setGraphicsTransformation()
             axes = scene.createGraphicsPoints()
+            axes.setScenecoordinatesystem(SCENECOORDINATESYSTEM_WORLD)
             pointattr = axes.getGraphicspointattributes()
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_AXES_XYZ)
             pointattr.setBaseSize([ axesScale, axesScale, axesScale ])
@@ -815,23 +869,30 @@ class MeshGeneratorModel(object):
             elementAxes.setName('displayElementAxes')
             elementAxes.setVisibilityFlag(self.isDisplayElementAxes())
 
-            # annotation points
-            annotationPoints = scene.createGraphicsPoints()
-            annotationPoints.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
-            annotationPoints.setSubgroupField(markerGroup)
-            annotationPoints.setCoordinateField(markerHostCoordinates)
-            pointattr = annotationPoints.getGraphicspointattributes()
+            # marker points
+            markerPoints = scene.createGraphicsPoints()
+            markerPoints.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
+            markerPoints.setSubgroupField(markerGroup)
+            markerPoints.setCoordinateField(markerHostCoordinates)
+            pointattr = markerPoints.getGraphicspointattributes()
             pointattr.setLabelText(1, '  ')
             pointattr.setLabelField(markerName)
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
             pointattr.setBaseSize(2*glyphWidth)
-            annotationPoints.setMaterial(self._materialmodule.findMaterialByName('yellow'))
-            annotationPoints.setName('displayAnnotationPoints')
-            annotationPoints.setVisibilityFlag(self.isDisplayAnnotationPoints())
+            markerPoints.setMaterial(self._materialmodule.findMaterialByName('yellow'))
+            markerPoints.setName('displayMarkerPoints')
+            markerPoints.setVisibilityFlag(self.isDisplayMarkerPoints())
 
 
     def updateSettingsBeforeWrite(self):
         self._updateMeshEdits()
+
+    def done(self):
+        '''
+        Finish generating mesh by applying transformation.
+        '''
+        assert 1 == len(self._scaffoldPackages)
+        self._scaffoldPackages[0].applyTransformation(self._region)
 
     def writeModel(self, file_name):
         self._region.writeFile(file_name)
