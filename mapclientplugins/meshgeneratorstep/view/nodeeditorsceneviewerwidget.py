@@ -5,7 +5,7 @@ Derived SceneviewerWidget capable of editing node coordinate positions and deriv
 from enum import Enum
 import math
 from PySide import QtCore
-from opencmiss.utils.maths import vectorops
+from opencmiss.utils.maths.vectorops import add, cross, div, magnitude, mult, sub
 from opencmiss.utils.zinc.general import ChangeManager
 from opencmiss.zincwidgets.sceneviewerwidget import SceneviewerWidget, SelectionMode
 from opencmiss.zinc.field import Field
@@ -209,14 +209,14 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
             result, eye = self._sceneviewer.getEyePosition()
             result, lookat = self._sceneviewer.getLookatPosition()
             result, up = self._sceneviewer.getUpVector()
-            lookatToEye = vectorops.sub(eye, lookat)
-            eyeDistance = vectorops.magnitude(lookatToEye)
-            front = vectorops.div(lookatToEye, eyeDistance)
-            right = vectorops.cross(up, front)
+            lookatToEye = sub(eye, lookat)
+            eyeDistance = magnitude(lookatToEye)
+            front = div(lookatToEye, eyeDistance)
+            right = cross(up, front)
             if self._alignMode == self.AlignMode.ROTATION:
-                mag = vectorops.magnitude(delta)
-                prop = vectorops.div(delta, mag)
-                axis = vectorops.add(vectorops.mult(up, prop[0]), vectorops.mult(right, prop[1]))
+                mag = magnitude(delta)
+                prop = div(delta, mag)
+                axis = add(mult(up, prop[0]), mult(right, prop[1]))
                 angle = mag*0.002
                 #print('delta', delta, 'axis', axis, 'angle', angle)
                 self._model.interactionRotate(axis, angle)
@@ -233,7 +233,7 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
                     eyeScale = (t - b) / viewportHeight
                 else:
                     eyeScale = (r - l) / viewportWidth
-                offset = vectorops.add(vectorops.mult(right, eyeScale*delta[0]), vectorops.mult(up, -eyeScale*delta[1]))
+                offset = add(mult(right, eyeScale*delta[0]), mult(up, -eyeScale*delta[1]))
                 self._model.interactionTranslate(offset)
             self._lastMousePos = mousePos
             event.accept()

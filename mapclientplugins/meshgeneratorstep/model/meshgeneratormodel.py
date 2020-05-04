@@ -11,7 +11,7 @@ import string
 from opencmiss.utils.zinc.field import findOrCreateFieldCoordinates, findOrCreateFieldStoredMeshLocation, findOrCreateFieldStoredString
 from opencmiss.utils.zinc.finiteelement import evaluateFieldNodesetRange
 from opencmiss.utils.zinc.general import ChangeManager
-from opencmiss.utils.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrixmult, rotation_matrix_to_euler
+from opencmiss.utils.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrix_mult, rotation_matrix_to_euler
 from opencmiss.zinc.field import Field, FieldGroup
 from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
@@ -145,7 +145,7 @@ class MeshGeneratorModel(object):
     def interactionRotate(self, axis, angle):
         mat1 = axis_angle_to_rotation_matrix(axis, angle)
         mat2 = euler_to_rotation_matrix([ deg*math.pi/180.0 for deg in self._scaffoldPackages[-1].getRotation() ])
-        newmat = matrixmult(mat1, mat2)
+        newmat = matrix_mult(mat1, mat2)
         rotation = [ rad*180.0/math.pi for rad in rotation_matrix_to_euler(newmat) ]
         if self._scaffoldPackages[-1].setRotation(rotation):
             self._setGraphicsTransformation()
@@ -772,7 +772,7 @@ class MeshGeneratorModel(object):
         for scaffoldPackage in reversed(self._scaffoldPackages):
             mat = scaffoldPackage.getTransformationMatrix()
             if mat:
-                transformationMatrix = matrixmult(mat, transformationMatrix) if transformationMatrix else mat
+                transformationMatrix = matrix_mult(mat, transformationMatrix) if transformationMatrix else mat
         scene = self._region.getScene()
         if transformationMatrix:
             # flatten to list of 16 components for passing to Zinc
