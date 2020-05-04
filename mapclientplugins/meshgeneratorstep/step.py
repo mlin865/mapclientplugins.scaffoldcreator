@@ -28,8 +28,12 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#file_location'))
+        self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
+                      'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
+                      'http://physiomeproject.org/workflow/1.0/rdf-schema#file_location'))
         # Port data:
         self._portData0 = None # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
+        self._port1_inputZincDataFile = None  # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
         # Config:
         self._config = {}
         self._config['identifier'] = ''
@@ -43,6 +47,8 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         User invokes the _doneExecution() method when finished, via pushbutton.
         """
         self._model = MasterModel(self._location, self._config['identifier'])
+        if self._port1_inputZincDataFile:
+            self._model.setSegmentationDataFile(self._port1_inputZincDataFile)
         self._view = MeshGeneratorWidget(self._model)
         # self._view.setWindowFlags(QtCore.Qt.Widget)
         self._view.registerDoneExecution(self._myDoneExecution)
@@ -64,8 +70,17 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         """
         return self._portData0 # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
 
-    def setPortData(self, index, data):
-        pass
+    def setPortData(self, index, dataIn):
+        """
+        Add your code here that will set the appropriate objects for this step.
+        The index is the index of the port in the port list.  If there is only one
+        uses port for this step then the index can be ignored.
+
+        :param index: Index of the port to return.
+        :param dataIn: The data to set for the port at the given index.
+        """
+        if index == 1:
+            self._port1_inputZincDataFile = dataIn # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
 
     def configure(self):
         """

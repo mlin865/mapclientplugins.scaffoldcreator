@@ -18,10 +18,12 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._model = model
         self._generator_model = model.getGeneratorModel()
         self._annotation_model = model.getMeshAnnotationModel()
+        self._segmentation_data_model = model.getSegmentationDataModel()
         self._ui.sceneviewer_widget.setContext(model.getContext())
         self._ui.sceneviewer_widget.setGeneratorModel(model.getGeneratorModel())
         self._model.getGeneratorModel().registerCustomParametersCallback(self._customParametersChange)
         self._model.registerSceneChangeCallback(self._sceneChanged)
+        self._generator_model.registerTransformationChangeCallback(self._transformationChanged)
         self._doneCallback = None
         # self._populateAnnotationTree()
         self._refreshScaffoldTypeNames()
@@ -58,6 +60,11 @@ class MeshGeneratorWidget(QtGui.QWidget):
             self._ui.sceneviewer_widget.setScene(scene)
             self._autoPerturbLines()
 
+    def _transformationChanged(self):
+        self._ui.rotation_lineEdit.setText(self._generator_model.getRotationText())
+        self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
+        self._ui.translation_lineEdit.setText(self._generator_model.getTranslationText())
+
     def _autoPerturbLines(self):
         """
         Enable scene viewer perturb lines iff solid surfaces are drawn with lines.
@@ -76,9 +83,17 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.parameterSet_comboBox.currentIndexChanged.connect(self._parameterSetChanged)
         self._ui.deleteElementsRanges_lineEdit.returnPressed.connect(self._deleteElementRangesLineEditChanged)
         self._ui.deleteElementsRanges_lineEdit.editingFinished.connect(self._deleteElementRangesLineEditChanged)
+        self._ui.deleteElementsSelection_pushButton.clicked.connect(self._deleteElementsSelectionButtonPressed)
+        self._ui.rotation_lineEdit.returnPressed.connect(self._rotationLineEditChanged)
+        self._ui.rotation_lineEdit.editingFinished.connect(self._rotationLineEditChanged)
         self._ui.scale_lineEdit.returnPressed.connect(self._scaleLineEditChanged)
         self._ui.scale_lineEdit.editingFinished.connect(self._scaleLineEditChanged)
-        self._ui.displayAnnotationPoints_checkBox.clicked.connect(self._displayAnnotationPointsClicked)
+        self._ui.translation_lineEdit.returnPressed.connect(self._translationLineEditChanged)
+        self._ui.translation_lineEdit.editingFinished.connect(self._translationLineEditChanged)
+        self._ui.displayDataContours_checkBox.clicked.connect(self._displayDataContoursClicked)
+        self._ui.displayDataMarkerPoints_checkBox.clicked.connect(self._displayDataMarkerPointsClicked)
+        self._ui.displayDataMarkerNames_checkBox.clicked.connect(self._displayDataMarkerNamesClicked)
+        self._ui.displayMarkerPoints_checkBox.clicked.connect(self._displayMarkerPointsClicked)
         self._ui.displayAxes_checkBox.clicked.connect(self._displayAxesClicked)
         self._ui.displayElementAxes_checkBox.clicked.connect(self._displayElementAxesClicked)
         self._ui.displayElementNumbers_checkBox.clicked.connect(self._displayElementNumbersClicked)
@@ -198,11 +213,6 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _subscaffoldBackButtonPressed(self):
         self._generator_model.endEditScaffoldPackageOption()
-        if self._generator_model.editingRootScaffoldPackage():
-            # show/hide widgets
-            self._ui.done_button.setEnabled(True)
-            self._ui.subscaffold_frame.setVisible(False)
-            self._ui.modifyOptions_frame.setVisible(True)
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
         self._refreshScaffoldOptions()
@@ -210,11 +220,6 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _meshTypeOptionScaffoldPackageButtonPressed(self, pushButton):
         optionName = pushButton.objectName()
         self._generator_model.editScaffoldPackageOption(optionName)
-        # show/hide widgets
-        self._ui.done_button.setEnabled(False)
-        self._ui.subscaffold_label.setText(self._generator_model.getEditScaffoldOptionDisplayName())
-        self._ui.subscaffold_frame.setVisible(True)
-        self._ui.modifyOptions_frame.setVisible(False)
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
         self._refreshScaffoldOptions()
@@ -266,12 +271,26 @@ class MeshGeneratorWidget(QtGui.QWidget):
                     #lineEdit.returnPressed.connect(callback)
                     lineEdit.editingFinished.connect(callback)
                     layout.addWidget(lineEdit)
+        # refresh or show/hide standard scaffold options for transformation and deleting element ranges
+        editingRootScaffold = self._generator_model.editingRootScaffoldPackage()
+        self._ui.done_button.setEnabled(editingRootScaffold)
+        self._ui.subscaffold_frame.setVisible(not editingRootScaffold)
+        if editingRootScaffold:
+            self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
+        else:
+            self._ui.subscaffold_label.setText(self._generator_model.getEditScaffoldOptionDisplayName())
+        self._ui.deleteElementsRanges_frame.setVisible(editingRootScaffold)
+        self._ui.rotation_lineEdit.setText(self._generator_model.getRotationText())
+        self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
+        self._ui.translation_lineEdit.setText(self._generator_model.getTranslationText())
 
     def _refreshOptions(self):
         self._ui.identifier_label.setText('Identifier:  ' + self._model.getIdentifier())
-        self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
-        self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
-        self._ui.displayAnnotationPoints_checkBox.setChecked(self._generator_model.isDisplayAnnotationPoints())
+        self._ui.displayDataContours_checkBox.setChecked(self._segmentation_data_model.isDisplayDataContours())
+        self._ui.displayDataMarkerPoints_checkBox.setChecked(self._segmentation_data_model.isDisplayDataMarkerPoints())
+        self._ui.displayDataMarkerNames_checkBox.setChecked(self._segmentation_data_model.isDisplayDataMarkerNames())
+        self._ui.displayData_frame.setVisible(self._segmentation_data_model.hasData())
+        self._ui.displayMarkerPoints_checkBox.setChecked(self._generator_model.isDisplayMarkerPoints())
         self._ui.displayAxes_checkBox.setChecked(self._generator_model.isDisplayAxes())
         self._ui.displayElementNumbers_checkBox.setChecked(self._generator_model.isDisplayElementNumbers())
         self._ui.displayElementAxes_checkBox.setChecked(self._generator_model.isDisplayElementAxes())
@@ -299,18 +318,38 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._refreshScaffoldOptions()
         self._ui.done_button.setEnabled(True)
         self._ui.subscaffold_frame.setVisible(False)
-        self._ui.modifyOptions_frame.setVisible(True)
 
     def _deleteElementRangesLineEditChanged(self):
         self._generator_model.setDeleteElementsRangesText(self._ui.deleteElementsRanges_lineEdit.text())
         self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
 
+    def _deleteElementsSelectionButtonPressed(self):
+        self._generator_model.deleteElementsSelection()
+        self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
+
+    def _rotationLineEditChanged(self):
+        self._generator_model.setRotationText(self._ui.rotation_lineEdit.text())
+        self._ui.rotation_lineEdit.setText(self._generator_model.getRotationText())
+
     def _scaleLineEditChanged(self):
         self._generator_model.setScaleText(self._ui.scale_lineEdit.text())
         self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
 
-    def _displayAnnotationPointsClicked(self):
-        self._generator_model.setDisplayAnnotationPoints(self._ui.displayAnnotationPoints_checkBox.isChecked())
+    def _translationLineEditChanged(self):
+        self._generator_model.setTranslationText(self._ui.translation_lineEdit.text())
+        self._ui.translation_lineEdit.setText(self._generator_model.getTranslationText())
+
+    def _displayDataContoursClicked(self):
+        self._segmentation_data_model.setDisplayDataContours(self._ui.displayDataContours_checkBox.isChecked())
+
+    def _displayDataMarkerPointsClicked(self):
+        self._segmentation_data_model.setDisplayDataMarkerPoints(self._ui.displayDataMarkerPoints_checkBox.isChecked())
+
+    def _displayDataMarkerNamesClicked(self):
+        self._segmentation_data_model.setDisplayDataMarkerNames(self._ui.displayDataMarkerNames_checkBox.isChecked())
+
+    def _displayMarkerPointsClicked(self):
+        self._generator_model.setDisplayMarkerPoints(self._ui.displayMarkerPoints_checkBox.isChecked())
 
     def _displayAxesClicked(self):
         self._generator_model.setDisplayAxes(self._ui.displayAxes_checkBox.isChecked())
