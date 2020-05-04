@@ -12,7 +12,7 @@ from opencmiss.utils.zinc.field import findOrCreateFieldCoordinates, findOrCreat
 from opencmiss.utils.zinc.finiteelement import evaluateFieldNodesetRange
 from opencmiss.utils.zinc.general import ChangeManager
 from opencmiss.utils.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrixmult, rotation_matrix_to_euler
-from opencmiss.zinc.field import Field
+from opencmiss.zinc.field import Field, FieldGroup
 from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.node import Node
@@ -679,9 +679,68 @@ class MeshGeneratorModel(object):
         self._checkCustomParameterSet()
         self._generateMesh()
 
+    def _deleteElementsInRanges(self):
+        '''
+        If this is the root scaffold and there are ranges of element identifiers to delete,
+        remove these from the model.
+        Also remove marker group nodes embedded in those elements and any nodes used only by
+        the deleted elements.
+        '''
+        if (len(self._deleteElementRanges) == 0) or (len(self._scaffoldPackages) > 1):
+            return
+        fm = self._region.getFieldmodule()
+        mesh = self._getMesh()
+        meshDimension = mesh.getDimension()
+        nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+        with ChangeManager(fm):
+            # put the elements in a group and use subelement handling to get nodes in use by it
+            destroyGroup = fm.createFieldGroup()
+            destroyGroup.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
+            destroyElementGroup = destroyGroup.createFieldElementGroup(mesh)
+            destroyMesh = destroyElementGroup.getMeshGroup()
+            elementIter = mesh.createElementiterator()
+            element = elementIter.next()
+            while element.isValid():
+                identifier = element.getIdentifier()
+                for deleteElementRange in self._deleteElementRanges:
+                    if (identifier >= deleteElementRange[0]) and (identifier <= deleteElementRange[1]):
+                        destroyMesh.addElement(element)
+                element = elementIter.next()
+            del elementIter
+            #print("Deleting", destroyMesh.getSize(), "element(s)")
+            if destroyMesh.getSize() > 0:
+                destroyNodeGroup = destroyGroup.getFieldNodeGroup(nodes)
+                destroyNodes = destroyNodeGroup.getNodesetGroup()
+                markerGroup = fm.findFieldByName("marker").castGroup()
+                if markerGroup.isValid():
+                    markerNodes = markerGroup.getFieldNodeGroup(nodes).getNodesetGroup()
+                    markerLocation = fm.findFieldByName("marker_location")
+                    #markerName = fm.findFieldByName("marker_name")
+                    if markerNodes.isValid() and markerLocation.isValid():
+                        fieldcache = fm.createFieldcache()
+                        nodeIter = markerNodes.createNodeiterator()
+                        node = nodeIter.next()
+                        while node.isValid():
+                            fieldcache.setNode(node)
+                            element, xi = markerLocation.evaluateMeshLocation(fieldcache, meshDimension)
+                            if element.isValid() and destroyMesh.containsElement(element):
+                                #print("Destroy marker '" + markerName.evaluateString(fieldcache) + "' node", node.getIdentifier(), "in destroyed element", element.getIdentifier(), "at", xi)
+                                destroyNodes.addNode(node)  # so destroyed with others below; can't do here as
+                            node = nodeIter.next()
+                        del nodeIter
+                        del fieldcache
+                # must destroy elements first as Zinc won't destroy nodes that are in use
+                mesh.destroyElementsConditional(destroyElementGroup)
+                nodes.destroyNodesConditional(destroyNodeGroup)
+                # clean up group so no external code hears is notified of its existence
+                del destroyNodes
+                del destroyNodeGroup
+            del destroyMesh
+            del destroyElementGroup
+            del destroyGroup
+
     def _generateMesh(self):
         scaffoldPackage = self._scaffoldPackages[-1]
-        isRootScaffold = len(self._scaffoldPackages) == 1
         if self._region:
             self._parent_region.removeChild(self._region)
         self._region = self._parent_region.createChild(self._region_name)
@@ -695,29 +754,7 @@ class MeshGeneratorModel(object):
             #     for i in range(1, loggerMessageCount + 1):
             #         print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
             #     logger.removeAllMessages()
-            mesh = self._getMesh()
-            # meshDimension = mesh.getDimension()
-            nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
-            if isRootScaffold and (len(self._deleteElementRanges) > 0):
-                deleteElementIdentifiers = []
-                elementIter = mesh.createElementiterator()
-                element = elementIter.next()
-                while element.isValid():
-                    identifier = element.getIdentifier()
-                    for deleteElementRange in self._deleteElementRanges:
-                        if (identifier >= deleteElementRange[0]) and (identifier <= deleteElementRange[1]):
-                            deleteElementIdentifiers.append(identifier)
-                    element = elementIter.next()
-                #print('delete elements ', deleteElementIdentifiers)
-                for identifier in deleteElementIdentifiers:
-                    element = mesh.findElementByIdentifier(identifier)
-                    mesh.destroyElement(element)
-                del element
-                # destroy all orphaned nodes
-                #size1 = nodes.getSize()
-                nodes.destroyAllNodes()  # destroy only nodes in deleted elements, and markers embedded in those elements
-                #size2 = nodes.getSize()
-                #print('deleted', size1 - size2, 'nodes')
+            self._deleteElementsInRanges()
             fm.defineAllFaces()
             if annotationGroups is not None:
                 for annotationGroup in annotationGroups:
