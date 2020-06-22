@@ -113,8 +113,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>794</width>
-            <height>856</height>
+            <width>705</width>
+            <height>813</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -389,43 +389,100 @@
             <property name="frameShadow">
              <enum>QFrame::Raised</enum>
             </property>
-            <layout class="QHBoxLayout" name="horizontalLayout_9">
+            <layout class="QVBoxLayout" name="verticalLayout_11">
              <property name="margin">
               <number>0</number>
              </property>
              <item>
-              <widget class="QCheckBox" name="displayDataContours_checkBox">
-               <property name="text">
-                <string>Data contours</string>
+              <widget class="QFrame" name="displayDataPoints_frame">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
                </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_9">
+                <property name="margin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QCheckBox" name="displayDataPoints_checkBox">
+                  <property name="text">
+                   <string>Data points</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="displayDataContours_checkBox">
+                  <property name="text">
+                   <string>Data contours</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="displayDataCircleExtrusion_checkBox">
+                  <property name="text">
+                   <string>Circle extrusion</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="displayDataPoints_horizontalSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="displayDataMarkerPoints_checkBox">
-               <property name="text">
-                <string>Data marker points</string>
+              <widget class="QFrame" name="displayDataMarkers_frame">
+               <property name="frameShape">
+                <enum>QFrame::StyledPanel</enum>
                </property>
+               <property name="frameShadow">
+                <enum>QFrame::Raised</enum>
+               </property>
+               <layout class="QHBoxLayout" name="horizontalLayout_10">
+                <property name="margin">
+                 <number>0</number>
+                </property>
+                <item>
+                 <widget class="QCheckBox" name="displayDataMarkerPoints_checkBox">
+                  <property name="text">
+                   <string>Data marker points</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="displayDataMarkerNames_checkBox">
+                  <property name="text">
+                   <string>Data marker names</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="displayDataMarkers_horizontalSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
               </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="displayDataMarkerNames_checkBox">
-               <property name="text">
-                <string>Data marker names</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
              </item>
             </layout>
            </widget>

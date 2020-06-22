@@ -90,7 +90,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.scale_lineEdit.editingFinished.connect(self._scaleLineEditChanged)
         self._ui.translation_lineEdit.returnPressed.connect(self._translationLineEditChanged)
         self._ui.translation_lineEdit.editingFinished.connect(self._translationLineEditChanged)
+        self._ui.displayDataPoints_checkBox.clicked.connect(self._displayDataPointsClicked)
         self._ui.displayDataContours_checkBox.clicked.connect(self._displayDataContoursClicked)
+        self._ui.displayDataCircleExtrusion_checkBox.clicked.connect(self._displayDataCircleExtrusionClicked)
         self._ui.displayDataMarkerPoints_checkBox.clicked.connect(self._displayDataMarkerPointsClicked)
         self._ui.displayDataMarkerNames_checkBox.clicked.connect(self._displayDataMarkerNamesClicked)
         self._ui.displayMarkerPoints_checkBox.clicked.connect(self._displayMarkerPointsClicked)
@@ -286,7 +288,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _refreshOptions(self):
         self._ui.identifier_label.setText('Identifier:  ' + self._model.getIdentifier())
+        self._ui.displayDataPoints_checkBox.setChecked(self._segmentation_data_model.isDisplayDataPoints())
         self._ui.displayDataContours_checkBox.setChecked(self._segmentation_data_model.isDisplayDataContours())
+        self._ui.displayDataCircleExtrusion_checkBox.setChecked(self._segmentation_data_model.isDisplayDataCircleExtrusion())
         self._ui.displayDataMarkerPoints_checkBox.setChecked(self._segmentation_data_model.isDisplayDataMarkerPoints())
         self._ui.displayDataMarkerNames_checkBox.setChecked(self._segmentation_data_model.isDisplayDataMarkerNames())
         self._ui.displayData_frame.setVisible(self._segmentation_data_model.hasData())
@@ -339,8 +343,14 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._generator_model.setTranslationText(self._ui.translation_lineEdit.text())
         self._ui.translation_lineEdit.setText(self._generator_model.getTranslationText())
 
+    def _displayDataPointsClicked(self):
+        self._segmentation_data_model.setDisplayDataPoints(self._ui.displayDataPoints_checkBox.isChecked())
+
     def _displayDataContoursClicked(self):
         self._segmentation_data_model.setDisplayDataContours(self._ui.displayDataContours_checkBox.isChecked())
+
+    def _displayDataCircleExtrusionClicked(self):
+        self._segmentation_data_model.setDisplayDataCircleExtrusion(self._ui.displayDataCircleExtrusion_checkBox.isChecked())
 
     def _displayDataMarkerPointsClicked(self):
         self._segmentation_data_model.setDisplayDataMarkerPoints(self._ui.displayDataMarkerPoints_checkBox.isChecked())
