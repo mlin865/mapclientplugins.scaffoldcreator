@@ -11,7 +11,7 @@ def get_field_coordinates_on_nodeset(fieldmodule, nodeset, name=None):
     '''
     Get Zinc finite element coordinates field defined on nodeset.
     :param nodeset: Nodeset field must be defined on.
-    :param preferred_name: Optional name of field to try first.
+    :param name: Optional name of field to try first.
     :return: Handle to Zinc field or None if none defined.
     '''
     node = nodeset.createNodeiterator().next()
@@ -158,7 +158,8 @@ class SegmentationDataModel():
 
             points = self._scene.createGraphicsPoints()
             points.setFieldDomainType(Field.DOMAIN_TYPE_NODES if (nodes.getSize() > 0) else Field.DOMAIN_TYPE_DATAPOINTS)
-            points.setCoordinateField(coordinates)
+            if coordinates:
+                points.setCoordinateField(coordinates)
             pointattr = points.getGraphicspointattributes()
             if self.isDisplayDataCircleExtrusion() and radius.isValid():
                 pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_SPHERE)
