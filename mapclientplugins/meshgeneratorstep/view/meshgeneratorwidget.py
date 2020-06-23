@@ -92,7 +92,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.translation_lineEdit.editingFinished.connect(self._translationLineEditChanged)
         self._ui.displayDataPoints_checkBox.clicked.connect(self._displayDataPointsClicked)
         self._ui.displayDataContours_checkBox.clicked.connect(self._displayDataContoursClicked)
-        self._ui.displayDataCircleExtrusion_checkBox.clicked.connect(self._displayDataCircleExtrusionClicked)
+        self._ui.displayDataRadius_checkBox.clicked.connect(self._displayDataRadiusClicked)
         self._ui.displayDataMarkerPoints_checkBox.clicked.connect(self._displayDataMarkerPointsClicked)
         self._ui.displayDataMarkerNames_checkBox.clicked.connect(self._displayDataMarkerNamesClicked)
         self._ui.displayMarkerPoints_checkBox.clicked.connect(self._displayMarkerPointsClicked)
@@ -101,6 +101,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayElementNumbers_checkBox.clicked.connect(self._displayElementNumbersClicked)
         self._ui.displayLines_checkBox.clicked.connect(self._displayLinesClicked)
         self._ui.displayLinesExterior_checkBox.clicked.connect(self._displayLinesExteriorClicked)
+        self._ui.displayModelRadius_checkBox.clicked.connect(self._displayModelRadiusClicked)
         self._ui.displayNodeDerivativeLabelsD1_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD1Clicked)
         self._ui.displayNodeDerivativeLabelsD2_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD2Clicked)
         self._ui.displayNodeDerivativeLabelsD3_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD3Clicked)
@@ -290,7 +291,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.identifier_label.setText('Identifier:  ' + self._model.getIdentifier())
         self._ui.displayDataPoints_checkBox.setChecked(self._segmentation_data_model.isDisplayDataPoints())
         self._ui.displayDataContours_checkBox.setChecked(self._segmentation_data_model.isDisplayDataContours())
-        self._ui.displayDataCircleExtrusion_checkBox.setChecked(self._segmentation_data_model.isDisplayDataCircleExtrusion())
+        self._ui.displayDataRadius_checkBox.setChecked(self._segmentation_data_model.isDisplayDataRadius())
         self._ui.displayDataMarkerPoints_checkBox.setChecked(self._segmentation_data_model.isDisplayDataMarkerPoints())
         self._ui.displayDataMarkerNames_checkBox.setChecked(self._segmentation_data_model.isDisplayDataMarkerNames())
         self._ui.displayData_frame.setVisible(self._segmentation_data_model.hasData())
@@ -300,6 +301,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayElementAxes_checkBox.setChecked(self._generator_model.isDisplayElementAxes())
         self._ui.displayLines_checkBox.setChecked(self._generator_model.isDisplayLines())
         self._ui.displayLinesExterior_checkBox.setChecked(self._generator_model.isDisplayLinesExterior())
+        self._ui.displayModelRadius_checkBox.setChecked(self._generator_model.isDisplayModelRadius())
         self._ui.displayNodeDerivativeLabelsD1_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D1'))
         self._ui.displayNodeDerivativeLabelsD2_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D2'))
         self._ui.displayNodeDerivativeLabelsD3_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D3'))
@@ -349,8 +351,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _displayDataContoursClicked(self):
         self._segmentation_data_model.setDisplayDataContours(self._ui.displayDataContours_checkBox.isChecked())
 
-    def _displayDataCircleExtrusionClicked(self):
-        self._segmentation_data_model.setDisplayDataCircleExtrusion(self._ui.displayDataCircleExtrusion_checkBox.isChecked())
+    def _displayDataRadiusClicked(self):
+        self._segmentation_data_model.setDisplayDataRadius(self._ui.displayDataRadius_checkBox.isChecked())
 
     def _displayDataMarkerPointsClicked(self):
         self._segmentation_data_model.setDisplayDataMarkerPoints(self._ui.displayDataMarkerPoints_checkBox.isChecked())
@@ -376,6 +378,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _displayLinesExteriorClicked(self):
         self._generator_model.setDisplayLinesExterior(self._ui.displayLinesExterior_checkBox.isChecked())
+
+    def _displayModelRadiusClicked(self):
+        self._generator_model.setDisplayModelRadius(self._ui.displayModelRadius_checkBox.isChecked())
 
     def _displayNodeDerivativesClicked(self):
         self._generator_model.setDisplayNodeDerivatives(self._ui.displayNodeDerivatives_checkBox.isChecked())

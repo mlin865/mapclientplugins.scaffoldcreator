@@ -84,6 +84,7 @@ class MeshGeneratorModel(object):
             'displayNodeDerivativeLabels' : self._nodeDerivativeLabels[0:3],
             'displayLines' : True,
             'displayLinesExterior' : False,
+            'displayModelRadius' : False,
             'displaySurfaces' : True,
             'displaySurfacesExterior' : True,
             'displaySurfacesTranslucent' : True,
@@ -533,6 +534,14 @@ class MeshGeneratorModel(object):
         lines = self._region.getScene().findGraphicsByName('displayLines')
         lines.setExterior(self.isDisplayLinesExterior())
 
+    def isDisplayModelRadius(self):
+        return self._getVisibility('displayModelRadius')
+
+    def setDisplayModelRadius(self, show):
+        if show != self._settings['displayModelRadius']:
+            self._settings['displayModelRadius'] = show
+            self._createGraphics()
+
     def isDisplayNodeDerivatives(self):
         return self._getVisibility('displayNodeDerivatives')
 
@@ -801,9 +810,10 @@ class MeshGeneratorModel(object):
                 elementDerivativeFields.append(fm.createFieldDerivative(coordinates, d + 1))
             elementDerivativesField = fm.createFieldConcatenate(elementDerivativeFields)
             cmiss_number = fm.findFieldByName('cmiss_number')
-            markerGroup = fm.findFieldByName("marker")
-            markerName = findOrCreateFieldStoredString(fm, "marker_name")
-            markerLocation = findOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name="marker_location")
+            markerGroup = fm.findFieldByName('marker').castGroup()
+            markerName = findOrCreateFieldStoredString(fm, 'marker_name')
+            radius = fm.findFieldByName('radius')
+            markerLocation = findOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name='marker_location')
             markerHostCoordinates = fm.createFieldEmbedded(coordinates, markerLocation)
 
             # get sizing for axes
@@ -853,12 +863,14 @@ class MeshGeneratorModel(object):
         # make graphics
         scene = self._region.getScene()
         with ChangeManager(scene):
+            scene.removeAllGraphics()
+
             self._setGraphicsTransformation()
             axes = scene.createGraphicsPoints()
             axes.setScenecoordinatesystem(SCENECOORDINATESYSTEM_WORLD)
             pointattr = axes.getGraphicspointattributes()
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_AXES_XYZ)
-            pointattr.setBaseSize([ axesScale, axesScale, axesScale ])
+            pointattr.setBaseSize([ axesScale ])
             pointattr.setLabelText(1, '  ' + str(axesScale))
             axes.setMaterial(self._materialmodule.findMaterialByName('grey50'))
             axes.setName('displayAxes')
@@ -867,6 +879,12 @@ class MeshGeneratorModel(object):
             lines = scene.createGraphicsLines()
             lines.setCoordinateField(coordinates)
             lines.setExterior(self.isDisplayLinesExterior())
+            if self.isDisplayModelRadius() and radius.isValid():
+                lineattr = lines.getGraphicslineattributes()
+                lineattr.setShapeType(lineattr.SHAPE_TYPE_CIRCLE_EXTRUSION)
+                lineattr.setBaseSize([ 0.0 ])
+                lineattr.setScaleFactors([ 2.0 ])
+                lineattr.setOrientationScaleField(radius)
             lines.setName('displayLines')
             lines.setVisibilityFlag(self.isDisplayLines())
 
@@ -874,8 +892,13 @@ class MeshGeneratorModel(object):
             nodePoints.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
             nodePoints.setCoordinateField(coordinates)
             pointattr = nodePoints.getGraphicspointattributes()
-            pointattr.setBaseSize([glyphWidth, glyphWidth, glyphWidth])
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_SPHERE)
+            if self.isDisplayModelRadius() and radius.isValid():
+                pointattr.setBaseSize([ 0.0 ])
+                pointattr.setScaleFactors([ 2.0 ])
+                pointattr.setOrientationScaleField(radius)
+            else:
+                pointattr.setBaseSize([ glyphWidth ])
             nodePoints.setMaterial(self._materialmodule.findMaterialByName('white'))
             nodePoints.setName('displayNodePoints')
             nodePoints.setVisibilityFlag(self.isDisplayNodePoints())

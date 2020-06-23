@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mapclientplugins\meshgeneratorstep\qt\meshgeneratorwidget.ui'
 #
-# Created: Mon Jun 22 13:22:46 2020
+# Created: Tue Jun 23 12:01:55 2020
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -227,9 +227,9 @@ class Ui_MeshGeneratorWidget(object):
         self.displayDataContours_checkBox = QtGui.QCheckBox(self.displayDataPoints_frame)
         self.displayDataContours_checkBox.setObjectName("displayDataContours_checkBox")
         self.horizontalLayout_9.addWidget(self.displayDataContours_checkBox)
-        self.displayDataCircleExtrusion_checkBox = QtGui.QCheckBox(self.displayDataPoints_frame)
-        self.displayDataCircleExtrusion_checkBox.setObjectName("displayDataCircleExtrusion_checkBox")
-        self.horizontalLayout_9.addWidget(self.displayDataCircleExtrusion_checkBox)
+        self.displayDataRadius_checkBox = QtGui.QCheckBox(self.displayDataPoints_frame)
+        self.displayDataRadius_checkBox.setObjectName("displayDataRadius_checkBox")
+        self.horizontalLayout_9.addWidget(self.displayDataRadius_checkBox)
         spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_9.addItem(spacerItem1)
         self.verticalLayout_11.addWidget(self.displayDataPoints_frame)
@@ -363,6 +363,9 @@ class Ui_MeshGeneratorWidget(object):
         self.displayLinesExterior_checkBox.setSizePolicy(sizePolicy)
         self.displayLinesExterior_checkBox.setObjectName("displayLinesExterior_checkBox")
         self.horizontalLayout_5.addWidget(self.displayLinesExterior_checkBox)
+        self.displayModelRadius_checkBox = QtGui.QCheckBox(self.displayLines_frame)
+        self.displayModelRadius_checkBox.setObjectName("displayModelRadius_checkBox")
+        self.horizontalLayout_5.addWidget(self.displayModelRadius_checkBox)
         spacerItem5 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_5.addItem(spacerItem5)
         self.verticalLayout_7.addWidget(self.displayLines_frame)
@@ -490,7 +493,7 @@ class Ui_MeshGeneratorWidget(object):
         self.displayOptions_groupBox.setTitle(QtGui.QApplication.translate("MeshGeneratorWidget", "Display options:", None, QtGui.QApplication.UnicodeUTF8))
         self.displayDataPoints_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Data points", None, QtGui.QApplication.UnicodeUTF8))
         self.displayDataContours_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Data contours", None, QtGui.QApplication.UnicodeUTF8))
-        self.displayDataCircleExtrusion_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Circle extrusion", None, QtGui.QApplication.UnicodeUTF8))
+        self.displayDataRadius_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Data radius", None, QtGui.QApplication.UnicodeUTF8))
         self.displayDataMarkerPoints_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Data marker points", None, QtGui.QApplication.UnicodeUTF8))
         self.displayDataMarkerNames_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Data marker names", None, QtGui.QApplication.UnicodeUTF8))
         self.displayNodePoints_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Node points", None, QtGui.QApplication.UnicodeUTF8))
@@ -505,6 +508,7 @@ class Ui_MeshGeneratorWidget(object):
         self.displayNodeDerivativeLabelsD123_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "D123", None, QtGui.QApplication.UnicodeUTF8))
         self.displayLines_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Lines", None, QtGui.QApplication.UnicodeUTF8))
         self.displayLinesExterior_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Exterior", None, QtGui.QApplication.UnicodeUTF8))
+        self.displayModelRadius_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Model radius", None, QtGui.QApplication.UnicodeUTF8))
         self.displaySurfaces_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Surfaces", None, QtGui.QApplication.UnicodeUTF8))
         self.displaySurfacesExterior_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Exterior", None, QtGui.QApplication.UnicodeUTF8))
         self.displaySurfacesTranslucent_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Transluc.", None, QtGui.QApplication.UnicodeUTF8))
