@@ -420,9 +420,9 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="displayDataCircleExtrusion_checkBox">
+                 <widget class="QCheckBox" name="displayDataRadius_checkBox">
                   <property name="text">
-                   <string>Circle extrusion</string>
+                   <string>Data radius</string>
                   </property>
                  </widget>
                 </item>
@@ -696,6 +696,13 @@
                </property>
                <property name="text">
                 <string>Exterior</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="displayModelRadius_checkBox">
+               <property name="text">
+                <string>Model radius</string>
                </property>
               </widget>
              </item>

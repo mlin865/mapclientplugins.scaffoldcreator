@@ -47,9 +47,9 @@ class SegmentationDataModel():
         self._fieldmodule = None
         self._scene = None
         self._settings = {
-            'displayDataCircleExtrusion' : False,
             'displayDataContours' : True,
             'displayDataPoints' : False,
+            'displayDataRadius' : False,
             'displayDataMarkerPoints' : True,
             'displayDataMarkerNames' : True
             }
@@ -108,12 +108,12 @@ class SegmentationDataModel():
     def setDisplayDataContours(self, show):
         self._setVisibility("displayDataContours", show)
 
-    def isDisplayDataCircleExtrusion(self):
-        return self._getVisibility("displayDataCircleExtrusion")
+    def isDisplayDataRadius(self):
+        return self._getVisibility("displayDataRadius")
 
-    def setDisplayDataCircleExtrusion(self, show):
-        if show != self._settings["displayDataCircleExtrusion"]:
-            self._settings["displayDataCircleExtrusion"] = show
+    def setDisplayDataRadius(self, show):
+        if show != self._settings["displayDataRadius"]:
+            self._settings["displayDataRadius"] = show
             self._generateGraphics()
 
     def isDisplayDataPoints(self):
@@ -161,7 +161,7 @@ class SegmentationDataModel():
             if coordinates:
                 points.setCoordinateField(coordinates)
             pointattr = points.getGraphicspointattributes()
-            if self.isDisplayDataCircleExtrusion() and radius.isValid():
+            if self.isDisplayDataRadius() and radius.isValid():
                 pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_SPHERE)
                 pointattr.setBaseSize([ 0.0 ])
                 pointattr.setScaleFactors([ 2.0 ])
@@ -180,7 +180,7 @@ class SegmentationDataModel():
             lines = self._scene.createGraphicsLines()
             if coordinates:
                 lines.setCoordinateField(coordinates)
-            if self.isDisplayDataCircleExtrusion() and radius.isValid():
+            if self.isDisplayDataRadius() and radius.isValid():
                 lineattr = lines.getGraphicslineattributes()
                 lineattr.setShapeType(lineattr.SHAPE_TYPE_CIRCLE_EXTRUSION)
                 lineattr.setBaseSize([ 0.0 ])

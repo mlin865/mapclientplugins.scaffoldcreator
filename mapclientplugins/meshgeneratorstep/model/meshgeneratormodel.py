@@ -16,6 +16,7 @@ from opencmiss.zinc.field import Field, FieldGroup
 from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.node import Node
+from opencmiss.zinc.result import RESULT_OK, RESULT_WARNING_PART_DONE
 from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_WORLD
 from scaffoldmaker.scaffolds import Scaffolds
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
@@ -84,6 +85,7 @@ class MeshGeneratorModel(object):
             'displayNodeDerivativeLabels' : self._nodeDerivativeLabels[0:3],
             'displayLines' : True,
             'displayLinesExterior' : False,
+            'displayModelRadius' : False,
             'displaySurfaces' : True,
             'displaySurfacesExterior' : True,
             'displaySurfacesTranslucent' : True,
@@ -533,14 +535,34 @@ class MeshGeneratorModel(object):
         lines = self._region.getScene().findGraphicsByName('displayLines')
         lines.setExterior(self.isDisplayLinesExterior())
 
+    def isDisplayModelRadius(self):
+        return self._getVisibility('displayModelRadius')
+
+    def setDisplayModelRadius(self, show):
+        if show != self._settings['displayModelRadius']:
+            self._settings['displayModelRadius'] = show
+            self._createGraphics()
+
     def isDisplayNodeDerivatives(self):
         return self._getVisibility('displayNodeDerivatives')
+
+    def _setAllGraphicsVisibility(self, graphicsName, show):
+        '''
+        Ensure visibility of all graphics with graphicsName is set to boolean show.
+        '''
+        scene = self._region.getScene()
+        graphics = scene.findGraphicsByName(graphicsName)
+        while graphics.isValid():
+            graphics.setVisibilityFlag(show)
+            while True:
+                graphics = scene.getNextGraphics(graphics)
+                if (not graphics.isValid()) or (graphics.getName() == graphicsName):
+                    break
 
     def setDisplayNodeDerivatives(self, show):
         self._settings['displayNodeDerivatives'] = show
         for nodeDerivativeLabel in self._nodeDerivativeLabels:
-            graphics = self._region.getScene().findGraphicsByName('displayNodeDerivatives' + nodeDerivativeLabel)
-            graphics.setVisibilityFlag(show and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel))
+            self._setAllGraphicsVisibility('displayNodeDerivatives' + nodeDerivativeLabel, show and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel))
 
     def isDisplayNodeDerivativeLabels(self, nodeDerivativeLabel):
         '''
@@ -564,8 +586,7 @@ class MeshGeneratorModel(object):
         else:
             if shown:
                 self._settings['displayNodeDerivativeLabels'].remove(nodeDerivativeLabel)
-        graphics = self._region.getScene().findGraphicsByName('displayNodeDerivatives' + nodeDerivativeLabel)
-        graphics.setVisibilityFlag(show and self.isDisplayNodeDerivatives())
+        self._setAllGraphicsVisibility('displayNodeDerivatives' + nodeDerivativeLabel, show and self.isDisplayNodeDerivatives())
 
     def isDisplayNodeNumbers(self):
         return self._getVisibility('displayNodeNumbers')
@@ -601,6 +622,11 @@ class MeshGeneratorModel(object):
         surfaces = self._region.getScene().findGraphicsByName('displaySurfaces')
         surfacesMaterial = self._materialmodule.findMaterialByName('trans_blue' if isTranslucent else 'solid_blue')
         surfaces.setMaterial(surfacesMaterial)
+        lines = self._region.getScene().findGraphicsByName('displayLines')
+        lineattr = lines.getGraphicslineattributes()
+        isTranslucentLines = isTranslucent and (lineattr.getShapeType() == lineattr.SHAPE_TYPE_CIRCLE_EXTRUSION)
+        linesMaterial = self._materialmodule.findMaterialByName('trans_blue' if isTranslucentLines else 'default')
+        lines.setMaterial(linesMaterial)
 
     def isDisplaySurfacesWireframe(self):
         return self._settings['displaySurfacesWireframe']
@@ -784,31 +810,51 @@ class MeshGeneratorModel(object):
         fm = self._region.getFieldmodule()
         with ChangeManager(fm):
             meshDimension = self.getMeshDimension()
-            coordinates = fm.findFieldByName('coordinates')
+            coordinates = fm.findFieldByName('coordinates').castFiniteElement()
             componentsCount = coordinates.getNumberOfComponents()
+            nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+            fieldcache = fm.createFieldcache()
+
+            # determine field derivatives for all versions in use: fairly expensive
             # fields in same order as self._nodeDerivativeLabels
-            nodeDerivativeFields = [
-                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D_DS1, 1),
-                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D_DS2, 1),
-                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D_DS3, 1),
-                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D2_DS1DS2, 1),
-                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D2_DS1DS3, 1),
-                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D2_DS2DS3, 1),
-                fm.createFieldNodeValue(coordinates, Node.VALUE_LABEL_D3_DS1DS2DS3, 1)
-            ]
+            nodeDerivatives = [ Node.VALUE_LABEL_D_DS1, Node.VALUE_LABEL_D_DS2, Node.VALUE_LABEL_D_DS3,
+                Node.VALUE_LABEL_D2_DS1DS2, Node.VALUE_LABEL_D2_DS1DS3, Node.VALUE_LABEL_D2_DS2DS3, Node.VALUE_LABEL_D3_DS1DS2DS3 ]
+            nodeDerivativeFields = [ [ fm.createFieldNodeValue(coordinates, nodeDerivative, 1) ] for nodeDerivative in nodeDerivatives ]
+            derivativesCount = len(nodeDerivatives)
+            maxVersions = [ 1 for nodeDerivative in nodeDerivatives ]
+            lastVersion = 1
+            version = 2
+            while True:
+                nodeIter = nodes.createNodeiterator()
+                node = nodeIter.next()
+                foundCount = sum((1 if (v < lastVersion) else 0) for v in maxVersions)
+                while (node.isValid()) and (foundCount < derivativesCount):
+                    fieldcache.setNode(node)
+                    for d in range(derivativesCount):
+                        if maxVersions[d] == lastVersion:  # only look one higher than last version found
+                            result, values = coordinates.getNodeParameters(fieldcache, -1, nodeDerivatives[d], version, componentsCount)
+                            if (result == RESULT_OK) or (result == RESULT_WARNING_PART_DONE):
+                                maxVersions[d] = version
+                                nodeDerivativeFields[d].append(fm.createFieldNodeValue(coordinates, nodeDerivatives[d], version))
+                                foundCount += 1
+                    node = nodeIter.next()
+                if foundCount >= derivativesCount:
+                    break
+                lastVersion = version
+                version += 1
             elementDerivativeFields = []
             for d in range(meshDimension):
                 elementDerivativeFields.append(fm.createFieldDerivative(coordinates, d + 1))
             elementDerivativesField = fm.createFieldConcatenate(elementDerivativeFields)
             cmiss_number = fm.findFieldByName('cmiss_number')
-            markerGroup = fm.findFieldByName("marker")
-            markerName = findOrCreateFieldStoredString(fm, "marker_name")
-            markerLocation = findOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name="marker_location")
+            markerGroup = fm.findFieldByName('marker').castGroup()
+            markerName = findOrCreateFieldStoredString(fm, 'marker_name')
+            radius = fm.findFieldByName('radius')
+            markerLocation = findOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name='marker_location')
             markerHostCoordinates = fm.createFieldEmbedded(coordinates, markerLocation)
 
             # get sizing for axes
             axesScale = 1.0
-            nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
             minX, maxX = evaluateFieldNodesetRange(coordinates, nodes)
             if componentsCount == 1:
                 maxRange = maxX - minX
@@ -829,10 +875,8 @@ class MeshGeneratorModel(object):
             if lineCount > 0:
                 one = fm.createFieldConstant(1.0)
                 sumLineLength = fm.createFieldMeshIntegral(one, coordinates, mesh1d)
-                cache = fm.createFieldcache()
-                result, totalLineLength = sumLineLength.evaluateReal(cache, 1)
+                result, totalLineLength = sumLineLength.evaluateReal(fieldcache, 1)
                 glyphWidth = 0.1*totalLineLength/lineCount
-                del cache
                 del sumLineLength
                 del one
             if (lineCount == 0) or (glyphWidth == 0.0):
@@ -849,16 +893,19 @@ class MeshGeneratorModel(object):
                 if maxScale == 0.0:
                     maxScale = 1.0
                 glyphWidth = 0.01*maxScale
+            del fieldcache
 
         # make graphics
         scene = self._region.getScene()
         with ChangeManager(scene):
+            scene.removeAllGraphics()
+
             self._setGraphicsTransformation()
             axes = scene.createGraphicsPoints()
             axes.setScenecoordinatesystem(SCENECOORDINATESYSTEM_WORLD)
             pointattr = axes.getGraphicspointattributes()
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_AXES_XYZ)
-            pointattr.setBaseSize([ axesScale, axesScale, axesScale ])
+            pointattr.setBaseSize([ axesScale ])
             pointattr.setLabelText(1, '  ' + str(axesScale))
             axes.setMaterial(self._materialmodule.findMaterialByName('grey50'))
             axes.setName('displayAxes')
@@ -867,6 +914,15 @@ class MeshGeneratorModel(object):
             lines = scene.createGraphicsLines()
             lines.setCoordinateField(coordinates)
             lines.setExterior(self.isDisplayLinesExterior())
+            lineattr = lines.getGraphicslineattributes()
+            if self.isDisplayModelRadius() and radius.isValid():
+                lineattr.setShapeType(lineattr.SHAPE_TYPE_CIRCLE_EXTRUSION)
+                lineattr.setBaseSize([ 0.0 ])
+                lineattr.setScaleFactors([ 2.0 ])
+                lineattr.setOrientationScaleField(radius)
+            isTranslucentLines = self.isDisplaySurfacesTranslucent() and (lineattr.getShapeType() == lineattr.SHAPE_TYPE_CIRCLE_EXTRUSION)
+            linesMaterial = self._materialmodule.findMaterialByName('trans_blue' if isTranslucentLines else 'default')
+            lines.setMaterial(linesMaterial)
             lines.setName('displayLines')
             lines.setVisibilityFlag(self.isDisplayLines())
 
@@ -874,8 +930,13 @@ class MeshGeneratorModel(object):
             nodePoints.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
             nodePoints.setCoordinateField(coordinates)
             pointattr = nodePoints.getGraphicspointattributes()
-            pointattr.setBaseSize([glyphWidth, glyphWidth, glyphWidth])
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_SPHERE)
+            if self.isDisplayModelRadius() and radius.isValid():
+                pointattr.setBaseSize([ 0.0 ])
+                pointattr.setScaleFactors([ 2.0 ])
+                pointattr.setOrientationScaleField(radius)
+            else:
+                pointattr.setBaseSize([ glyphWidth ])
             nodePoints.setMaterial(self._materialmodule.findMaterialByName('white'))
             nodePoints.setName('displayNodePoints')
             nodePoints.setVisibilityFlag(self.isDisplayNodePoints())
@@ -895,19 +956,24 @@ class MeshGeneratorModel(object):
             derivativeScales = [ 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.25 ]
             for i in range(len(self._nodeDerivativeLabels)):
                 nodeDerivativeLabel = self._nodeDerivativeLabels[i]
-                nodeDerivatives = scene.createGraphicsPoints()
-                nodeDerivatives.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
-                nodeDerivatives.setCoordinateField(coordinates)
-                pointattr = nodeDerivatives.getGraphicspointattributes()
-                pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_ARROW_SOLID)
-                pointattr.setOrientationScaleField(nodeDerivativeFields[i])
-                pointattr.setBaseSize([0.0, glyphWidth, glyphWidth])
-                pointattr.setScaleFactors([ derivativeScales[i], 0.0, 0.0 ])
-                material = self._materialmodule.findMaterialByName(nodeDerivativeMaterialNames[i])
-                nodeDerivatives.setMaterial(material)
-                nodeDerivatives.setSelectedMaterial(material)
-                nodeDerivatives.setName('displayNodeDerivatives' + nodeDerivativeLabel)
-                nodeDerivatives.setVisibilityFlag(self.isDisplayNodeDerivatives() and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel))
+                maxVersions = len(nodeDerivativeFields[i])
+                for v in range(maxVersions):
+                    nodeDerivatives = scene.createGraphicsPoints()
+                    nodeDerivatives.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
+                    nodeDerivatives.setCoordinateField(coordinates)
+                    pointattr = nodeDerivatives.getGraphicspointattributes()
+                    pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_ARROW_SOLID)
+                    pointattr.setOrientationScaleField(nodeDerivativeFields[i][v])
+                    pointattr.setBaseSize([0.0, glyphWidth, glyphWidth])
+                    pointattr.setScaleFactors([ derivativeScales[i], 0.0, 0.0 ])
+                    if maxVersions > 1:
+                        pointattr.setLabelOffset([ 1.05, 0.0, 0.0 ])
+                        pointattr.setLabelText(1, str(v + 1))
+                    material = self._materialmodule.findMaterialByName(nodeDerivativeMaterialNames[i])
+                    nodeDerivatives.setMaterial(material)
+                    nodeDerivatives.setSelectedMaterial(material)
+                    nodeDerivatives.setName('displayNodeDerivatives' + nodeDerivativeLabel)
+                    nodeDerivatives.setVisibilityFlag(self.isDisplayNodeDerivatives() and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel))
 
             elementNumbers = scene.createGraphicsPoints()
             elementNumbers.setFieldDomainType(Field.DOMAIN_TYPE_MESH_HIGHEST_DIMENSION)
