@@ -6,6 +6,7 @@ from PySide import QtGui, QtCore
 from functools import partial
 
 from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
+from opencmiss.utils.maths.vectorops import dot, magnitude, mult, normalize, sub
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 
 
@@ -45,7 +46,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
             sceneviewer.setLookatParametersNonSkew([2.0, -2.0, 1.0], [0.0, 0.0, 0.0], [0.0, 0.0, 1.0])
             sceneviewer.setTransparencyMode(sceneviewer.TRANSPARENCY_MODE_SLOW)
             self._autoPerturbLines()
-            self._viewAll()
+            self._viewAllButtonClicked()
 
     def _customParametersChange(self):
         """
@@ -76,8 +77,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _makeConnections(self):
         self._ui.sceneviewer_widget.graphicsInitialized.connect(self._graphicsInitialized)
-        self._ui.done_button.clicked.connect(self._doneButtonClicked)
-        self._ui.viewAll_button.clicked.connect(self._viewAll)
+        self._ui.done_pushButton.clicked.connect(self._doneButtonClicked)
+        self._ui.stdViews_pushButton.clicked.connect(self._stdViewsButtonClicked)
+        self._ui.viewAll_pushButton.clicked.connect(self._viewAllButtonClicked)
         self._ui.subscaffoldBack_pushButton.clicked.connect(self._subscaffoldBackButtonPressed)
         self._ui.meshType_comboBox.currentIndexChanged.connect(self._scaffoldTypeChanged)
         self._ui.parameterSet_comboBox.currentIndexChanged.connect(self._parameterSetChanged)
@@ -197,6 +199,39 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._model = None
         self._doneCallback()
 
+    def _stdViewsButtonClicked(self):
+        sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
+        if sceneviewer is not None:
+            result, eyePosition, lookatPosition, upVector = sceneviewer.getLookatParameters()
+            upVector = normalize(upVector)
+            viewVector = sub(lookatPosition, eyePosition)
+            viewDistance = magnitude(viewVector)
+            viewVector = normalize(viewVector)
+            viewX = dot(viewVector, [ 1.0, 0.0, 0.0 ])
+            viewY = dot(viewVector, [ 0.0, 1.0, 0.0 ])
+            viewZ = dot(viewVector, [ 0.0, 0.0, 1.0 ])
+            upX = dot(upVector, [ 1.0, 0.0, 0.0 ])
+            upY = dot(upVector, [ 0.0, 1.0, 0.0 ])
+            upZ = dot(upVector, [ 0.0, 0.0, 1.0 ])
+            if (viewZ < -0.999) and (upY > 0.999):
+                # XY -> XZ
+                viewVector = [ 0.0, 1.0, 0.0 ]
+                upVector = [ 0.0, 0.0, 1.0 ]
+            elif (viewY > 0.999) and (upZ > 0.999):
+                # XZ -> YZ
+                viewVector = [ -1.0, 0.0, 0.0 ]
+                upVector = [ 0.0, 0.0, 1.0 ]
+            else:
+                # XY
+                viewVector = [ 0.0, 0.0, -1.0 ]
+                upVector = [ 0.0, 1.0, 0.0 ]
+            eyePosition = sub(lookatPosition, mult(viewVector, viewDistance))
+            sceneviewer.setLookatParametersNonSkew(eyePosition, lookatPosition, upVector)
+
+    def _viewAllButtonClicked(self):
+        if self._ui.sceneviewer_widget.getSceneviewer() is not None:
+            self._ui.sceneviewer_widget.viewAll()
+
     def _scaffoldTypeChanged(self, index):
         scaffoldTypeName = self._ui.meshType_comboBox.itemText(index)
         self._generator_model.setScaffoldTypeByName(scaffoldTypeName)
@@ -276,7 +311,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
                     layout.addWidget(lineEdit)
         # refresh or show/hide standard scaffold options for transformation and deleting element ranges
         editingRootScaffold = self._generator_model.editingRootScaffoldPackage()
-        self._ui.done_button.setEnabled(editingRootScaffold)
+        self._ui.done_pushButton.setEnabled(editingRootScaffold)
         self._ui.subscaffold_frame.setVisible(not editingRootScaffold)
         if editingRootScaffold:
             self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
@@ -322,7 +357,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.meshType_comboBox.blockSignals(False)
         self._refreshParameterSetNames()
         self._refreshScaffoldOptions()
-        self._ui.done_button.setEnabled(True)
+        self._ui.done_pushButton.setEnabled(True)
         self._ui.subscaffold_frame.setVisible(False)
 
     def _deleteElementRangesLineEditChanged(self):
@@ -429,10 +464,3 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _annotationItemChanged(self, item):
         print(item.text(0))
         print(item.data(0, QtCore.Qt.UserRole + 1))
-
-    def _viewAll(self):
-        """
-        Ask sceneviewer to show all of scene.
-        """
-        if self._ui.sceneviewer_widget.getSceneviewer() is not None:
-            self._ui.sceneviewer_widget.viewAll()
