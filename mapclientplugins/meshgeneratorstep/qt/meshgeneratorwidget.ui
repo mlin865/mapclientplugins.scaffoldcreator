@@ -902,14 +902,21 @@
            <number>3</number>
           </property>
           <item>
-           <widget class="QPushButton" name="viewAll_button">
+           <widget class="QPushButton" name="viewAll_pushButton">
             <property name="text">
              <string>View All</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="done_button">
+           <widget class="QPushButton" name="stdViews_pushButton">
+            <property name="text">
+             <string>Std. Views</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="done_pushButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
               <horstretch>0</horstretch>

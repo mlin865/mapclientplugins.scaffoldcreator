@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mapclientplugins\meshgeneratorstep\qt\meshgeneratorwidget.ui'
 #
-# Created: Tue Jun 23 12:01:55 2020
+# Created: Thu Jul 30 11:33:00 2020
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -451,17 +451,20 @@ class Ui_MeshGeneratorWidget(object):
         self.horizontalLayout_2 = QtGui.QHBoxLayout(self.bottom_frame)
         self.horizontalLayout_2.setContentsMargins(3, 3, 3, 3)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.viewAll_button = QtGui.QPushButton(self.bottom_frame)
-        self.viewAll_button.setObjectName("viewAll_button")
-        self.horizontalLayout_2.addWidget(self.viewAll_button)
-        self.done_button = QtGui.QPushButton(self.bottom_frame)
+        self.viewAll_pushButton = QtGui.QPushButton(self.bottom_frame)
+        self.viewAll_pushButton.setObjectName("viewAll_pushButton")
+        self.horizontalLayout_2.addWidget(self.viewAll_pushButton)
+        self.stdViews_pushButton = QtGui.QPushButton(self.bottom_frame)
+        self.stdViews_pushButton.setObjectName("stdViews_pushButton")
+        self.horizontalLayout_2.addWidget(self.stdViews_pushButton)
+        self.done_pushButton = QtGui.QPushButton(self.bottom_frame)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.done_button.sizePolicy().hasHeightForWidth())
-        self.done_button.setSizePolicy(sizePolicy)
-        self.done_button.setObjectName("done_button")
-        self.horizontalLayout_2.addWidget(self.done_button)
+        sizePolicy.setHeightForWidth(self.done_pushButton.sizePolicy().hasHeightForWidth())
+        self.done_pushButton.setSizePolicy(sizePolicy)
+        self.done_pushButton.setObjectName("done_pushButton")
+        self.horizontalLayout_2.addWidget(self.done_pushButton)
         self.verticalLayout.addWidget(self.bottom_frame)
         self.dockWidget.setWidget(self.dockWidgetContents)
         self.horizontalLayout.addWidget(self.dockWidget)
@@ -517,8 +520,9 @@ class Ui_MeshGeneratorWidget(object):
         self.displayElementAxes_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Element axes", None, QtGui.QApplication.UnicodeUTF8))
         self.displayAxes_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Axes", None, QtGui.QApplication.UnicodeUTF8))
         self.displayMarkerPoints_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Marker points", None, QtGui.QApplication.UnicodeUTF8))
-        self.viewAll_button.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "View All", None, QtGui.QApplication.UnicodeUTF8))
-        self.done_button.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Done", None, QtGui.QApplication.UnicodeUTF8))
+        self.viewAll_pushButton.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "View All", None, QtGui.QApplication.UnicodeUTF8))
+        self.stdViews_pushButton.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Std. Views", None, QtGui.QApplication.UnicodeUTF8))
+        self.done_pushButton.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Done", None, QtGui.QApplication.UnicodeUTF8))
 
 from mapclientplugins.meshgeneratorstep.view.nodeeditorsceneviewerwidget import NodeEditorSceneviewerWidget
 from mapclientplugins.meshgeneratorstep import resources_rc
