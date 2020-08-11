@@ -306,8 +306,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         scaffoldTypeName = self._ui.meshType_comboBox.itemText(index)
         self._generator_model.setScaffoldTypeByName(scaffoldTypeName)
         self._annotation_model.setScaffoldTypeByName(scaffoldTypeName)
-        self._refreshScaffoldOptions()
         self._refreshParameterSetNames()
+        self._refreshScaffoldOptions()
         self._refreshAnnotationGroups()
         self._refreshCurrentAnnotationGroupSettings()
 
@@ -326,6 +326,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
         self._refreshScaffoldOptions()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
 
     def _meshTypeOptionScaffoldPackageButtonPressed(self, pushButton):
         optionName = pushButton.objectName()
@@ -333,6 +335,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
         self._refreshScaffoldOptions()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
 
     def _meshTypeOptionLineEditChanged(self, lineEdit):
         dependentChanges = self._generator_model.setScaffoldOption(lineEdit.objectName(), lineEdit.text())

@@ -414,6 +414,7 @@ class MeshGeneratorModel(object):
         self._scaffoldPackages.append(scaffoldPackage)
         self._scaffoldPackageOptionNames.append(optionName)
         self._checkCustomParameterSet()
+        self._currentAnnotationGroup = None
         self._generateMesh()
 
     def endEditScaffoldPackageOption(self):
@@ -425,6 +426,7 @@ class MeshGeneratorModel(object):
         self._scaffoldPackages.pop()
         self._scaffoldPackageOptionNames.pop()
         self._checkCustomParameterSet()
+        self._currentAnnotationGroup = None
         self._generateMesh()
 
     def getAvailableParameterSetNames(self):
