@@ -188,7 +188,7 @@ class MeshGeneratorModel(object):
         '''
         self._currentAnnotationGroup = self._scaffoldPackages[-1].createUserAnnotationGroup()
         self.redefineCurrentAnnotationGroupFromSelection()
-        return annotationGroup
+        return self._currentAnnotationGroup
 
     def deleteAnnotationGroup(self, annotationGroup):
         '''
@@ -233,7 +233,6 @@ class MeshGeneratorModel(object):
 
     def setCurrentAnnotationGroupOntId(self, newOntId):
         '''
-        Set Ontology ID of current annotation group if it is a user-defined group.
         :return: True on success, otherwise False
         '''
         if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup):
