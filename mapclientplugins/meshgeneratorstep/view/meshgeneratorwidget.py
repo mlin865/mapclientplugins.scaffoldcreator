@@ -29,6 +29,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         # self._populateAnnotationTree()
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
+        self._refreshAnnotationGroups()
         self._makeConnections()
 
     def _graphicsInitialized(self):
@@ -83,14 +84,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.subscaffoldBack_pushButton.clicked.connect(self._subscaffoldBackButtonPressed)
         self._ui.meshType_comboBox.currentIndexChanged.connect(self._scaffoldTypeChanged)
         self._ui.parameterSet_comboBox.currentIndexChanged.connect(self._parameterSetChanged)
-        self._ui.deleteElementsRanges_lineEdit.returnPressed.connect(self._deleteElementRangesLineEditChanged)
         self._ui.deleteElementsRanges_lineEdit.editingFinished.connect(self._deleteElementRangesLineEditChanged)
         self._ui.deleteElementsSelection_pushButton.clicked.connect(self._deleteElementsSelectionButtonPressed)
-        self._ui.rotation_lineEdit.returnPressed.connect(self._rotationLineEditChanged)
         self._ui.rotation_lineEdit.editingFinished.connect(self._rotationLineEditChanged)
-        self._ui.scale_lineEdit.returnPressed.connect(self._scaleLineEditChanged)
         self._ui.scale_lineEdit.editingFinished.connect(self._scaleLineEditChanged)
-        self._ui.translation_lineEdit.returnPressed.connect(self._translationLineEditChanged)
         self._ui.translation_lineEdit.editingFinished.connect(self._translationLineEditChanged)
         self._ui.displayDataPoints_checkBox.clicked.connect(self._displayDataPointsClicked)
         self._ui.displayDataContours_checkBox.clicked.connect(self._displayDataContoursClicked)
@@ -118,6 +115,11 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displaySurfacesExterior_checkBox.clicked.connect(self._displaySurfacesExteriorClicked)
         self._ui.displaySurfacesTranslucent_checkBox.clicked.connect(self._displaySurfacesTranslucentClicked)
         self._ui.displaySurfacesWireframe_checkBox.clicked.connect(self._displaySurfacesWireframeClicked)
+        self._ui.annotationGroup_comboBox.currentIndexChanged.connect(self._annotationGroupChanged)
+        self._ui.annotationGroupNew_pushButton.clicked.connect(self._annotationGroupNewButtonClicked)
+        self._ui.annotationGroupRedefine_pushButton.clicked.connect(self._annotationGroupRedefineButtonClicked)
+        self._ui.annotationGroupDelete_pushButton.clicked.connect(self._annotationGroupDeleteButtonClicked)
+        self._ui.annotationGroupOntId_lineEdit.editingFinished.connect(self._annotationGroupOntIdLineEditChanged)
 
     def keyPressEvent(self, event):
         if (event.key() == QtCore.Qt.Key_S) and (event.isAutoRepeat() == False):
@@ -155,6 +157,13 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._refreshComboBoxNames(self._ui.parameterSet_comboBox,
             self._generator_model.getAvailableParameterSetNames(),
             self._generator_model.getParameterSetName())
+
+    def _refreshAnnotationGroups(self):
+        annotationGroups = self._generator_model.getAnnotationGroups()
+        currentAnnotationGroup = self._generator_model.getCurrentAnnotationGroup()
+        self._refreshComboBoxNames(self._ui.annotationGroup_comboBox,
+            ['-'] + [ annotationGroup.getName() for annotationGroup in annotationGroups ],
+            currentAnnotationGroup.getName() if currentAnnotationGroup else '-')
 
     def _createFMAItem(self, parent, text, fma_id):
         item = QtGui.QTreeWidgetItem(parent)
@@ -232,28 +241,97 @@ class MeshGeneratorWidget(QtGui.QWidget):
         if self._ui.sceneviewer_widget.getSceneviewer() is not None:
             self._ui.sceneviewer_widget.viewAll()
 
+    def _annotationGroupChanged(self, index):
+        annotationGroupName = self._ui.annotationGroup_comboBox.itemText(index)
+        #print('_annotationGroupChanged', 'index', index, annotationGroupName)
+        self._generator_model.setCurrentAnnotationGroupByName(annotationGroupName)
+        self._refreshCurrentAnnotationGroupSettings()
+
+    def _annotationGroupNewButtonClicked(self):
+        annotationGroup = self._generator_model.createUserAnnotationGroup()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
+
+    def _annotationGroupRedefineButtonClicked(self):
+        annotationGroup = self._generator_model.getCurrentAnnotationGroup()
+        if annotationGroup:
+            reply = QtGui.QMessageBox.question(self, 'Confirm action',
+                'Redefine annotation group \'' + annotationGroup.getName() + '\' from selection?',
+                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:
+                if self._generator_model.redefineCurrentAnnotationGroupFromSelection():
+                    self._refreshCurrentAnnotationGroupSettings()
+
+    def _annotationGroupDeleteButtonClicked(self):
+        annotationGroup = self._generator_model.getCurrentAnnotationGroup()
+        if annotationGroup:
+            reply = QtGui.QMessageBox.question(self, 'Confirm action',
+                'Delete annotation group \'' + annotationGroup.getName() + '\'?',
+                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:
+                if self._generator_model.deleteAnnotationGroup(annotationGroup):
+                    self._refreshAnnotationGroups()
+                    self._refreshCurrentAnnotationGroupSettings()
+
+    def _annotationGroupNameLineEditChanged(self):
+        newName = self._ui.annotationGroup_comboBox.currentText()
+        #print('_annotationGroupNameLineEditChanged', newName)
+        if not self._generator_model.setCurrentAnnotationGroupName(newName):
+            self._refreshAnnotationGroups()
+
+    def _annotationGroupOntIdLineEditChanged(self):
+        newOntId = self._ui.annotationGroupOntId_lineEdit.text()
+        #print('_annotationGroupNameLineEditChanged', newOntId)
+        if not self._generator_model.setCurrentAnnotationGroupOntId(newOntId):
+            self._refreshCurrentAnnotationGroupSettings()
+
+    def _refreshCurrentAnnotationGroupSettings(self):
+        '''
+        Display current annotation group settings.
+        '''
+        annotationGroup = self._generator_model.getCurrentAnnotationGroup()
+        isUser = self._generator_model.isUserAnnotationGroup(annotationGroup)
+        self._ui.annotationGroup_comboBox.setEditable(isUser)
+        if isUser:
+            self._ui.annotationGroup_comboBox.lineEdit().editingFinished.connect(self._annotationGroupNameLineEditChanged)
+            self._ui.annotationGroup_comboBox.setInsertPolicy(QtGui.QComboBox.InsertAtCurrent)
+        self._ui.annotationGroupOntId_lineEdit.setText(annotationGroup.getId() if annotationGroup else '-')
+        self._ui.annotationGroupOntId_lineEdit.setEnabled(isUser)
+        self._ui.annotationGroupDimension_spinBox.setValue(annotationGroup.getDimension() if annotationGroup else 0)
+        self._ui.annotationGroupDimension_spinBox.setEnabled(False)
+        self._ui.annotationGroupRedefine_pushButton.setEnabled(isUser)
+        self._ui.annotationGroupDelete_pushButton.setEnabled(isUser)
+
     def _scaffoldTypeChanged(self, index):
         scaffoldTypeName = self._ui.meshType_comboBox.itemText(index)
         self._generator_model.setScaffoldTypeByName(scaffoldTypeName)
         self._annotation_model.setScaffoldTypeByName(scaffoldTypeName)
-        self._refreshScaffoldOptions()
         self._refreshParameterSetNames()
+        self._refreshScaffoldOptions()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
 
     def _parameterSetChanged(self, index):
         parameterSetName = self._ui.parameterSet_comboBox.itemText(index)
         self._generator_model.setParameterSetName(parameterSetName)
         self._refreshScaffoldOptions()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
 
     def _meshTypeOptionCheckBoxClicked(self, checkBox):
         dependentChanges = self._generator_model.setScaffoldOption(checkBox.objectName(), checkBox.isChecked())
         if dependentChanges:
             self._refreshScaffoldOptions()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
 
     def _subscaffoldBackButtonPressed(self):
         self._generator_model.endEditScaffoldPackageOption()
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
         self._refreshScaffoldOptions()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
 
     def _meshTypeOptionScaffoldPackageButtonPressed(self, pushButton):
         optionName = pushButton.objectName()
@@ -261,6 +339,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
         self._refreshScaffoldOptions()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
 
     def _meshTypeOptionLineEditChanged(self, lineEdit):
         dependentChanges = self._generator_model.setScaffoldOption(lineEdit.objectName(), lineEdit.text())
@@ -269,6 +349,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         else:
             finalValue = self._generator_model.getEditScaffoldOption(lineEdit.objectName())
             lineEdit.setText(str(finalValue))
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
 
     def _refreshScaffoldOptions(self):
         layout = self._ui.meshTypeOptions_frame.layout()
@@ -306,7 +388,6 @@ class MeshGeneratorWidget(QtGui.QWidget):
                     lineEdit.setObjectName(key)
                     lineEdit.setText(str(value))
                     callback = partial(self._meshTypeOptionLineEditChanged, lineEdit)
-                    #lineEdit.returnPressed.connect(callback)
                     lineEdit.editingFinished.connect(callback)
                     layout.addWidget(lineEdit)
         # refresh or show/hide standard scaffold options for transformation and deleting element ranges
@@ -357,6 +438,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.meshType_comboBox.blockSignals(False)
         self._refreshParameterSetNames()
         self._refreshScaffoldOptions()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
         self._ui.done_pushButton.setEnabled(True)
         self._ui.subscaffold_frame.setVisible(False)
 
@@ -460,7 +543,3 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _displaySurfacesWireframeClicked(self):
         self._generator_model.setDisplaySurfacesWireframe(self._ui.displaySurfacesWireframe_checkBox.isChecked())
-
-    def _annotationItemChanged(self, item):
-        print(item.text(0))
-        print(item.data(0, QtCore.Qt.UserRole + 1))

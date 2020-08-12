@@ -17,11 +17,14 @@ from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.node import Node
 from opencmiss.zinc.result import RESULT_OK, RESULT_WARNING_PART_DONE
+from opencmiss.zinc.scene import Scene
 from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_WORLD
+from scaffoldmaker.annotation.annotationgroup import AnnotationGroup, findAnnotationGroupByName
 from scaffoldmaker.scaffolds import Scaffolds
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 from scaffoldmaker.utils.exportvtk import ExportVtk
-from scaffoldmaker.utils.zinc_utils import *
+from scaffoldmaker.utils.zinc_utils import group_add_group_elements, group_get_highest_dimension, \
+    identifier_ranges_fix, identifier_ranges_from_string, identifier_ranges_to_string, mesh_group_to_identifier_ranges
 
 STRING_FLOAT_FORMAT = '{:.8g}'
 
@@ -61,7 +64,7 @@ class MeshGeneratorModel(object):
         self._materialmodule = material_module
         self._region = None
         self._fieldmodulenotifier = None
-        self._annotationGroups = None
+        self._currentAnnotationGroup = None
         self._customParametersCallback = None
         self._sceneChangeCallback = None
         self._transformationChangeCallback = None
@@ -171,6 +174,112 @@ class MeshGeneratorModel(object):
     def interactionEnd(self):
         pass
 
+    def getAnnotationGroups(self):
+        '''
+        :return: Alphabetically sorted list of annotation group names.
+        '''
+        return self._scaffoldPackages[-1].getAnnotationGroups()
+
+    def createUserAnnotationGroup(self):
+        '''
+        Create a new annotation group with automatic name, define it from
+        the current selection and set it as the current annotation group.
+        :return: New annotation group.
+        '''
+        self._currentAnnotationGroup = self._scaffoldPackages[-1].createUserAnnotationGroup()
+        self.redefineCurrentAnnotationGroupFromSelection()
+        return annotationGroup
+
+    def deleteAnnotationGroup(self, annotationGroup):
+        '''
+        Delete the annotation group. If the current annotation group is deleted, set an empty group.
+        :return: True on success, otherwise False
+        '''
+        if self._scaffoldPackages[-1].deleteAnnotationGroup(annotationGroup):
+            if annotationGroup is self._currentAnnotationGroup:
+                self.setCurrentAnnotationGroup(None)
+            return True
+        print('Cannot delete annotation group')
+        return False
+
+    def redefineCurrentAnnotationGroupFromSelection(self):
+        if not self._currentAnnotationGroup:
+            return False
+        scene = self._region.getScene()
+        group = self._currentAnnotationGroup.getGroup()
+        group.clear()
+        selectionGroup = get_scene_selection_group(scene)
+        if selectionGroup:
+            fieldmodule = self._region.getFieldmodule()
+            with ChangeManager(fieldmodule):
+                group.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
+                highest_dimension = group_get_highest_dimension(selectionGroup)
+                group_add_group_elements(group, selectionGroup, highest_dimension)
+                # redefine selection to match group, removes orphaned lower dimensional elements.
+                selectionGroup.clear()
+                group_add_group_elements(selectionGroup, group, highest_dimension)
+        return True
+
+    def setCurrentAnnotationGroupName(self, newName):
+        '''
+        Rename current annotation group, but ensure it is a user group and name is not already in use.
+        :return: True on success, otherwise False
+        '''
+        if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup) and \
+            (not findAnnotationGroupByName(self.getAnnotationGroups(), newName)):
+            self._currentAnnotationGroup.setName(newName)
+            return True
+        return False
+
+    def setCurrentAnnotationGroupOntId(self, newOntId):
+        '''
+        Set Ontology ID of current annotation group if it is a user-defined group.
+        :return: True on success, otherwise False
+        '''
+        if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup):
+            self._currentAnnotationGroup.setId(newOntId)
+            return True
+        return False
+
+    def isUserAnnotationGroup(self, annotationGroup):
+        '''
+        :return: True if annotationGroup is user-created and editable.
+        '''
+        return self._scaffoldPackages[-1].isUserAnnotationGroup(annotationGroup)
+
+    def getCurrentAnnotationGroup(self):
+        '''
+        Get the current annotation group stored for possible editing.
+        '''
+        return self._currentAnnotationGroup
+
+    def setCurrentAnnotationGroup(self, annotationGroup : AnnotationGroup):
+        '''
+        Set annotationGroup as current and replace the selection with its objects.
+        :param annotationGroup: Group to select, or None to clear selection.
+        '''
+        #print('setCurrentAnnotationGroup', annotationGroup.getName() if annotationGroup else None)
+        self._currentAnnotationGroup = annotationGroup
+        fieldmodule = self._region.getFieldmodule()
+        with ChangeManager(fieldmodule):
+            scene = self._region.getScene()
+            selectionGroup = get_scene_selection_group(scene)
+            if annotationGroup:
+                if selectionGroup:
+                    selectionGroup.clear()
+                else:
+                    selectionGroup = create_scene_selection_group(scene)
+                group = annotationGroup.getGroup()
+                group_add_group_elements(selectionGroup, group, group_get_highest_dimension(group))
+            else:
+                if selectionGroup:
+                    selectionGroup.clear()
+                    scene.setSelectionField(Field())
+
+    def setCurrentAnnotationGroupByName(self, annotationGroupName):
+        annotationGroup = findAnnotationGroupByName(self.getAnnotationGroups(), annotationGroupName)
+        self.setCurrentAnnotationGroup(annotationGroup)
+
     def _setScaffoldType(self, scaffoldType):
         if len(self._scaffoldPackages) == 1:
             # root scaffoldPackage
@@ -181,6 +290,7 @@ class MeshGeneratorModel(object):
         self._customScaffoldPackage = None
         self._unsavedNodeEdits = False
         self._parameterSetName = self.getEditScaffoldParameterSetNames()[0]
+        self._generateMesh()
 
     def _getScaffoldTypeByName(self, name):
         for scaffoldType in self._allScaffoldTypes:
@@ -196,7 +306,6 @@ class MeshGeneratorModel(object):
                'Invalid scaffold type for parent scaffold'
             if scaffoldType != self.getEditScaffoldType():
                 self._setScaffoldType(scaffoldType)
-                self._generateMesh()
 
     def getAvailableScaffoldTypeNames(self):
         scaffoldTypeNames = []
@@ -379,52 +488,10 @@ class MeshGeneratorModel(object):
         """
         :return: True if ranges changed, otherwise False
         """
-        elementRanges = []
-        for elementRangeText in elementRangesTextIn.split(','):
-            try:
-                elementRangeEnds = elementRangeText.split('-')
-                # remove trailing non-numeric characters, workaround for select 's' key ending up there
-                for e in range(len(elementRangeEnds)):
-                    size = len(elementRangeEnds[e])
-                    for i in range(size):
-                        if elementRangeEnds[e][size - i - 1] in string.digits:
-                            break;
-                    if i > 0:
-                        elementRangeEnds[e] = elementRangeEnds[e][:(size - i)]
-                elementRangeStart = int(elementRangeEnds[0])
-                if len(elementRangeEnds) > 1:
-                    elementRangeStop = int(elementRangeEnds[1])
-                else:
-                    elementRangeStop = elementRangeStart
-                if elementRangeStop >= elementRangeStart:
-                    elementRanges.append([elementRangeStart, elementRangeStop])
-                else:
-                    elementRanges.append([elementRangeStop, elementRangeStart])
-            except:
-                pass
-        elementRanges.sort()
-        # merge adjacent or overlapping ranges:
-        i = 1
-        while i < len(elementRanges):
-            if elementRanges[i][0] <= (elementRanges[i - 1][1] + 1):
-                if elementRanges[i][1] > elementRanges[i - 1][1]:
-                    elementRanges[i - 1][1] = elementRanges[i][1]
-                elementRanges.pop(i)
-            else:
-                i += 1
-        elementRangesText = ''
-        first = True
-        for elementRange in elementRanges:
-            if first:
-                first = False
-            else:
-                elementRangesText += ','
-            elementRangesText += str(elementRange[0])
-            if elementRange[1] != elementRange[0]:
-                elementRangesText += '-' + str(elementRange[1])
+        elementRanges = identifier_ranges_from_string(elementRangesTextIn)
         changed = self._deleteElementRanges != elementRanges
         self._deleteElementRanges = elementRanges
-        self._settings['deleteElementRanges'] = elementRangesText
+        self._settings['deleteElementRanges'] = identifier_ranges_to_string(elementRanges)
         return changed
 
     def setDeleteElementsRangesText(self, elementRangesTextIn):
@@ -441,26 +508,14 @@ class MeshGeneratorModel(object):
         selectionGroup = scene.getSelectionField().castGroup()
         meshGroup = selectionGroup.getFieldElementGroup(mesh).getMeshGroup()
         if meshGroup.isValid() and (meshGroup.getSize() > 0):
-            # convert selection to element ranges text
-            # following assumes iteration is in identifier order!
-            elementIter = meshGroup.createElementiterator()
-            element = elementIter.next()
-            lastIdentifier = startIdentifier = element.getIdentifier()
-            elementRangesText = str(startIdentifier)
-            element = elementIter.next()
-            while element.isValid():
-                identifier = element.getIdentifier()
-                if identifier > (lastIdentifier + 1):
-                    if lastIdentifier > startIdentifier:
-                        elementRangesText += "-" + str(lastIdentifier)
-                    startIdentifier = identifier
-                    elementRangesText += "," + str(startIdentifier)
-                lastIdentifier = identifier
-                element = elementIter.next()
-            if lastIdentifier > startIdentifier:
-                elementRangesText += "-" + str(lastIdentifier)
-            # append to current delete element ranges
-            self.setDeleteElementsRangesText(self._settings['deleteElementRanges'] + "," + elementRangesText)
+            # merge selection with current delete element ranges
+            elementRanges = self._deleteElementRanges + mesh_group_to_identifier_ranges(meshGroup)
+            identifier_ranges_fix(elementRanges)
+            self._deleteElementRanges = elementRanges
+            oldText = self._settings['deleteElementRanges']
+            self._settings['deleteElementRanges'] = identifier_ranges_to_string(elementRanges)
+            if self._settings['deleteElementRanges'] != oldText:
+                self._generateMesh()
 
     def getRotationText(self):
         return ', '.join(STRING_FLOAT_FORMAT.format(value) for value in self._scaffoldPackages[-1].getRotation())
@@ -766,6 +821,7 @@ class MeshGeneratorModel(object):
             del destroyGroup
 
     def _generateMesh(self):
+        currentAnnotationGroupName = self._currentAnnotationGroup.getName() if self._currentAnnotationGroup else None
         scaffoldPackage = self._scaffoldPackages[-1]
         if self._region:
             self._parent_region.removeChild(self._region)
@@ -774,19 +830,21 @@ class MeshGeneratorModel(object):
         fm = self._region.getFieldmodule()
         with ChangeManager(fm):
             # logger = self._context.getLogger()
-            annotationGroups = scaffoldPackage.generate(self._region, applyTransformation=False)
+            scaffoldPackage.generate(self._region, applyTransformation=False)
+            annotationGroups = scaffoldPackage.getAnnotationGroups()
             # loggerMessageCount = logger.getNumberOfMessages()
             # if loggerMessageCount > 0:
             #     for i in range(1, loggerMessageCount + 1):
             #         print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
             #     logger.removeAllMessages()
             self._deleteElementsInRanges()
+            # in future the following should not be needed:
             fm.defineAllFaces()
-            if annotationGroups is not None:
+            if annotationGroups:
                 for annotationGroup in annotationGroups:
                     annotationGroup.addSubelements()
-            self._annotationGroups = annotationGroups
-        self._createGraphics()
+            self.setCurrentAnnotationGroupByName(currentAnnotationGroupName)
+            self._createGraphics()
         if self._sceneChangeCallback:
             self._sceneChangeCallback()
 
@@ -1053,7 +1111,7 @@ class MeshGeneratorModel(object):
         Finish generating mesh by applying transformation.
         '''
         assert 1 == len(self._scaffoldPackages)
-        self._scaffoldPackages[0].applyTransformation(self._region)
+        self._scaffoldPackages[0].applyTransformation()
 
     def writeModel(self, file_name):
         self._region.writeFile(file_name)
@@ -1061,7 +1119,7 @@ class MeshGeneratorModel(object):
     def exportToVtk(self, filenameStem):
         base_name = os.path.basename(filenameStem)
         description = 'Scaffold ' + self._scaffoldPackages[0].getScaffoldType().getName() + ': ' + base_name
-        exportvtk = ExportVtk(self._region, description, self._annotationGroups)
+        exportvtk = ExportVtk(self._region, description, self.getAnnotationGroups())
         exportvtk.writeFile(filenameStem + '.vtk')
 
 def exnodeStringFromGroup(region, groupName, fieldNames):
@@ -1078,3 +1136,45 @@ def exnodeStringFromGroup(region, groupName, fieldNames):
     region.write(sir)
     result, exString = srm.getBuffer()
     return exString
+
+def get_scene_selection_group(scene : Scene, subelementHandlingMode = FieldGroup.SUBELEMENT_HANDLING_MODE_FULL):
+    '''
+    Get existing scene selection group of standard name.
+    :param subelementHandlingMode: Mode controlling how faces, lines and nodes are
+    automatically added or removed with higher dimensional elements.
+    :return: Existing selection group, or None.
+    '''
+    selection_group = scene.getSelectionField().castGroup()
+    if selection_group.isValid():
+        selection_group.setSubelementHandlingMode(subelementHandlingMode)
+        return selection_group
+    return None
+
+selection_group_name = 'cmiss_selection'
+
+def create_scene_selection_group(scene : Scene, subelementHandlingMode = FieldGroup.SUBELEMENT_HANDLING_MODE_FULL):
+    '''
+    Create empty, unmanaged scene selection group of standard name.
+    Should have already called get_selection_group with None returned.
+    Can discover orphaned group of that name.
+    New group has subelement handling on.
+    :param scene: Zinc Scene to create selection for.
+    :param subelementHandlingMode: Mode controlling how faces, lines and nodes are
+    automatically added or removed with higher dimensional elements.
+    :return: Selection group for scene.
+    '''
+    region = scene.getRegion()
+    fieldmodule = region.getFieldmodule()
+    with ChangeManager(fieldmodule):
+        selection_group = fieldmodule.findFieldByName(selection_group_name)
+        if selection_group.isValid():
+            selection_group = selectionGroup.castGroup()
+            if selection_group.isValid():
+                selection_group.clear()
+                selection_group.setManaged(False)
+        if not selection_group.isValid():
+            selection_group = fieldmodule.createFieldGroup()
+            selection_group.setName(selection_group_name)
+        selection_group.setSubelementHandlingMode(subelementHandlingMode)
+    scene.setSelectionField(selection_group)
+    return selection_group
