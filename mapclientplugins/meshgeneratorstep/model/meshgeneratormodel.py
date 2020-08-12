@@ -186,8 +186,7 @@ class MeshGeneratorModel(object):
         the current selection and set it as the current annotation group.
         :return: New annotation group.
         '''
-        annotationGroup = self._scaffoldPackages[-1].createUserAnnotationGroup()
-        self._currentAnnotationGroup = annotationGroup
+        self._currentAnnotationGroup = self._scaffoldPackages[-1].createUserAnnotationGroup()
         self.redefineCurrentAnnotationGroupFromSelection()
         return annotationGroup
 
@@ -226,7 +225,6 @@ class MeshGeneratorModel(object):
         Rename current annotation group, but ensure it is a user group and name is not already in use.
         :return: True on success, otherwise False
         '''
-        #print('setCurrentAnnotationGroupName', self._currentAnnotationGroup, self.isUserAnnotationGroup(self._currentAnnotationGroup))
         if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup) and \
             (not findAnnotationGroupByName(self.getAnnotationGroups(), newName)):
             self._currentAnnotationGroup.setName(newName)
@@ -235,7 +233,7 @@ class MeshGeneratorModel(object):
 
     def setCurrentAnnotationGroupOntId(self, newOntId):
         '''
-        Set Ontology ID of current annotation group if it is a uer group.
+        Set Ontology ID of current annotation group if it is a user-defined group.
         :return: True on success, otherwise False
         '''
         if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup):
@@ -292,7 +290,6 @@ class MeshGeneratorModel(object):
         self._customScaffoldPackage = None
         self._unsavedNodeEdits = False
         self._parameterSetName = self.getEditScaffoldParameterSetNames()[0]
-        self._currentAnnotationGroup = None
         self._generateMesh()
 
     def _getScaffoldTypeByName(self, name):
@@ -414,7 +411,6 @@ class MeshGeneratorModel(object):
         self._scaffoldPackages.append(scaffoldPackage)
         self._scaffoldPackageOptionNames.append(optionName)
         self._checkCustomParameterSet()
-        self._currentAnnotationGroup = None
         self._generateMesh()
 
     def endEditScaffoldPackageOption(self):
@@ -426,7 +422,6 @@ class MeshGeneratorModel(object):
         self._scaffoldPackages.pop()
         self._scaffoldPackageOptionNames.pop()
         self._checkCustomParameterSet()
-        self._currentAnnotationGroup = None
         self._generateMesh()
 
     def getAvailableParameterSetNames(self):
@@ -826,6 +821,7 @@ class MeshGeneratorModel(object):
             del destroyGroup
 
     def _generateMesh(self):
+        currentAnnotationGroupName = self._currentAnnotationGroup.getName() if self._currentAnnotationGroup else None
         scaffoldPackage = self._scaffoldPackages[-1]
         if self._region:
             self._parent_region.removeChild(self._region)
@@ -847,7 +843,8 @@ class MeshGeneratorModel(object):
             if annotationGroups:
                 for annotationGroup in annotationGroups:
                     annotationGroup.addSubelements()
-        self._createGraphics()
+            self.setCurrentAnnotationGroupByName(currentAnnotationGroupName)
+            self._createGraphics()
         if self._sceneChangeCallback:
             self._sceneChangeCallback()
 

@@ -315,11 +315,15 @@ class MeshGeneratorWidget(QtGui.QWidget):
         parameterSetName = self._ui.parameterSet_comboBox.itemText(index)
         self._generator_model.setParameterSetName(parameterSetName)
         self._refreshScaffoldOptions()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
 
     def _meshTypeOptionCheckBoxClicked(self, checkBox):
         dependentChanges = self._generator_model.setScaffoldOption(checkBox.objectName(), checkBox.isChecked())
         if dependentChanges:
             self._refreshScaffoldOptions()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
 
     def _subscaffoldBackButtonPressed(self):
         self._generator_model.endEditScaffoldPackageOption()
@@ -345,6 +349,8 @@ class MeshGeneratorWidget(QtGui.QWidget):
         else:
             finalValue = self._generator_model.getEditScaffoldOption(lineEdit.objectName())
             lineEdit.setText(str(finalValue))
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
 
     def _refreshScaffoldOptions(self):
         layout = self._ui.meshTypeOptions_frame.layout()
