@@ -843,7 +843,9 @@ class MeshGeneratorModel(object):
                 for annotationGroup in annotationGroups:
                     annotationGroup.addSubelements()
             self.setCurrentAnnotationGroupByName(currentAnnotationGroupName)
-            self._createGraphics()
+        # Zinc won't create cmiss_number and xi fields until endChange called
+        # Hence must create graphics outside of ChangeManager lifetime:
+        self._createGraphics()
         if self._sceneChangeCallback:
             self._sceneChangeCallback()
 
