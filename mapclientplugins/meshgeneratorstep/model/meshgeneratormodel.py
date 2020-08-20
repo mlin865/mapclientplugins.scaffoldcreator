@@ -835,11 +835,6 @@ class MeshGeneratorModel(object):
             #         print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
             #     logger.removeAllMessages()
             self._deleteElementsInRanges()
-            # in future the following should not be needed:
-            fm.defineAllFaces()
-            if annotationGroups:
-                for annotationGroup in annotationGroups:
-                    annotationGroup.addSubelements()
             self.setCurrentAnnotationGroupByName(currentAnnotationGroupName)
         # Zinc won't create cmiss_number and xi fields until endChange called
         # Hence must create graphics outside of ChangeManager lifetime:
