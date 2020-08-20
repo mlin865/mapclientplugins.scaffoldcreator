@@ -275,13 +275,11 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _annotationGroupNameLineEditChanged(self):
         newName = self._ui.annotationGroup_comboBox.currentText()
-        #print('_annotationGroupNameLineEditChanged', newName)
         if not self._generator_model.setCurrentAnnotationGroupName(newName):
             self._refreshAnnotationGroups()
 
     def _annotationGroupOntIdLineEditChanged(self):
         newOntId = self._ui.annotationGroupOntId_lineEdit.text()
-        #print('_annotationGroupNameLineEditChanged', newOntId)
         if not self._generator_model.setCurrentAnnotationGroupOntId(newOntId):
             self._refreshCurrentAnnotationGroupSettings()
 

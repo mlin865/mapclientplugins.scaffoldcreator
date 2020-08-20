@@ -227,8 +227,7 @@ class MeshGeneratorModel(object):
         '''
         if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup) and \
             (not findAnnotationGroupByName(self.getAnnotationGroups(), newName)):
-            self._currentAnnotationGroup.setName(newName)
-            return True
+            return self._currentAnnotationGroup.setName(newName)
         return False
 
     def setCurrentAnnotationGroupOntId(self, newOntId):
@@ -236,8 +235,7 @@ class MeshGeneratorModel(object):
         :return: True on success, otherwise False
         '''
         if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup):
-            self._currentAnnotationGroup.setId(newOntId)
-            return True
+            return self._currentAnnotationGroup.setId(newOntId)
         return False
 
     def isUserAnnotationGroup(self, annotationGroup):
