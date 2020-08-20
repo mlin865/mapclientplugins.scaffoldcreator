@@ -227,8 +227,7 @@ class MeshGeneratorModel(object):
         '''
         if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup) and \
             (not findAnnotationGroupByName(self.getAnnotationGroups(), newName)):
-            self._currentAnnotationGroup.setName(newName)
-            return True
+            return self._currentAnnotationGroup.setName(newName)
         return False
 
     def setCurrentAnnotationGroupOntId(self, newOntId):
@@ -236,8 +235,7 @@ class MeshGeneratorModel(object):
         :return: True on success, otherwise False
         '''
         if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup):
-            self._currentAnnotationGroup.setId(newOntId)
-            return True
+            return self._currentAnnotationGroup.setId(newOntId)
         return False
 
     def isUserAnnotationGroup(self, annotationGroup):
@@ -837,11 +835,6 @@ class MeshGeneratorModel(object):
             #         print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
             #     logger.removeAllMessages()
             self._deleteElementsInRanges()
-            # in future the following should not be needed:
-            fm.defineAllFaces()
-            if annotationGroups:
-                for annotationGroup in annotationGroups:
-                    annotationGroup.addSubelements()
             self.setCurrentAnnotationGroupByName(currentAnnotationGroupName)
         # Zinc won't create cmiss_number and xi fields until endChange called
         # Hence must create graphics outside of ChangeManager lifetime:
