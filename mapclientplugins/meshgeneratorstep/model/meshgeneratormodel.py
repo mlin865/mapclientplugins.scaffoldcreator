@@ -1162,7 +1162,7 @@ def create_scene_selection_group(scene : Scene, subelementHandlingMode = FieldGr
     with ChangeManager(fieldmodule):
         selection_group = fieldmodule.findFieldByName(selection_group_name)
         if selection_group.isValid():
-            selection_group = selectionGroup.castGroup()
+            selection_group = selection_group.castGroup()
             if selection_group.isValid():
                 selection_group.clear()
                 selection_group.setManaged(False)
