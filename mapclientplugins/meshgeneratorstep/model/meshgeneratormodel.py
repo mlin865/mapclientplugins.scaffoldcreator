@@ -101,19 +101,20 @@ class MeshGeneratorModel(object):
         self._customScaffoldPackage = None  # temporary storage of custom mesh options and edits, to switch back to
         self._unsavedNodeEdits = False  # Whether nodes have been edited since ScaffoldPackage meshEdits last updated
 
-    def _updateMeshEdits(self):
+    def _updateScaffoldEdits(self):
         '''
-        Ensure mesh edits are up-to-date.
+        Ensure mesh and annotation group edits are up-to-date.
         '''
         if self._unsavedNodeEdits:
             self._scaffoldPackages[-1].setMeshEdits(exnodeStringFromGroup(self._region, 'meshEdits', [ 'coordinates' ]))
             self._unsavedNodeEdits = False
+        self._scaffoldPackages[-1].updateUserAnnotationGroups()
 
     def _saveCustomScaffoldPackage(self):
         '''
         Copy current ScaffoldPackage to custom ScaffoldPackage to be able to switch back to later.
         '''
-        self._updateMeshEdits()
+        self._updateScaffoldEdits()
         scaffoldPackage = self._scaffoldPackages[-1]
         self._customScaffoldPackage = ScaffoldPackage(scaffoldPackage.getScaffoldType(), scaffoldPackage.toDict())
 
@@ -283,7 +284,7 @@ class MeshGeneratorModel(object):
             self._scaffoldPackages[0].__init__(scaffoldType)
         else:
             # nested ScaffoldPackage
-            self._scaffoldPackages[-1].deepcopy(self.getParentScaffoldType().getOptionScaffoldPackage(self._scaffoldPackageOptionNames[-1], scaffoldType))
+            self._scaffoldPackages[-1] = self.getParentScaffoldType().getOptionScaffoldPackage(self._scaffoldPackageOptionNames[-1], scaffoldType)
         self._customScaffoldPackage = None
         self._unsavedNodeEdits = False
         self._parameterSetName = self.getEditScaffoldParameterSetNames()[0]
@@ -415,7 +416,7 @@ class MeshGeneratorModel(object):
         End editing of the last ScaffoldPackage, moving up to parent or top scaffold type.
         '''
         assert len(self._scaffoldPackages) > 1, 'Attempt to end editing root ScaffoldPackage'
-        self._updateMeshEdits()
+        self._updateScaffoldEdits()
         self._scaffoldPackages.pop()
         self._scaffoldPackageOptionNames.pop()
         self._checkCustomParameterSet()
@@ -437,10 +438,9 @@ class MeshGeneratorModel(object):
         if self._parameterSetName == 'Custom':
             self._saveCustomScaffoldPackage()
         if parameterSetName == 'Custom':
-            sourceScaffoldPackage = self._customScaffoldPackage
+            self._scaffoldPackages[-1] = copy.deepcopy(self._customScaffoldPackage)
         else:
-            sourceScaffoldPackage = self.getDefaultScaffoldPackageForParameterSetName(parameterSetName)
-        self._scaffoldPackages[-1].deepcopy(sourceScaffoldPackage)
+            self._scaffoldPackages[-1] = self.getDefaultScaffoldPackageForParameterSetName(parameterSetName)
         self._parameterSetName = parameterSetName
         self._unsavedNodeEdits = False
         self._generateMesh()
@@ -1098,7 +1098,7 @@ class MeshGeneratorModel(object):
 
 
     def updateSettingsBeforeWrite(self):
-        self._updateMeshEdits()
+        self._updateScaffoldEdits()
 
     def done(self):
         '''
