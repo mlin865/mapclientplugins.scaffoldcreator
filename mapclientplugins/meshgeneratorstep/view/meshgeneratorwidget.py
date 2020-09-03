@@ -345,8 +345,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         if dependentChanges:
             self._refreshScaffoldOptions()
         else:
-            finalValue = self._generator_model.getEditScaffoldOption(lineEdit.objectName())
-            lineEdit.setText(str(finalValue))
+            lineEdit.setText(self._generator_model.getEditScaffoldOptionStr(lineEdit.objectName()))
         self._refreshAnnotationGroups()
         self._refreshCurrentAnnotationGroupSettings()
 
@@ -384,7 +383,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
                 else:
                     lineEdit = QtGui.QLineEdit(self._ui.meshTypeOptions_frame)
                     lineEdit.setObjectName(key)
-                    lineEdit.setText(str(value))
+                    lineEdit.setText(self._generator_model.getEditScaffoldOptionStr(key))
                     callback = partial(self._meshTypeOptionLineEditChanged, lineEdit)
                     lineEdit.editingFinished.connect(callback)
                     layout.addWidget(lineEdit)

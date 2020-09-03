@@ -29,6 +29,40 @@ from scaffoldmaker.utils.zinc_utils import group_add_group_elements, group_get_h
 STRING_FLOAT_FORMAT = '{:.8g}'
 
 
+def parseListFloat(text : str, delimiter=','):
+    """
+    Parse a delimited list of floats from text.
+    :param text: string containing floats separated by delimiter.
+    :param delimiter: character delimiter between component values.
+    :return: list of floats parsed from text.
+    """
+    values = []
+    for s in text.split(delimiter):
+        try:
+            values.append(float(s))
+        except:
+            print('Invalid float')
+            values.append(0.0)
+    return values
+
+
+def parseListInt(text : str, delimiter=','):
+    """
+    Parse a delimited list of integers from text.
+    :param text: string containing integers separated by delimiter.
+    :param delimiter: character delimiter between component values.
+    :return: list of integers parsed from text.
+    """
+    values = []
+    for s in text.split(delimiter):
+        try:
+            values.append(int(s))
+        except:
+            print('Invalid integer')
+            values.append(0)
+    return values
+
+
 def parseVector3(vectorText : str, delimiter, defaultValue):
     """
     Parse a 3 component vector from a string.
@@ -365,6 +399,15 @@ class MeshGeneratorModel(object):
     def getEditScaffoldOption(self, key):
         return self.getEditScaffoldSettings()[key]
 
+    def getEditScaffoldOptionStr(self, key):
+        value = self.getEditScaffoldSettings()[key]
+        if type(value) is list:
+            if type(value[0]) is int:
+                return ', '.join(str(v) for v in value)
+            elif type(value[0]) is float:
+                return ', '.join(STRING_FLOAT_FORMAT.format(v) for v in value)
+        return str(value)
+
     def getParentScaffoldType(self):
         '''
         :return: Parent scaffold type or None if root scaffold.
@@ -445,8 +488,10 @@ class MeshGeneratorModel(object):
         self._unsavedNodeEdits = False
         self._generateMesh()
 
+
     def setScaffoldOption(self, key, value):
         '''
+        :param value: New option value as a string.
         :return: True if other dependent options have changed, otherwise False.
         On True return client is expected to refresh all option values in UI.
         '''
@@ -464,8 +509,16 @@ class MeshGeneratorModel(object):
                 newValue = float(value)
             elif type(oldValue) is str:
                 newValue = str(value)
+            elif type(oldValue) is list:
+                # requires at least one value to work:
+                if type(oldValue[0]) is float:
+                    newValue = parseListFloat(value)
+                elif type(oldValue[0]) is int:
+                    newValue = parseListInt(value)
+                else:
+                    assert False, 'Unimplemented type in list for scaffold option'
             else:
-                newValue = value
+                assert False, 'Unimplemented type in scaffold option'
         except:
             print('setScaffoldOption: Invalid value')
             return
