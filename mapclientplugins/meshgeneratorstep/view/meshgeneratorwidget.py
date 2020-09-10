@@ -340,6 +340,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._refreshAnnotationGroups()
         self._refreshCurrentAnnotationGroupSettings()
 
+    def _meshTypeInteractiveFunctionButtonPressed(self, pushButton):
+        functionName = pushButton.objectName()
+        self._generator_model.performInteractiveFunction(functionName)
+
     def _meshTypeOptionLineEditChanged(self, lineEdit):
         dependentChanges = self._generator_model.setScaffoldOption(lineEdit.objectName(), lineEdit.text())
         if dependentChanges:
@@ -388,6 +392,14 @@ class MeshGeneratorWidget(QtGui.QWidget):
                     callback = partial(self._meshTypeOptionLineEditChanged, lineEdit)
                     lineEdit.editingFinished.connect(callback)
                     layout.addWidget(lineEdit)
+        interativeFunctions = self._generator_model.getInteractiveFunctions()
+        for interactiveFunction in interativeFunctions:
+            pushButton = QtGui.QPushButton()
+            pushButton.setObjectName(interactiveFunction[0])
+            pushButton.setText(interactiveFunction[0])
+            callback = partial(self._meshTypeInteractiveFunctionButtonPressed, pushButton)
+            pushButton.clicked.connect(callback)
+            layout.addWidget(pushButton)
         # refresh or show/hide standard scaffold options for transformation and deleting element ranges
         editingRootScaffold = self._generator_model.editingRootScaffoldPackage()
         self._ui.done_pushButton.setEnabled(editingRootScaffold)

@@ -422,6 +422,27 @@ class MeshGeneratorModel(object):
         self._checkCustomParameterSet()
         self._generateMesh()
 
+    def getInteractiveFunctions(self):
+        '''
+        Return list of interactive functions for current scaffold type.
+        :return: list(tuples), (name : str, callable(region, options)).
+        '''
+        return self._scaffoldPackages[-1].getScaffoldType().getInteractiveFunctions()
+
+    def performInteractiveFunction(self, functionName):
+        '''
+        Perform interactive function of supplied name for current scaffold.
+        '''
+        interactiveFunctions = self.getInteractiveFunctions()
+        for interactiveFunction in interactiveFunctions:
+            if interactiveFunction[0] == functionName:
+                interactiveFunction[1](self._region, self._scaffoldPackages[-1].getScaffoldSettings())
+                # assume function has made mesh edits, so now a custom parameter set
+                self._unsavedNodeEdits = True
+                self._updateScaffoldEdits()
+                self._checkCustomParameterSet()
+                return
+
     def getAvailableParameterSetNames(self):
         parameterSetNames = self.getEditScaffoldParameterSetNames()
         if self._customScaffoldPackage:
