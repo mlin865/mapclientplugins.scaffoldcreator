@@ -149,8 +149,7 @@ class MeshGeneratorModel(object):
         Copy current ScaffoldPackage to custom ScaffoldPackage to be able to switch back to later.
         '''
         self._updateScaffoldEdits()
-        scaffoldPackage = self._scaffoldPackages[-1]
-        self._customScaffoldPackage = ScaffoldPackage(scaffoldPackage.getScaffoldType(), scaffoldPackage.toDict())
+        self._customScaffoldPackage = copy.deepcopy(self._scaffoldPackages[-1])
 
     def _useCustomScaffoldPackage(self):
         if (not self._customScaffoldPackage) or (self._parameterSetName != 'Custom'):
@@ -315,7 +314,7 @@ class MeshGeneratorModel(object):
     def _setScaffoldType(self, scaffoldType):
         if len(self._scaffoldPackages) == 1:
             # root scaffoldPackage
-            self._scaffoldPackages[0].__init__(scaffoldType)
+            self._settings['scaffoldPackage'] = self._scaffoldPackages[0] = ScaffoldPackage(scaffoldType)
         else:
             # nested ScaffoldPackage
             self._scaffoldPackages[-1] = self.getParentScaffoldType().getOptionScaffoldPackage(self._scaffoldPackageOptionNames[-1], scaffoldType)
@@ -460,8 +459,11 @@ class MeshGeneratorModel(object):
         '''
         assert len(self._scaffoldPackages) > 1, 'Attempt to end editing root ScaffoldPackage'
         self._updateScaffoldEdits()
-        self._scaffoldPackages.pop()
-        self._scaffoldPackageOptionNames.pop()
+        # store the edited scaffold in the settings option
+        optionName = self._scaffoldPackageOptionNames.pop()
+        scaffoldPackage = self._scaffoldPackages.pop()
+        settings = self.getEditScaffoldSettings()
+        settings[optionName] = copy.deepcopy(scaffoldPackage)
         self._checkCustomParameterSet()
         self._generateMesh()
 
@@ -505,6 +507,8 @@ class MeshGeneratorModel(object):
             self._scaffoldPackages[-1] = copy.deepcopy(self._customScaffoldPackage)
         else:
             self._scaffoldPackages[-1] = self.getDefaultScaffoldPackageForParameterSetName(parameterSetName)
+        if len(self._scaffoldPackages) == 1:
+            self._settings['scaffoldPackage'] = self._scaffoldPackages[0]
         self._parameterSetName = parameterSetName
         self._unsavedNodeEdits = False
         self._generateMesh()
