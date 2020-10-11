@@ -477,16 +477,18 @@ class MeshGeneratorModel(object):
     def performInteractiveFunction(self, functionName):
         '''
         Perform interactive function of supplied name for current scaffold.
+        :return: True if scaffold settings changed.
         '''
         interactiveFunctions = self.getInteractiveFunctions()
         for interactiveFunction in interactiveFunctions:
             if interactiveFunction[0] == functionName:
-                interactiveFunction[1](self._region, self._scaffoldPackages[-1].getScaffoldSettings())
-                # assume function has made mesh edits, so now a custom parameter set
-                self._unsavedNodeEdits = True
+                settingsChanged, nodesChanged = interactiveFunction[1](self._region, self._scaffoldPackages[-1].getScaffoldSettings(), 'meshEdits')
+                if nodesChanged:
+                    self._unsavedNodeEdits = True
                 self._updateScaffoldEdits()
                 self._checkCustomParameterSet()
-                return
+                return settingsChanged
+        return False
 
     def getAvailableParameterSetNames(self):
         parameterSetNames = self.getEditScaffoldParameterSetNames()
@@ -1101,7 +1103,7 @@ class MeshGeneratorModel(object):
 
             # names in same order as self._nodeDerivativeLabels 'D1', 'D2', 'D3', 'D12', 'D13', 'D23', 'D123' and nodeDerivativeFields
             nodeDerivativeMaterialNames = [ 'gold', 'silver', 'green', 'cyan', 'magenta', 'yellow', 'blue' ]
-            derivativeScales = [ 1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.25 ]
+            derivativeScales = [ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ]
             for i in range(len(self._nodeDerivativeLabels)):
                 nodeDerivativeLabel = self._nodeDerivativeLabels[i]
                 maxVersions = len(nodeDerivativeFields[i])

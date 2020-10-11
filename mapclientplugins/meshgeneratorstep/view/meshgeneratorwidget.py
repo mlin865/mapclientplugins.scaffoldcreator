@@ -342,7 +342,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _meshTypeInteractiveFunctionButtonPressed(self, pushButton):
         functionName = pushButton.objectName()
-        self._generator_model.performInteractiveFunction(functionName)
+        optionsChanged = self._generator_model.performInteractiveFunction(functionName)
+        if optionsChanged:
+            self._refreshScaffoldOptions()
 
     def _meshTypeOptionLineEditChanged(self, lineEdit):
         dependentChanges = self._generator_model.setScaffoldOption(lineEdit.objectName(), lineEdit.text())
