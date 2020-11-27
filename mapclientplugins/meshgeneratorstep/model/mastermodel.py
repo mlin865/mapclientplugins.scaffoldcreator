@@ -25,7 +25,7 @@ class MasterModel(object):
         self._frameIndexUpdate = None
         self._initialise()
         self._region = self._context.createRegion()
-        self._generator_model = MeshGeneratorModel(self._region, self._materialmodule)
+        self._generator_model = MeshGeneratorModel(self._context, self._region, self._materialmodule)
         self._segmentation_data_model = SegmentationDataModel(self._region, self._materialmodule)
         self._annotation_model = MeshAnnotationModel()
 
@@ -98,6 +98,7 @@ class MasterModel(object):
         self._saveSettings()
         self._generator_model.done()
         self._generator_model.writeModel(self.getOutputModelFilename())
+        self._generator_model.writeAnnotations(self._filenameStem)
         self._generator_model.exportToVtk(self._filenameStem)
 
     def _getSettings(self):

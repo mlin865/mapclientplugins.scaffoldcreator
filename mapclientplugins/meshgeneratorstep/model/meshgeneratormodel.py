@@ -91,9 +91,10 @@ class MeshGeneratorModel(object):
     Framework for generating meshes of a number of types, with mesh type specific options
     """
 
-    def __init__(self, region, material_module):
+    def __init__(self, context, region, material_module):
         super(MeshGeneratorModel, self).__init__()
         self._region_name = "generated_mesh"
+        self._context = context
         self._parent_region = region
         self._materialmodule = material_module
         self._region = None
@@ -1189,6 +1190,18 @@ class MeshGeneratorModel(object):
 
     def writeModel(self, file_name):
         self._region.writeFile(file_name)
+
+    def writeAnnotations(self, filenameStem):
+        annotationFilename = filenameStem + '_annotations.csv'
+        with open(annotationFilename, 'w') as outstream:
+            outstream.write('Term ID,Group name\n')
+            annotationGroups = self.getAnnotationGroups()
+            termNameIds = []
+            for annotationGroup in annotationGroups:
+                termNameIds.append((annotationGroup.getName(), annotationGroup.getId()))
+            termNameIds.sort()
+            for termNameId in termNameIds:
+                outstream.write(termNameId[1] + ',' + termNameId[0] + '\n')
 
     def exportToVtk(self, filenameStem):
         base_name = os.path.basename(filenameStem)
