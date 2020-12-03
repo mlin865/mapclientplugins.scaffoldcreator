@@ -595,6 +595,27 @@ class MeshGeneratorModel(object):
             if self._settings['deleteElementRanges'] != oldText:
                 self._generateMesh()
 
+    def applyTransformation(self):
+        '''
+        Apply transformation to nodes and clear it, recording all modified nodes.
+        '''
+        scaffoldPackage = self._scaffoldPackages[-1]
+        fieldmodule = self._region.getFieldmodule()
+        with ChangeManager(fieldmodule):
+            if scaffoldPackage.applyTransformation():
+                scaffoldPackage.setRotation([0.0, 0.0, 0.0])
+                scaffoldPackage.setScale([1.0, 1.0, 1.0])
+                scaffoldPackage.setTranslation([0.0, 0.0, 0.0])
+                # mark all nodes as edited:
+                coordinates = fieldmodule.findFieldByName('coordinates')
+                if coordinates.isValid():
+                    nodes = fieldmodule.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+                    meshEditsNodeset = self.getOrCreateMeshEditsNodesetGroup(nodes)
+                    meshEditsNodeset.addNodesConditional(fieldmodule.createFieldIsDefined(coordinates))
+                self._updateScaffoldEdits()
+                self._checkCustomParameterSet()
+                self._setGraphicsTransformation()
+
     def getRotationText(self):
         return ', '.join(STRING_FLOAT_FORMAT.format(value) for value in self._scaffoldPackages[-1].getRotation())
 

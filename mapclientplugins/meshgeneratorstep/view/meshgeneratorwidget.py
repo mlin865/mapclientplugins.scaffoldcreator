@@ -89,6 +89,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.rotation_lineEdit.editingFinished.connect(self._rotationLineEditChanged)
         self._ui.scale_lineEdit.editingFinished.connect(self._scaleLineEditChanged)
         self._ui.translation_lineEdit.editingFinished.connect(self._translationLineEditChanged)
+        self._ui.applyTransformation_pushButton.clicked.connect(self._applyTransformationButtonPressed)
         self._ui.displayDataPoints_checkBox.clicked.connect(self._displayDataPointsClicked)
         self._ui.displayDataContours_checkBox.clicked.connect(self._displayDataContoursClicked)
         self._ui.displayDataRadius_checkBox.clicked.connect(self._displayDataRadiusClicked)
@@ -473,6 +474,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _translationLineEditChanged(self):
         self._generator_model.setTranslationText(self._ui.translation_lineEdit.text())
         self._ui.translation_lineEdit.setText(self._generator_model.getTranslationText())
+
+    def _applyTransformationButtonPressed(self):
+        self._generator_model.applyTransformation()
+        self._transformationChanged()
 
     def _displayDataPointsClicked(self):
         self._segmentation_data_model.setDisplayDataPoints(self._ui.displayDataPoints_checkBox.isChecked())
