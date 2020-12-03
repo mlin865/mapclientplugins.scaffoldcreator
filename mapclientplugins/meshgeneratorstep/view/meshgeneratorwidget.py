@@ -26,7 +26,6 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._model.registerSceneChangeCallback(self._sceneChanged)
         self._generator_model.registerTransformationChangeCallback(self._transformationChanged)
         self._doneCallback = None
-        # self._populateAnnotationTree()
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
         self._refreshAnnotationGroups()
@@ -166,42 +165,11 @@ class MeshGeneratorWidget(QtGui.QWidget):
             ['-'] + [ annotationGroup.getName() for annotationGroup in annotationGroups ],
             currentAnnotationGroup.getName() if currentAnnotationGroup else '-')
 
-    def _createFMAItem(self, parent, text, fma_id):
-        item = QtGui.QTreeWidgetItem(parent)
-        item.setText(0, text)
-        item.setData(0, QtCore.Qt.UserRole + 1, fma_id)
-        item.setCheckState(0, QtCore.Qt.Unchecked)
-        item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsTristate)
-
-        return item
-
-    def _populateAnnotationTree(self):
-        tree = self._ui.treeWidgetAnnotation
-        tree.clear()
-        rsh_item = self._createFMAItem(tree, 'right side of heart', 'FMA_7165')
-        self._createFMAItem(rsh_item, 'ventricle', 'FMA_7098')
-        self._createFMAItem(rsh_item, 'atrium', 'FMA_7096')
-        self._createFMAItem(rsh_item, 'auricle', 'FMA_7218')
-        lsh_item = self._createFMAItem(tree, 'left side of heart', 'FMA_7166')
-        self._createFMAItem(lsh_item, 'ventricle', 'FMA_7101')
-        self._createFMAItem(lsh_item, 'atrium', 'FMA_7097')
-        self._createFMAItem(lsh_item, 'auricle', 'FMA_7219')
-        apex_item = self._createFMAItem(tree, 'apex of heart', 'FMA_7164')
-        vortex_item = self._createFMAItem(tree, 'vortex of heart', 'FMA_84628')
-
-        self._ui.treeWidgetAnnotation.addTopLevelItem(rsh_item)
-        self._ui.treeWidgetAnnotation.addTopLevelItem(lsh_item)
-        self._ui.treeWidgetAnnotation.addTopLevelItem(apex_item)
-        self._ui.treeWidgetAnnotation.addTopLevelItem(vortex_item)
-
     def getModel(self):
         return self._model
 
     def registerDoneExecution(self, doneCallback):
         self._doneCallback = doneCallback
-
-    def _updateUi(self):
-        pass
 
     def _doneButtonClicked(self):
         self._ui.dockWidget.setFloating(False)
