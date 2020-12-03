@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mapclientplugins\meshgeneratorstep\qt\meshgeneratorwidget.ui'
 #
-# Created: Fri Dec  4 10:25:58 2020
+# Created: Fri Dec  4 11:23:49 2020
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -274,6 +274,7 @@ class Ui_MeshGeneratorWidget(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.displayNodeDerivatives_checkBox.sizePolicy().hasHeightForWidth())
         self.displayNodeDerivatives_checkBox.setSizePolicy(sizePolicy)
+        self.displayNodeDerivatives_checkBox.setTristate(True)
         self.displayNodeDerivatives_checkBox.setObjectName("displayNodeDerivatives_checkBox")
         self.horizontalLayout_6.addWidget(self.displayNodeDerivatives_checkBox)
         spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)

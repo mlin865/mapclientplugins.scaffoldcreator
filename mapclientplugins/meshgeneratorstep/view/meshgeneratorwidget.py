@@ -437,7 +437,11 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayNodeDerivativeLabelsD13_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D13'))
         self._ui.displayNodeDerivativeLabelsD23_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D23'))
         self._ui.displayNodeDerivativeLabelsD123_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D123'))
-        self._ui.displayNodeDerivatives_checkBox.setChecked(self._generator_model.isDisplayNodeDerivatives())
+        displayNodeDerivatives = self._generator_model.getDisplayNodeDerivatives()
+        self._ui.displayNodeDerivatives_checkBox.setCheckState(
+            QtCore.Qt.Unchecked if not displayNodeDerivatives else
+            QtCore.Qt.PartiallyChecked if (displayNodeDerivatives == 1) else
+            QtCore.Qt.Checked)
         self._ui.displayNodeNumbers_checkBox.setChecked(self._generator_model.isDisplayNodeNumbers())
         self._ui.displayNodePoints_checkBox.setChecked(self._generator_model.isDisplayNodePoints())
         self._ui.displaySurfaces_checkBox.setChecked(self._generator_model.isDisplaySurfaces())
@@ -517,7 +521,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._generator_model.setDisplayModelRadius(self._ui.displayModelRadius_checkBox.isChecked())
 
     def _displayNodeDerivativesClicked(self):
-        self._generator_model.setDisplayNodeDerivatives(self._ui.displayNodeDerivatives_checkBox.isChecked())
+        checkState = self._ui.displayNodeDerivatives_checkBox.checkState()
+        triState = 0 if (checkState == QtCore.Qt.Unchecked) else 1 if (checkState == QtCore.Qt.PartiallyChecked) else 2
+        self._generator_model.setDisplayNodeDerivatives(triState)
 
     def _displayNodeDerivativeLabelsD1Clicked(self):
         self._generator_model.setDisplayNodeDerivativeLabels('D1', self._ui.displayNodeDerivativeLabelsD1_checkBox.isChecked())

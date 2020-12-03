@@ -119,7 +119,7 @@ class MeshGeneratorModel(object):
             'deleteElementRanges' : '',
             'displayNodePoints' : False,
             'displayNodeNumbers' : False,
-            'displayNodeDerivatives' : False,
+            'displayNodeDerivatives' : 0,  # tri-state: 0=show none, 1=show selected, 2=show all
             'displayNodeDerivativeLabels' : self._nodeDerivativeLabels[0:3],
             'displayLines' : True,
             'displayLinesExterior' : False,
@@ -697,26 +697,37 @@ class MeshGeneratorModel(object):
             self._settings['displayModelRadius'] = show
             self._createGraphics()
 
-    def isDisplayNodeDerivatives(self):
-        return self._getVisibility('displayNodeDerivatives')
+    def getDisplayNodeDerivatives(self):
+        '''
+        :return: tri-state: 0=show none, 1=show selected, 2=show all
+        '''
+        return self._settings['displayNodeDerivatives']
 
-    def _setAllGraphicsVisibility(self, graphicsName, show):
+    def _setAllGraphicsVisibility(self, graphicsName, show, selectMode=None):
         '''
         Ensure visibility of all graphics with graphicsName is set to boolean show.
+        :param selectMode: Optional selectMode to set at the same time.
         '''
         scene = self._region.getScene()
         graphics = scene.findGraphicsByName(graphicsName)
         while graphics.isValid():
             graphics.setVisibilityFlag(show)
+            if selectMode:
+                graphics.setSelectMode(selectMode)
             while True:
                 graphics = scene.getNextGraphics(graphics)
                 if (not graphics.isValid()) or (graphics.getName() == graphicsName):
                     break
 
-    def setDisplayNodeDerivatives(self, show):
-        self._settings['displayNodeDerivatives'] = show
+    def setDisplayNodeDerivatives(self, triState):
+        '''
+        :param triState: From Qt::CheckState: 0=show none, 1=show selected, 2=show all
+        '''
+        self._settings['displayNodeDerivatives'] = triState
         for nodeDerivativeLabel in self._nodeDerivativeLabels:
-            self._setAllGraphicsVisibility('displayNodeDerivatives' + nodeDerivativeLabel, show and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel))
+            self._setAllGraphicsVisibility('displayNodeDerivatives' + nodeDerivativeLabel,
+                                           bool(triState) and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel),
+                                           selectMode = Graphics.SELECT_MODE_DRAW_SELECTED if (triState == 1) else Graphics.SELECT_MODE_ON)
 
     def isDisplayNodeDerivativeLabels(self, nodeDerivativeLabel):
         '''
@@ -740,7 +751,7 @@ class MeshGeneratorModel(object):
         else:
             if shown:
                 self._settings['displayNodeDerivativeLabels'].remove(nodeDerivativeLabel)
-        self._setAllGraphicsVisibility('displayNodeDerivatives' + nodeDerivativeLabel, show and self.isDisplayNodeDerivatives())
+        self._setAllGraphicsVisibility('displayNodeDerivatives' + nodeDerivativeLabel, show and bool(self.getDisplayNodeDerivatives()))
 
     def isDisplayNodeNumbers(self):
         return self._getVisibility('displayNodeNumbers')
@@ -847,6 +858,11 @@ class MeshGeneratorModel(object):
             del settings['meshTypeOptions']
             scaffoldPackage = ScaffoldPackage(scaffoldType, { 'scaffoldSettings' : scaffoldSettings })
             settings['scaffoldPackage'] = scaffoldPackage
+        # migrate boolean options which are now tri-state
+        for name in ['displayNodeDerivatives']:
+            value = settings[name]
+            if type(value)==bool:
+                settings[name] = 2 if value else 0
         self._settings.update(settings)
         self._parseDeleteElementsRangesText(self._settings['deleteElementRanges'])
         # migrate old scale text, now held in scaffoldPackage
@@ -1145,7 +1161,9 @@ class MeshGeneratorModel(object):
                     nodeDerivatives.setMaterial(material)
                     nodeDerivatives.setSelectedMaterial(material)
                     nodeDerivatives.setName('displayNodeDerivatives' + nodeDerivativeLabel)
-                    nodeDerivatives.setVisibilityFlag(self.isDisplayNodeDerivatives() and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel))
+                    displayNodeDerivatives = self.getDisplayNodeDerivatives()  # tri-state: 0=show none, 1=show selected, 2=show all
+                    nodeDerivatives.setSelectMode(Graphics.SELECT_MODE_DRAW_SELECTED if (displayNodeDerivatives == 1) else Graphics.SELECT_MODE_ON)
+                    nodeDerivatives.setVisibilityFlag(bool(displayNodeDerivatives) and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel))
 
             elementNumbers = scene.createGraphicsPoints()
             elementNumbers.setFieldDomainType(Field.DOMAIN_TYPE_MESH_HIGHEST_DIMENSION)
