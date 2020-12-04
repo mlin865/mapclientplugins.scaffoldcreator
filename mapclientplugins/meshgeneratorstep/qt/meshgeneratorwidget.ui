@@ -338,6 +338,13 @@
                     <widget class="QLineEdit" name="translation_lineEdit"/>
                    </item>
                    <item>
+                    <widget class="QPushButton" name="applyTransformation_pushButton">
+                     <property name="text">
+                      <string>Apply transformation</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
                     <spacer name="verticalSpacer">
                      <property name="orientation">
                       <enum>Qt::Vertical</enum>
@@ -526,6 +533,9 @@
                 </property>
                 <property name="text">
                  <string>Node derivatives</string>
+                </property>
+                <property name="tristate">
+                 <bool>true</bool>
                 </property>
                </widget>
               </item>

@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mapclientplugins\meshgeneratorstep\qt\meshgeneratorwidget.ui'
 #
-# Created: Sat Aug  8 12:51:25 2020
+# Created: Fri Dec  4 11:23:49 2020
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -186,6 +186,9 @@ class Ui_MeshGeneratorWidget(object):
         self.translation_lineEdit = QtGui.QLineEdit(self.modifyOptions_frame)
         self.translation_lineEdit.setObjectName("translation_lineEdit")
         self.verticalLayout_6.addWidget(self.translation_lineEdit)
+        self.applyTransformation_pushButton = QtGui.QPushButton(self.modifyOptions_frame)
+        self.applyTransformation_pushButton.setObjectName("applyTransformation_pushButton")
+        self.verticalLayout_6.addWidget(self.applyTransformation_pushButton)
         spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout_6.addItem(spacerItem)
         self.verticalLayout_8.addWidget(self.modifyOptions_frame)
@@ -271,6 +274,7 @@ class Ui_MeshGeneratorWidget(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.displayNodeDerivatives_checkBox.sizePolicy().hasHeightForWidth())
         self.displayNodeDerivatives_checkBox.setSizePolicy(sizePolicy)
+        self.displayNodeDerivatives_checkBox.setTristate(True)
         self.displayNodeDerivatives_checkBox.setObjectName("displayNodeDerivatives_checkBox")
         self.horizontalLayout_6.addWidget(self.displayNodeDerivatives_checkBox)
         spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
@@ -545,6 +549,7 @@ class Ui_MeshGeneratorWidget(object):
         self.rotation_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Rotation in degrees about z, y, x", None, QtGui.QApplication.UnicodeUTF8))
         self.scale_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Scale x, y, z:", None, QtGui.QApplication.UnicodeUTF8))
         self.translation_label.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Translation x, y, z", None, QtGui.QApplication.UnicodeUTF8))
+        self.applyTransformation_pushButton.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Apply transformation", None, QtGui.QApplication.UnicodeUTF8))
         self.displayDataPoints_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Data points", None, QtGui.QApplication.UnicodeUTF8))
         self.displayDataContours_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Data contours", None, QtGui.QApplication.UnicodeUTF8))
         self.displayDataRadius_checkBox.setText(QtGui.QApplication.translate("MeshGeneratorWidget", "Data radius", None, QtGui.QApplication.UnicodeUTF8))

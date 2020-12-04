@@ -26,7 +26,6 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._model.registerSceneChangeCallback(self._sceneChanged)
         self._generator_model.registerTransformationChangeCallback(self._transformationChanged)
         self._doneCallback = None
-        # self._populateAnnotationTree()
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
         self._refreshAnnotationGroups()
@@ -89,6 +88,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.rotation_lineEdit.editingFinished.connect(self._rotationLineEditChanged)
         self._ui.scale_lineEdit.editingFinished.connect(self._scaleLineEditChanged)
         self._ui.translation_lineEdit.editingFinished.connect(self._translationLineEditChanged)
+        self._ui.applyTransformation_pushButton.clicked.connect(self._applyTransformationButtonPressed)
         self._ui.displayDataPoints_checkBox.clicked.connect(self._displayDataPointsClicked)
         self._ui.displayDataContours_checkBox.clicked.connect(self._displayDataContoursClicked)
         self._ui.displayDataRadius_checkBox.clicked.connect(self._displayDataRadiusClicked)
@@ -165,42 +165,11 @@ class MeshGeneratorWidget(QtGui.QWidget):
             ['-'] + [ annotationGroup.getName() for annotationGroup in annotationGroups ],
             currentAnnotationGroup.getName() if currentAnnotationGroup else '-')
 
-    def _createFMAItem(self, parent, text, fma_id):
-        item = QtGui.QTreeWidgetItem(parent)
-        item.setText(0, text)
-        item.setData(0, QtCore.Qt.UserRole + 1, fma_id)
-        item.setCheckState(0, QtCore.Qt.Unchecked)
-        item.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled | QtCore.Qt.ItemIsTristate)
-
-        return item
-
-    def _populateAnnotationTree(self):
-        tree = self._ui.treeWidgetAnnotation
-        tree.clear()
-        rsh_item = self._createFMAItem(tree, 'right side of heart', 'FMA_7165')
-        self._createFMAItem(rsh_item, 'ventricle', 'FMA_7098')
-        self._createFMAItem(rsh_item, 'atrium', 'FMA_7096')
-        self._createFMAItem(rsh_item, 'auricle', 'FMA_7218')
-        lsh_item = self._createFMAItem(tree, 'left side of heart', 'FMA_7166')
-        self._createFMAItem(lsh_item, 'ventricle', 'FMA_7101')
-        self._createFMAItem(lsh_item, 'atrium', 'FMA_7097')
-        self._createFMAItem(lsh_item, 'auricle', 'FMA_7219')
-        apex_item = self._createFMAItem(tree, 'apex of heart', 'FMA_7164')
-        vortex_item = self._createFMAItem(tree, 'vortex of heart', 'FMA_84628')
-
-        self._ui.treeWidgetAnnotation.addTopLevelItem(rsh_item)
-        self._ui.treeWidgetAnnotation.addTopLevelItem(lsh_item)
-        self._ui.treeWidgetAnnotation.addTopLevelItem(apex_item)
-        self._ui.treeWidgetAnnotation.addTopLevelItem(vortex_item)
-
     def getModel(self):
         return self._model
 
     def registerDoneExecution(self, doneCallback):
         self._doneCallback = doneCallback
-
-    def _updateUi(self):
-        pass
 
     def _doneButtonClicked(self):
         self._ui.dockWidget.setFloating(False)
@@ -436,7 +405,11 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.displayNodeDerivativeLabelsD13_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D13'))
         self._ui.displayNodeDerivativeLabelsD23_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D23'))
         self._ui.displayNodeDerivativeLabelsD123_checkBox.setChecked(self._generator_model.isDisplayNodeDerivativeLabels('D123'))
-        self._ui.displayNodeDerivatives_checkBox.setChecked(self._generator_model.isDisplayNodeDerivatives())
+        displayNodeDerivatives = self._generator_model.getDisplayNodeDerivatives()
+        self._ui.displayNodeDerivatives_checkBox.setCheckState(
+            QtCore.Qt.Unchecked if not displayNodeDerivatives else
+            QtCore.Qt.PartiallyChecked if (displayNodeDerivatives == 1) else
+            QtCore.Qt.Checked)
         self._ui.displayNodeNumbers_checkBox.setChecked(self._generator_model.isDisplayNodeNumbers())
         self._ui.displayNodePoints_checkBox.setChecked(self._generator_model.isDisplayNodePoints())
         self._ui.displaySurfaces_checkBox.setChecked(self._generator_model.isDisplaySurfaces())
@@ -473,6 +446,10 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _translationLineEditChanged(self):
         self._generator_model.setTranslationText(self._ui.translation_lineEdit.text())
         self._ui.translation_lineEdit.setText(self._generator_model.getTranslationText())
+
+    def _applyTransformationButtonPressed(self):
+        self._generator_model.applyTransformation()
+        self._transformationChanged()
 
     def _displayDataPointsClicked(self):
         self._segmentation_data_model.setDisplayDataPoints(self._ui.displayDataPoints_checkBox.isChecked())
@@ -512,7 +489,9 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._generator_model.setDisplayModelRadius(self._ui.displayModelRadius_checkBox.isChecked())
 
     def _displayNodeDerivativesClicked(self):
-        self._generator_model.setDisplayNodeDerivatives(self._ui.displayNodeDerivatives_checkBox.isChecked())
+        checkState = self._ui.displayNodeDerivatives_checkBox.checkState()
+        triState = 0 if (checkState == QtCore.Qt.Unchecked) else 1 if (checkState == QtCore.Qt.PartiallyChecked) else 2
+        self._generator_model.setDisplayNodeDerivatives(triState)
 
     def _displayNodeDerivativeLabelsD1Clicked(self):
         self._generator_model.setDisplayNodeDerivativeLabels('D1', self._ui.displayNodeDerivativeLabelsD1_checkBox.isChecked())
