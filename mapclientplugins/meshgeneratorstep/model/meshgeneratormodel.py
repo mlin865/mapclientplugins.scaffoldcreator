@@ -475,15 +475,28 @@ class MeshGeneratorModel(object):
         '''
         return self._scaffoldPackages[-1].getScaffoldType().getInteractiveFunctions()
 
-    def performInteractiveFunction(self, functionName):
+    def getInteractiveFunctionOptions(self, functionName):
+        '''
+        :param functionName: Name of the interactive function.
+        :return: Options dict for function with supplied name.
+        '''
+        interactiveFunctions = self.getInteractiveFunctions()
+        for interactiveFunction in interactiveFunctions:
+            if interactiveFunction[0] == functionName:
+                return interactiveFunction[1]
+        return {}
+
+    def performInteractiveFunction(self, functionName, functionOptions):
         '''
         Perform interactive function of supplied name for current scaffold.
+        :param functionName: Name of the interactive function.
+        :param option: User-modified options to pass to the function.
         :return: True if scaffold settings changed.
         '''
         interactiveFunctions = self.getInteractiveFunctions()
         for interactiveFunction in interactiveFunctions:
             if interactiveFunction[0] == functionName:
-                settingsChanged, nodesChanged = interactiveFunction[1](self._region, self._scaffoldPackages[-1].getScaffoldSettings(), 'meshEdits')
+                settingsChanged, nodesChanged = interactiveFunction[2](self._region, self._scaffoldPackages[-1].getScaffoldSettings(), functionOptions, 'meshEdits')
                 if nodesChanged:
                     self._unsavedNodeEdits = True
                 self._updateScaffoldEdits()

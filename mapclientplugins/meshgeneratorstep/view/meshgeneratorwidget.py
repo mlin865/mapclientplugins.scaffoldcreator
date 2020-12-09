@@ -6,6 +6,7 @@ from PySide import QtGui, QtCore
 from functools import partial
 
 from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
+from mapclientplugins.meshgeneratorstep.view.functionoptionsdialog import FunctionOptionsDialog
 from opencmiss.utils.maths.vectorops import dot, magnitude, mult, normalize, sub
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 
@@ -311,9 +312,12 @@ class MeshGeneratorWidget(QtGui.QWidget):
 
     def _meshTypeInteractiveFunctionButtonPressed(self, pushButton):
         functionName = pushButton.objectName()
-        optionsChanged = self._generator_model.performInteractiveFunction(functionName)
-        if optionsChanged:
-            self._refreshScaffoldOptions()
+        functionOptions = self._generator_model.getInteractiveFunctionOptions(functionName)
+        functionOptionsDialog = FunctionOptionsDialog(functionName, functionOptions, self)
+        if functionOptionsDialog.exec():
+            optionsChanged = self._generator_model.performInteractiveFunction(functionName, functionOptions)
+            if optionsChanged:
+                self._refreshScaffoldOptions()
 
     def _meshTypeOptionLineEditChanged(self, lineEdit):
         dependentChanges = self._generator_model.setScaffoldOption(lineEdit.objectName(), lineEdit.text())
