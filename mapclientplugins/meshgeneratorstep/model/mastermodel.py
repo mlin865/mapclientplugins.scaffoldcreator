@@ -1,7 +1,7 @@
 import os
 import json
 
-from PySide import QtCore
+from PySide2 import QtCore
 
 from opencmiss.zinc.context import Context
 from opencmiss.zinc.material import Material

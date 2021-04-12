@@ -1,7 +1,7 @@
-from PySide import QtGui, QtCore
+from PySide2 import QtCore, QtWidgets
 from functools import partial
 
-class FunctionOptionsDialog(QtGui.QDialog):
+class FunctionOptionsDialog(QtWidgets.QDialog):
     '''
     Modal dialog allowing a dict of options to be edited, then OK/Cancel to be returned.
     '''
@@ -17,23 +17,23 @@ class FunctionOptionsDialog(QtGui.QDialog):
 
     def _setup(self):
         self.setWindowTitle(self._functionName)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.setSizePolicy(sizePolicy)
         self.setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-        self._dialogLayout = QtGui.QVBoxLayout(self)
+        self._dialogLayout = QtWidgets.QVBoxLayout(self)
         self._dialogLayout.setObjectName("dialogLayout")
         self.setModal(True)
         self._addOptions()
         self.setWindowFlags(self.windowFlags() ^ QtCore.Qt.WindowContextHelpButtonHint)  # hide window context help (?)
         self.resize(300, 150)
-        self._buttonBox = QtGui.QDialogButtonBox(self)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        self._buttonBox = QtWidgets.QDialogButtonBox(self)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self._buttonBox.sizePolicy().hasHeightForWidth())
         self._buttonBox.setSizePolicy(sizePolicy)
         self._buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self._buttonBox.setStandardButtons(QtGui.QDialogButtonBox.Cancel|QtGui.QDialogButtonBox.Ok)
+        self._buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
         self._buttonBox.setObjectName("buttonBox")
         self._dialogLayout.addWidget(self._buttonBox)
         self._buttonBox.accepted.connect(self.accept)
@@ -71,7 +71,7 @@ class FunctionOptionsDialog(QtGui.QDialog):
         for key in self._functionOptions:
             value = self._functionOptions[key]
             if type(value) is bool:
-                checkBox = QtGui.QCheckBox(self)
+                checkBox = QtWidgets.QCheckBox(self)
                 checkBox.setObjectName(key)
                 checkBox.setText(key)
                 checkBox.setChecked(value)
@@ -79,14 +79,14 @@ class FunctionOptionsDialog(QtGui.QDialog):
                 checkBox.clicked.connect(callback)
                 self._dialogLayout.addWidget(checkBox)
             else:
-                label = QtGui.QLabel(self)
+                label = QtWidgets.QLabel(self)
                 label.setObjectName(key)
                 label.setText(key)
                 self._dialogLayout.addWidget(label)
                 if type(value) is dict:
                     # radio buttons
                     for subKey, subValue in value.items():
-                        radioButton = QtGui.QRadioButton(self)
+                        radioButton = QtWidgets.QRadioButton(self)
                         radioButton.setObjectName(key)
                         radioButton.setText(subKey)
                         radioButton.setChecked(subValue)
@@ -94,11 +94,11 @@ class FunctionOptionsDialog(QtGui.QDialog):
                         radioButton.clicked.connect(callback)
                         self._dialogLayout.addWidget(radioButton)
                 else:
-                    lineEdit = QtGui.QLineEdit(self)
+                    lineEdit = QtWidgets.QLineEdit(self)
                     lineEdit.setObjectName(key)
                     lineEdit.setText(value)
                     callback = partial(self._optionLineEditChanged, lineEdit)
                     lineEdit.editingFinished.connect(callback)
                     self._dialogLayout.addWidget(lineEdit)
-        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self._dialogLayout.addItem(spacerItem)

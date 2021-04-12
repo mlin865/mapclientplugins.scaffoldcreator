@@ -2,7 +2,7 @@
 Dialog/UI for interacting with meshgeneratormodel.
 """
 
-from PySide import QtGui, QtCore
+from PySide2 import QtCore, QtWidgets
 from functools import partial
 
 from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
@@ -11,7 +11,7 @@ from opencmiss.utils.maths.vectorops import dot, magnitude, mult, normalize, sub
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 
 
-class MeshGeneratorWidget(QtGui.QWidget):
+class MeshGeneratorWidget(QtWidgets.QWidget):
 
     def __init__(self, model, parent=None):
         super(MeshGeneratorWidget, self).__init__(parent)
@@ -225,20 +225,20 @@ class MeshGeneratorWidget(QtGui.QWidget):
     def _annotationGroupRedefineButtonClicked(self):
         annotationGroup = self._generator_model.getCurrentAnnotationGroup()
         if annotationGroup:
-            reply = QtGui.QMessageBox.question(self, 'Confirm action',
+            reply = QtWidgets.QMessageBox.question(self, 'Confirm action',
                 'Redefine annotation group \'' + annotationGroup.getName() + '\' from selection?',
-                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-            if reply == QtGui.QMessageBox.Yes:
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+            if reply == QtWidgets.QMessageBox.Yes:
                 if self._generator_model.redefineCurrentAnnotationGroupFromSelection():
                     self._refreshCurrentAnnotationGroupSettings()
 
     def _annotationGroupDeleteButtonClicked(self):
         annotationGroup = self._generator_model.getCurrentAnnotationGroup()
         if annotationGroup:
-            reply = QtGui.QMessageBox.question(self, 'Confirm action',
+            reply = QtWidgets.QMessageBox.question(self, 'Confirm action',
                 'Delete annotation group \'' + annotationGroup.getName() + '\'?',
-                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-            if reply == QtGui.QMessageBox.Yes:
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+            if reply == QtWidgets.QMessageBox.Yes:
                 if self._generator_model.deleteAnnotationGroup(annotationGroup):
                     self._refreshAnnotationGroups()
                     self._refreshCurrentAnnotationGroupSettings()
@@ -262,7 +262,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
         self._ui.annotationGroup_comboBox.setEditable(isUser)
         if isUser:
             self._ui.annotationGroup_comboBox.lineEdit().editingFinished.connect(self._annotationGroupNameLineEditChanged)
-            self._ui.annotationGroup_comboBox.setInsertPolicy(QtGui.QComboBox.InsertAtCurrent)
+            self._ui.annotationGroup_comboBox.setInsertPolicy(QtWidgets.QComboBox.InsertAtCurrent)
         self._ui.annotationGroupOntId_lineEdit.setText(annotationGroup.getId() if annotationGroup else '-')
         self._ui.annotationGroupOntId_lineEdit.setEnabled(isUser)
         self._ui.annotationGroupDimension_spinBox.setValue(annotationGroup.getDimension() if annotationGroup else 0)
@@ -340,7 +340,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
             value = self._generator_model.getEditScaffoldOption(key)
             # print('key ', key, ' value ', value)
             if type(value) is bool:
-                checkBox = QtGui.QCheckBox(self._ui.meshTypeOptions_frame)
+                checkBox = QtWidgets.QCheckBox(self._ui.meshTypeOptions_frame)
                 checkBox.setObjectName(key)
                 checkBox.setText(key)
                 checkBox.setChecked(value)
@@ -348,19 +348,19 @@ class MeshGeneratorWidget(QtGui.QWidget):
                 checkBox.clicked.connect(callback)
                 layout.addWidget(checkBox)
             else:
-                label = QtGui.QLabel(self._ui.meshTypeOptions_frame)
+                label = QtWidgets.QLabel(self._ui.meshTypeOptions_frame)
                 label.setObjectName(key)
                 label.setText(key)
                 layout.addWidget(label)
                 if isinstance(value, ScaffoldPackage):
-                    pushButton = QtGui.QPushButton()
+                    pushButton = QtWidgets.QPushButton()
                     pushButton.setObjectName(key)
                     pushButton.setText('Edit >>')
                     callback = partial(self._meshTypeOptionScaffoldPackageButtonPressed, pushButton)
                     pushButton.clicked.connect(callback)
                     layout.addWidget(pushButton)
                 else:
-                    lineEdit = QtGui.QLineEdit(self._ui.meshTypeOptions_frame)
+                    lineEdit = QtWidgets.QLineEdit(self._ui.meshTypeOptions_frame)
                     lineEdit.setObjectName(key)
                     lineEdit.setText(self._generator_model.getEditScaffoldOptionStr(key))
                     callback = partial(self._meshTypeOptionLineEditChanged, lineEdit)
@@ -368,7 +368,7 @@ class MeshGeneratorWidget(QtGui.QWidget):
                     layout.addWidget(lineEdit)
         interativeFunctions = self._generator_model.getInteractiveFunctions()
         for interactiveFunction in interativeFunctions:
-            pushButton = QtGui.QPushButton()
+            pushButton = QtWidgets.QPushButton()
             pushButton.setObjectName(interactiveFunction[0])
             pushButton.setText(interactiveFunction[0])
             callback = partial(self._meshTypeInteractiveFunctionButtonPressed, pushButton)
