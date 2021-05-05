@@ -90,7 +90,7 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         then set:
             self._configured = True
         """
-        dlg = ConfigureDialog(QtWidgets.QApplication.activeWindow().currentWidget())
+        dlg = ConfigureDialog(QtWidgets.QApplication.activeWindow().current_widget())
         dlg.identifierOccursCount = self._identifierOccursCount
         dlg.setConfig(self._config)
         dlg.validate()
