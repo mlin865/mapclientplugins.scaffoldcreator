@@ -15,6 +15,7 @@ def readfile(filename, split=False):
             return stream.read().split("\n")
         return stream.read()
 
+
 readme = readfile("README.rst", split=True)[3:]  # skip title
 # For requirements not hosted on PyPi place listings
 # into the 'requirements.txt' file.
@@ -22,7 +23,7 @@ requires = [
     # minimal requirements listing
     "scaffoldmaker @ https://api.github.com/repos/ABI-Software/scaffoldmaker/tarball/master",
     "opencmiss.utils >= 0.3",
-    "opencmiss.zinc >= 3.3",  # not yet on pypi - need manual install from opencmiss.org
+    "opencmiss.zinc > 3.2",  # not yet on pypi - need manual install from opencmiss.org
     "opencmiss.zincwidgets >= 2.0"
 ]
 source_license = readfile("LICENSE")
@@ -37,7 +38,8 @@ class InstallCommand(install):
         subprocess.call(['pip', 'install', '-r', os.path.join(SETUP_DIR, 'requirements.txt')])
 
 
-setup(name='mapclientplugins.meshgeneratorstep',
+setup(
+    name='mapclientplugins.meshgeneratorstep',
     version='0.1.1',
     description='',
     long_description='\n'.join(readme) + source_license,
