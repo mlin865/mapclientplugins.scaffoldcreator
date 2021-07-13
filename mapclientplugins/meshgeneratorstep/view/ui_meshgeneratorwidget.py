@@ -13,6 +13,7 @@ from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
 from mapclientplugins.meshgeneratorstep.view.nodeeditorsceneviewerwidget import NodeEditorSceneviewerWidget
+from opencmiss.zincwidgets.fieldchooserwidget import FieldChooserWidget
 
 from mapclientplugins.meshgeneratorstep import resources_rc
 
@@ -69,7 +70,7 @@ class Ui_MeshGeneratorWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents_2 = QWidget()
         self.scrollAreaWidgetContents_2.setObjectName(u"scrollAreaWidgetContents_2")
-        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 705, 813))
+        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 822, 1014))
         sizePolicy1.setHeightForWidth(self.scrollAreaWidgetContents_2.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents_2.setSizePolicy(sizePolicy1)
         self.verticalLayout_2 = QVBoxLayout(self.scrollAreaWidgetContents_2)
@@ -318,6 +319,27 @@ class Ui_MeshGeneratorWidget(object):
 
 
         self.verticalLayout_13.addWidget(self.displayData_frame)
+
+        self.displayModelCoordinates_frame = QFrame(self.display_tab)
+        self.displayModelCoordinates_frame.setObjectName(u"displayModelCoordinates_frame")
+        self.displayModelCoordinates_frame.setFrameShape(QFrame.StyledPanel)
+        self.displayModelCoordinates_frame.setFrameShadow(QFrame.Raised)
+        self.formLayout_3 = QFormLayout(self.displayModelCoordinates_frame)
+        self.formLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.formLayout_3.setObjectName(u"formLayout_3")
+        self.formLayout_3.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        self.displayModelCoordinates_label = QLabel(self.displayModelCoordinates_frame)
+        self.displayModelCoordinates_label.setObjectName(u"displayModelCoordinates_label")
+
+        self.formLayout_3.setWidget(0, QFormLayout.LabelRole, self.displayModelCoordinates_label)
+
+        self.displayModelCoordinates_fieldChooser = FieldChooserWidget(self.displayModelCoordinates_frame)
+        self.displayModelCoordinates_fieldChooser.setObjectName(u"displayModelCoordinates_fieldChooser")
+
+        self.formLayout_3.setWidget(0, QFormLayout.FieldRole, self.displayModelCoordinates_fieldChooser)
+
+
+        self.verticalLayout_13.addWidget(self.displayModelCoordinates_frame)
 
         self.displayNodes_frame = QFrame(self.display_tab)
         self.displayNodes_frame.setObjectName(u"displayNodes_frame")
@@ -690,6 +712,7 @@ class Ui_MeshGeneratorWidget(object):
         self.displayDataRadius_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Data radius", None))
         self.displayDataMarkerPoints_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Data marker points", None))
         self.displayDataMarkerNames_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Data marker names", None))
+        self.displayModelCoordinates_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Model coordinates:", None))
         self.displayNodePoints_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Node points", None))
         self.displayNodeNumbers_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Node numbers", None))
         self.displayNodeDerivatives_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Node derivatives", None))

@@ -8,6 +8,7 @@ from functools import partial
 from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
 from mapclientplugins.meshgeneratorstep.view.functionoptionsdialog import FunctionOptionsDialog
 from opencmiss.utils.maths.vectorops import dot, magnitude, mult, normalize, sub
+from opencmiss.utils.zinc.field import fieldIsManagedCoordinates
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 
 
@@ -56,6 +57,9 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         self._refreshParameterSetNames()
 
     def _sceneChanged(self):
+        # new region for choosing coordinate field from
+        self._ui.displayModelCoordinates_fieldChooser.setRegion(self._generator_model.getRegion())
+        self._ui.displayModelCoordinates_fieldChooser.setField(self._generator_model.getModelCoordinatesField())
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
         if sceneviewer is not None:
             scene = self._model.getScene()
@@ -96,6 +100,9 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         self._ui.displayDataMarkerPoints_checkBox.clicked.connect(self._displayDataMarkerPointsClicked)
         self._ui.displayDataMarkerNames_checkBox.clicked.connect(self._displayDataMarkerNamesClicked)
         self._ui.displayMarkerPoints_checkBox.clicked.connect(self._displayMarkerPointsClicked)
+        self._ui.displayModelCoordinates_fieldChooser.setRegion(self._generator_model.getRegion())
+        self._ui.displayModelCoordinates_fieldChooser.setConditional(fieldIsManagedCoordinates)
+        self._ui.displayModelCoordinates_fieldChooser.currentIndexChanged.connect(self._displayModelCoordinatesFieldChanged)
         self._ui.displayAxes_checkBox.clicked.connect(self._displayAxesClicked)
         self._ui.displayElementAxes_checkBox.clicked.connect(self._displayElementAxesClicked)
         self._ui.displayElementNumbers_checkBox.clicked.connect(self._displayElementNumbersClicked)
@@ -472,6 +479,14 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
 
     def _displayMarkerPointsClicked(self):
         self._generator_model.setDisplayMarkerPoints(self._ui.displayMarkerPoints_checkBox.isChecked())
+
+    def _displayModelCoordinatesFieldChanged(self, index):
+        """
+        Callback for change in model coordinates field chooser widget.
+        """
+        field = self._ui.displayModelCoordinates_fieldChooser.getField()
+        if field:
+            self._generator_model.setModelCoordinatesField(field)  # will re-create graphics
 
     def _displayAxesClicked(self):
         self._generator_model.setDisplayAxes(self._ui.displayAxes_checkBox.isChecked())
