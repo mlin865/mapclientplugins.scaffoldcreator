@@ -8,7 +8,7 @@ import os
 import math
 import string
 
-from opencmiss.utils.zinc.field import findOrCreateFieldCoordinates, findOrCreateFieldStoredMeshLocation, findOrCreateFieldStoredString
+from opencmiss.utils.zinc.field import fieldIsManagedCoordinates, findOrCreateFieldCoordinates, findOrCreateFieldStoredMeshLocation, findOrCreateFieldStoredString
 from opencmiss.utils.zinc.finiteelement import evaluateFieldNodesetRange
 from opencmiss.utils.zinc.general import ChangeManager
 from opencmiss.utils.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrix_mult, rotation_matrix_to_euler
@@ -98,6 +98,8 @@ class MeshGeneratorModel(object):
         self._parent_region = region
         self._materialmodule = material_module
         self._region = None
+        self._modelCoordinatesField = None
+        self._modelCoordinatesFieldName = "coordinates"
         self._fieldmodulenotifier = None
         self._currentAnnotationGroup = None
         self._customParametersCallback = None
@@ -158,6 +160,55 @@ class MeshGeneratorModel(object):
             self._parameterSetName = 'Custom'
             if self._customParametersCallback:
                 self._customParametersCallback()
+
+    def getRegion(self):
+        return self._region
+
+    def _resetModelCoordinatesField(self):
+        self._modelCoordinatesField = None
+
+    def _setModelCoordinatesField(self, modelCoordinatesField):
+        if modelCoordinatesField:
+            self._modelCoordinatesField = modelCoordinatesField.castFiniteElement()
+            if self._modelCoordinatesField.isValid():
+                self._modelCoordinatesFieldName = modelCoordinatesField.getName()
+                return
+        # reset
+        self._modelCoordinatesField = None
+        self._modelCoordinatesFieldName = "coordinates"
+
+    def _discoverModelCoordinatesField(self):
+        """
+        Discover new model coordintes field by previous name or default "coordinates" or first found.
+        """
+        fieldmodule = self._region.getFieldmodule()
+        modelCoordinatesField = fieldmodule.findFieldByName(self._modelCoordinatesFieldName)
+        if not fieldIsManagedCoordinates(modelCoordinatesField):
+            if self._modelCoordinatesFieldName != "coordinates":
+                modelCoordinatesField = fieldmodule.findFieldByName("coordinates").castFiniteElement()
+            if not fieldIsManagedCoordinates(modelCoordinatesField):
+                fieldIter = fieldmodule.createFielditerator()
+                field = fieldIter.next()
+                while field.isValid():
+                    if fieldIsManagedCoordinates(field):
+                        modelCoordinatesField = field.castFiniteElement()
+                        break
+                    field = fieldIter.next()
+                else:
+                    modelCoordinatesField = None
+        self._setModelCoordinatesField(modelCoordinatesField)
+
+    def getModelCoordinatesField(self):
+        return self._modelCoordinatesField
+
+    def setModelCoordinatesField(self, modelCoordinatesField):
+        """
+        For outside use, sets field and rebuilds graphics.
+        """
+        self._setModelCoordinatesField(modelCoordinatesField)
+        if not self._modelCoordinatesField:
+            self._discoverModelCoordinatesField()
+        self._createGraphics()
 
     def getMeshEditsGroup(self):
         fm = self._region.getFieldmodule()
@@ -953,22 +1004,24 @@ class MeshGeneratorModel(object):
         scaffoldPackage = self._scaffoldPackages[-1]
         if self._region:
             self._parent_region.removeChild(self._region)
+        self._resetModelCoordinatesField()
         self._region = self._parent_region.createChild(self._region_name)
         self._scene = self._region.getScene()
         fm = self._region.getFieldmodule()
         with ChangeManager(fm):
-            # logger = self._context.getLogger()
+            logger = self._context.getLogger()
             scaffoldPackage.generate(self._region, applyTransformation=False)
             annotationGroups = scaffoldPackage.getAnnotationGroups()
-            # loggerMessageCount = logger.getNumberOfMessages()
-            # if loggerMessageCount > 0:
-            #     for i in range(1, loggerMessageCount + 1):
-            #         print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
-            #     logger.removeAllMessages()
+            loggerMessageCount = logger.getNumberOfMessages()
+            if loggerMessageCount > 0:
+                for i in range(1, loggerMessageCount + 1):
+                    print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
+                logger.removeAllMessages()
             self._deleteElementsInRanges()
             self.setCurrentAnnotationGroupByName(currentAnnotationGroupName)
         # Zinc won't create cmiss_number and xi fields until endChange called
         # Hence must create graphics outside of ChangeManager lifetime:
+        self._discoverModelCoordinatesField()
         self._createGraphics()
         if self._sceneChangeCallback:
             self._sceneChangeCallback()
@@ -1023,7 +1076,7 @@ class MeshGeneratorModel(object):
         fm = self._region.getFieldmodule()
         with ChangeManager(fm):
             meshDimension = self.getMeshDimension()
-            coordinates = fm.findFieldByName('coordinates').castFiniteElement()
+            coordinates = self.getModelCoordinatesField()
             componentsCount = coordinates.getNumberOfComponents()
             nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
             fieldcache = fm.createFieldcache()
@@ -1228,6 +1281,12 @@ class MeshGeneratorModel(object):
             markerPoints.setMaterial(self._materialmodule.findMaterialByName('yellow'))
             markerPoints.setName('displayMarkerPoints')
             markerPoints.setVisibilityFlag(self.isDisplayMarkerPoints())
+        logger = self._context.getLogger()
+        loggerMessageCount = logger.getNumberOfMessages()
+        if loggerMessageCount > 0:
+            for i in range(1, loggerMessageCount + 1):
+                print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
+            logger.removeAllMessages()
 
 
     def updateSettingsBeforeWrite(self):
