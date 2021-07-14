@@ -99,7 +99,6 @@ class MeshGeneratorModel(object):
         self._materialmodule = material_module
         self._region = None
         self._modelCoordinatesField = None
-        self._modelCoordinatesFieldName = "coordinates"
         self._fieldmodulenotifier = None
         self._currentAnnotationGroup = None
         self._customParametersCallback = None
@@ -133,7 +132,8 @@ class MeshGeneratorModel(object):
             'displayElementNumbers' : False,
             'displayElementAxes' : False,
             'displayAxes' : True,
-            'displayMarkerPoints' : False
+            'displayMarkerPoints' : False,
+            'modelCoordinatesField' : 'coordinates'
         }
         self._customScaffoldPackage = None  # temporary storage of custom mesh options and edits, to switch back to
         self._unsavedNodeEdits = False  # Whether nodes have been edited since ScaffoldPackage meshEdits last updated
@@ -171,20 +171,20 @@ class MeshGeneratorModel(object):
         if modelCoordinatesField:
             self._modelCoordinatesField = modelCoordinatesField.castFiniteElement()
             if self._modelCoordinatesField.isValid():
-                self._modelCoordinatesFieldName = modelCoordinatesField.getName()
+                self._settings['modelCoordinatesField'] = modelCoordinatesField.getName()
                 return
         # reset
         self._modelCoordinatesField = None
-        self._modelCoordinatesFieldName = "coordinates"
+        self._settings['modelCoordinatesField'] = "coordinates"
 
     def _discoverModelCoordinatesField(self):
         """
         Discover new model coordintes field by previous name or default "coordinates" or first found.
         """
         fieldmodule = self._region.getFieldmodule()
-        modelCoordinatesField = fieldmodule.findFieldByName(self._modelCoordinatesFieldName)
+        modelCoordinatesField = fieldmodule.findFieldByName(self._settings['modelCoordinatesField'])
         if not fieldIsManagedCoordinates(modelCoordinatesField):
-            if self._modelCoordinatesFieldName != "coordinates":
+            if self._settings['modelCoordinatesField'] != "coordinates":
                 modelCoordinatesField = fieldmodule.findFieldByName("coordinates").castFiniteElement()
             if not fieldIsManagedCoordinates(modelCoordinatesField):
                 fieldIter = fieldmodule.createFielditerator()
@@ -1114,6 +1114,8 @@ class MeshGeneratorModel(object):
             elementDerivativesField = fm.createFieldConcatenate(elementDerivativeFields)
             cmiss_number = fm.findFieldByName('cmiss_number')
             markerGroup = fm.findFieldByName('marker').castGroup()
+            if not markerGroup.isValid():
+                markerGroup = fm.createFieldConstant([0.0])  # show nothing to avoid warnings
             markerName = findOrCreateFieldStoredString(fm, 'marker_name')
             radius = fm.findFieldByName('radius')
             markerLocation = findOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name='marker_location')
