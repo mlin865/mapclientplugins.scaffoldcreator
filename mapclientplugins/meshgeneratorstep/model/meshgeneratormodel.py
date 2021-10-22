@@ -8,10 +8,10 @@ import os
 import math
 import string
 
+from opencmiss.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrix_mult, rotation_matrix_to_euler
 from opencmiss.utils.zinc.field import fieldIsManagedCoordinates, findOrCreateFieldCoordinates, findOrCreateFieldStoredMeshLocation, findOrCreateFieldStoredString
 from opencmiss.utils.zinc.finiteelement import evaluateFieldNodesetRange
 from opencmiss.utils.zinc.general import ChangeManager
-from opencmiss.utils.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrix_mult, rotation_matrix_to_euler
 from opencmiss.zinc.field import Field, FieldGroup
 from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics

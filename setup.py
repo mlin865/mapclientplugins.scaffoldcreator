@@ -22,8 +22,9 @@ readme = readfile("README.rst", split=True)[3:]  # skip title
 requires = [
     # minimal requirements listing
     "scaffoldmaker @ https://api.github.com/repos/ABI-Software/scaffoldmaker/tarball/master",
+    "opencmiss.maths",
     "opencmiss.utils >= 0.3",
-    "opencmiss.zinc > 3.2",  # not yet on pypi - need manual install from opencmiss.org
+    "opencmiss.zinc > 3.2",
     "opencmiss.zincwidgets >= 2.0"
 ]
 source_license = readfile("LICENSE")
