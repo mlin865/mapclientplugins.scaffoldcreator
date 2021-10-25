@@ -25,7 +25,8 @@ requires = [
     "opencmiss.maths",
     "opencmiss.utils >= 0.3",
     "opencmiss.zinc > 3.2",
-    "opencmiss.zincwidgets >= 2.0"
+    "opencmiss.zincwidgets >= 2.0",
+    "PySide2"
 ]
 source_license = readfile("LICENSE")
 
