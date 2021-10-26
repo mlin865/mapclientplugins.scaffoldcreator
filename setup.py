@@ -21,10 +21,12 @@ readme = readfile("README.rst", split=True)[3:]  # skip title
 # into the 'requirements.txt' file.
 requires = [
     # minimal requirements listing
-    "scaffoldmaker @ https://api.github.com/repos/ABI-Software/scaffoldmaker/tarball/master",
+    "scaffoldmaker @ https://api.github.com/repos/ABI-Software/scaffoldmaker/tarball/main",
+    "opencmiss.maths",
     "opencmiss.utils >= 0.3",
-    "opencmiss.zinc > 3.2",  # not yet on pypi - need manual install from opencmiss.org
-    "opencmiss.zincwidgets >= 2.0"
+    "opencmiss.zinc > 3.2",
+    "opencmiss.zincwidgets >= 2.0",
+    "PySide2"
 ]
 source_license = readfile("LICENSE")
 
@@ -51,7 +53,7 @@ setup(
     cmdclass={'install': InstallCommand,},
     author='Richard Christie',
     author_email='',
-    url='',
+    url='https://github.com/ABI-Software/mapclientplugins.meshgeneratorstep',
     license='APACHE',
     packages=find_packages(exclude=['ez_setup',]),
     namespace_packages=['mapclientplugins'],
