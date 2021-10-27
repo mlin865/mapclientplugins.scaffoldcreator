@@ -7,7 +7,7 @@ import math
 from PySide2 import QtCore
 from opencmiss.maths.vectorops import add, cross, div, magnitude, mult, sub
 from opencmiss.utils.zinc.general import ChangeManager
-from opencmiss.zincwidgets.sceneviewerwidget import SceneviewerWidget, SelectionMode
+from opencmiss.zincwidgets.sceneviewerwidget import SceneviewerWidget
 from opencmiss.zinc.field import Field
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_LOCAL, SCENECOORDINATESYSTEM_WINDOW_PIXEL_TOP_LEFT
