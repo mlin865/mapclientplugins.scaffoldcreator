@@ -7,7 +7,7 @@ from functools import partial
 
 from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
 from mapclientplugins.meshgeneratorstep.view.functionoptionsdialog import FunctionOptionsDialog
-from opencmiss.utils.maths.vectorops import dot, magnitude, mult, normalize, sub
+from opencmiss.maths.vectorops import dot, magnitude, mult, normalize, sub
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 
 

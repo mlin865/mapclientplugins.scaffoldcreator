@@ -6,12 +6,11 @@ from __future__ import division
 import copy
 import os
 import math
-import string
 
-from opencmiss.utils.zinc.field import findOrCreateFieldCoordinates, findOrCreateFieldStoredMeshLocation, findOrCreateFieldStoredString
+from opencmiss.utils.zinc.field import findOrCreateFieldStoredMeshLocation, findOrCreateFieldStoredString
 from opencmiss.utils.zinc.finiteelement import evaluateFieldNodesetRange
 from opencmiss.utils.zinc.general import ChangeManager
-from opencmiss.utils.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrix_mult, rotation_matrix_to_euler
+from opencmiss.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrix_mult, rotation_matrix_to_euler
 from opencmiss.zinc.field import Field, FieldGroup
 from opencmiss.zinc.glyph import Glyph
 from opencmiss.zinc.graphics import Graphics
@@ -29,7 +28,7 @@ from scaffoldmaker.utils.zinc_utils import group_add_group_elements, group_get_h
 STRING_FLOAT_FORMAT = '{:.8g}'
 
 
-def parseListFloat(text : str, delimiter=','):
+def parseListFloat(text: str, delimiter=','):
     """
     Parse a delimited list of floats from text.
     :param text: string containing floats separated by delimiter.
@@ -46,7 +45,7 @@ def parseListFloat(text : str, delimiter=','):
     return values
 
 
-def parseListInt(text : str, delimiter=','):
+def parseListInt(text: str, delimiter=','):
     """
     Parse a delimited list of integers from text.
     :param text: string containing integers separated by delimiter.
@@ -63,7 +62,7 @@ def parseListInt(text : str, delimiter=','):
     return values
 
 
-def parseVector3(vectorText : str, delimiter, defaultValue):
+def parseVector3(vectorText: str, delimiter, defaultValue):
     """
     Parse a 3 component vector from a string.
     Repeats last component if too few.
@@ -104,7 +103,7 @@ class MeshGeneratorModel(object):
         self._sceneChangeCallback = None
         self._transformationChangeCallback = None
         self._deleteElementRanges = []
-        self._nodeDerivativeLabels = [ 'D1', 'D2', 'D3', 'D12', 'D13', 'D23', 'D123' ]
+        self._nodeDerivativeLabels = ['D1', 'D2', 'D3', 'D12', 'D13', 'D23', 'D123']
         # list of nested scaffold packages to that being edited, with their parent option names
         # discover all mesh types and set the current from the default
         scaffolds = Scaffolds()
@@ -112,43 +111,43 @@ class MeshGeneratorModel(object):
         scaffoldType = scaffolds.getDefaultScaffoldType()
         scaffoldPackage = ScaffoldPackage(scaffoldType)
         self._parameterSetName = scaffoldType.getParameterSetNames()[0]
-        self._scaffoldPackages = [ scaffoldPackage ]
-        self._scaffoldPackageOptionNames = [ None ]
+        self._scaffoldPackages = [scaffoldPackage]
+        self._scaffoldPackageOptionNames = [None]
         self._settings = {
-            'scaffoldPackage' : scaffoldPackage,
-            'deleteElementRanges' : '',
-            'displayNodePoints' : False,
-            'displayNodeNumbers' : False,
-            'displayNodeDerivatives' : 0,  # tri-state: 0=show none, 1=show selected, 2=show all
-            'displayNodeDerivativeLabels' : self._nodeDerivativeLabels[0:3],
-            'displayLines' : True,
-            'displayLinesExterior' : False,
-            'displayModelRadius' : False,
-            'displaySurfaces' : True,
-            'displaySurfacesExterior' : True,
-            'displaySurfacesTranslucent' : True,
-            'displaySurfacesWireframe' : False,
-            'displayElementNumbers' : False,
-            'displayElementAxes' : False,
-            'displayAxes' : True,
-            'displayMarkerPoints' : False
+            'scaffoldPackage': scaffoldPackage,
+            'deleteElementRanges': '',
+            'displayNodePoints': False,
+            'displayNodeNumbers': False,
+            'displayNodeDerivatives': 0,  # tri-state: 0=show none, 1=show selected, 2=show all
+            'displayNodeDerivativeLabels': self._nodeDerivativeLabels[0:3],
+            'displayLines': True,
+            'displayLinesExterior': False,
+            'displayModelRadius': False,
+            'displaySurfaces': True,
+            'displaySurfacesExterior': True,
+            'displaySurfacesTranslucent': True,
+            'displaySurfacesWireframe': False,
+            'displayElementNumbers': False,
+            'displayElementAxes': False,
+            'displayAxes': True,
+            'displayMarkerPoints': False
         }
         self._customScaffoldPackage = None  # temporary storage of custom mesh options and edits, to switch back to
         self._unsavedNodeEdits = False  # Whether nodes have been edited since ScaffoldPackage meshEdits last updated
 
     def _updateScaffoldEdits(self):
-        '''
+        """
         Ensure mesh and annotation group edits are up-to-date.
-        '''
+        """
         if self._unsavedNodeEdits:
-            self._scaffoldPackages[-1].setMeshEdits(exnodeStringFromGroup(self._region, 'meshEdits', [ 'coordinates' ]))
+            self._scaffoldPackages[-1].setMeshEdits(exnodeStringFromGroup(self._region, 'meshEdits', ['coordinates']))
             self._unsavedNodeEdits = False
         self._scaffoldPackages[-1].updateUserAnnotationGroups()
 
     def _saveCustomScaffoldPackage(self):
-        '''
+        """
         Copy current ScaffoldPackage to custom ScaffoldPackage to be able to switch back to later.
-        '''
+        """
         self._updateScaffoldEdits()
         self._customScaffoldPackage = copy.deepcopy(self._scaffoldPackages[-1])
 
@@ -164,9 +163,9 @@ class MeshGeneratorModel(object):
         return fm.findFieldByName('meshEdits').castGroup()
 
     def getOrCreateMeshEditsNodesetGroup(self, nodeset):
-        '''
+        """
         Someone is about to edit a node, and must add the modified node to this nodesetGroup.
-        '''
+        """
         fm = self._region.getFieldmodule()
         with ChangeManager(fm):
             group = fm.findFieldByName('meshEdits').castGroup()
@@ -184,9 +183,9 @@ class MeshGeneratorModel(object):
 
     def interactionRotate(self, axis, angle):
         mat1 = axis_angle_to_rotation_matrix(axis, angle)
-        mat2 = euler_to_rotation_matrix([ deg*math.pi/180.0 for deg in self._scaffoldPackages[-1].getRotation() ])
+        mat2 = euler_to_rotation_matrix([deg * math.pi / 180.0 for deg in self._scaffoldPackages[-1].getRotation()])
         newmat = matrix_mult(mat1, mat2)
-        rotation = [ rad*180.0/math.pi for rad in rotation_matrix_to_euler(newmat) ]
+        rotation = [rad * 180.0 / math.pi for rad in rotation_matrix_to_euler(newmat)]
         if self._scaffoldPackages[-1].setRotation(rotation):
             self._setGraphicsTransformation()
             if self._transformationChangeCallback:
@@ -194,14 +193,14 @@ class MeshGeneratorModel(object):
 
     def interactionScale(self, uniformScale):
         scale = self._scaffoldPackages[-1].getScale()
-        if self._scaffoldPackages[-1].setScale([ (scale[i]*uniformScale) for i in range(3) ]):
+        if self._scaffoldPackages[-1].setScale([(scale[i] * uniformScale) for i in range(3)]):
             self._setGraphicsTransformation()
             if self._transformationChangeCallback:
                 self._transformationChangeCallback()
 
     def interactionTranslate(self, offset):
         translation = self._scaffoldPackages[-1].getTranslation()
-        if self._scaffoldPackages[-1].setTranslation([ (translation[i] + offset[i]) for i in range(3) ]):
+        if self._scaffoldPackages[-1].setTranslation([(translation[i] + offset[i]) for i in range(3)]):
             self._setGraphicsTransformation()
             if self._transformationChangeCallback:
                 self._transformationChangeCallback()
@@ -210,26 +209,26 @@ class MeshGeneratorModel(object):
         pass
 
     def getAnnotationGroups(self):
-        '''
+        """
         :return: Alphabetically sorted list of annotation group names.
-        '''
+        """
         return self._scaffoldPackages[-1].getAnnotationGroups()
 
     def createUserAnnotationGroup(self):
-        '''
+        """
         Create a new annotation group with automatic name, define it from
         the current selection and set it as the current annotation group.
         :return: New annotation group.
-        '''
+        """
         self._currentAnnotationGroup = self._scaffoldPackages[-1].createUserAnnotationGroup()
         self.redefineCurrentAnnotationGroupFromSelection()
         return self._currentAnnotationGroup
 
     def deleteAnnotationGroup(self, annotationGroup):
-        '''
+        """
         Delete the annotation group. If the current annotation group is deleted, set an empty group.
         :return: True on success, otherwise False
-        '''
+        """
         if self._scaffoldPackages[-1].deleteAnnotationGroup(annotationGroup):
             if annotationGroup is self._currentAnnotationGroup:
                 self.setCurrentAnnotationGroup(None)
@@ -256,41 +255,41 @@ class MeshGeneratorModel(object):
         return True
 
     def setCurrentAnnotationGroupName(self, newName):
-        '''
+        """
         Rename current annotation group, but ensure it is a user group and name is not already in use.
         :return: True on success, otherwise False
-        '''
+        """
         if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup) and \
-            (not findAnnotationGroupByName(self.getAnnotationGroups(), newName)):
+                (not findAnnotationGroupByName(self.getAnnotationGroups(), newName)):
             return self._currentAnnotationGroup.setName(newName)
         return False
 
     def setCurrentAnnotationGroupOntId(self, newOntId):
-        '''
+        """
         :return: True on success, otherwise False
-        '''
+        """
         if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup):
             return self._currentAnnotationGroup.setId(newOntId)
         return False
 
     def isUserAnnotationGroup(self, annotationGroup):
-        '''
+        """
         :return: True if annotationGroup is user-created and editable.
-        '''
+        """
         return self._scaffoldPackages[-1].isUserAnnotationGroup(annotationGroup)
 
     def getCurrentAnnotationGroup(self):
-        '''
+        """
         Get the current annotation group stored for possible editing.
-        '''
+        """
         return self._currentAnnotationGroup
 
-    def setCurrentAnnotationGroup(self, annotationGroup : AnnotationGroup):
-        '''
+    def setCurrentAnnotationGroup(self, annotationGroup: AnnotationGroup):
+        """
         Set annotationGroup as current and replace the selection with its objects.
         :param annotationGroup: Group to select, or None to clear selection.
-        '''
-        #print('setCurrentAnnotationGroup', annotationGroup.getName() if annotationGroup else None)
+        """
+        # print('setCurrentAnnotationGroup', annotationGroup.getName() if annotationGroup else None)
         self._currentAnnotationGroup = annotationGroup
         fieldmodule = self._region.getFieldmodule()
         with ChangeManager(fieldmodule):
@@ -335,7 +334,7 @@ class MeshGeneratorModel(object):
         if scaffoldType is not None:
             parentScaffoldType = self.getParentScaffoldType()
             assert (not parentScaffoldType) or (scaffoldType in parentScaffoldType.getOptionValidScaffoldTypes(self._scaffoldPackageOptionNames[-1])), \
-               'Invalid scaffold type for parent scaffold'
+                'Invalid scaffold type for parent scaffold'
             if scaffoldType != self.getEditScaffoldType():
                 self._setScaffoldType(scaffoldType)
 
@@ -352,27 +351,27 @@ class MeshGeneratorModel(object):
         return self.getEditScaffoldType().getName()
 
     def editingRootScaffoldPackage(self):
-        '''
+        """
         :return: True if editing root ScaffoldPackage, else False.
-        '''
+        """
         return len(self._scaffoldPackages) == 1
 
     def getEditScaffoldType(self):
-        '''
+        """
         Get scaffold type currently being edited, including nested scaffolds.
-        '''
+        """
         return self._scaffoldPackages[-1].getScaffoldType()
 
     def getEditScaffoldSettings(self):
-        '''
+        """
         Get settings for scaffold type currently being edited, including nested scaffolds.
-        '''
+        """
         return self._scaffoldPackages[-1].getScaffoldSettings()
 
     def getEditScaffoldOptionDisplayName(self):
-        '''
+        """
         Get option display name for sub scaffold package being edited.
-        '''
+        """
         return '/'.join(self._scaffoldPackageOptionNames[1:])
 
     def getEditScaffoldOrderedOptionNames(self):
@@ -386,12 +385,12 @@ class MeshGeneratorModel(object):
             self._scaffoldPackageOptionNames[-1], self._scaffoldPackages[-1].getScaffoldType())
 
     def getDefaultScaffoldPackageForParameterSetName(self, parameterSetName):
-        '''
+        """
         :return: Default ScaffoldPackage set up with named parameter set.
-        '''
+        """
         if self.editingRootScaffoldPackage():
             scaffoldType = self._scaffoldPackages[0].getScaffoldType()
-            return ScaffoldPackage(scaffoldType, { 'scaffoldSettings' : scaffoldType.getDefaultOptions(parameterSetName) })
+            return ScaffoldPackage(scaffoldType, {'scaffoldSettings': scaffoldType.getDefaultOptions(parameterSetName)})
         # may need to change if scaffolds nested two deep
         return self.getParentScaffoldType().getOptionScaffoldPackage( \
             self._scaffoldPackageOptionNames[-1], self._scaffoldPackages[-1].getScaffoldType(), parameterSetName)
@@ -409,9 +408,9 @@ class MeshGeneratorModel(object):
         return str(value)
 
     def getParentScaffoldType(self):
-        '''
+        """
         :return: Parent scaffold type or None if root scaffold.
-        '''
+        """
         if len(self._scaffoldPackages) > 1:
             return self._scaffoldPackages[-2].getScaffoldType()
         return None
@@ -422,9 +421,9 @@ class MeshGeneratorModel(object):
         return parentScaffoldSettings[key]
 
     def _checkCustomParameterSet(self):
-        '''
+        """
         Work out whether ScaffoldPackage has a predefined parameter set or 'Custom'.
-        '''
+        """
         self._customScaffoldPackage = None
         self._unsavedNodeEdits = False
         self._parameterSetName = None
@@ -442,9 +441,9 @@ class MeshGeneratorModel(object):
         self._unsavedNodeEdits = False
 
     def editScaffoldPackageOption(self, optionName):
-        '''
+        """
         Switch to editing a nested scaffold.
-        '''
+        """
         settings = self.getEditScaffoldSettings()
         scaffoldPackage = settings.get(optionName)
         assert isinstance(scaffoldPackage, ScaffoldPackage), 'Option is not a ScaffoldPackage'
@@ -455,9 +454,9 @@ class MeshGeneratorModel(object):
         self._generateMesh()
 
     def endEditScaffoldPackageOption(self):
-        '''
+        """
         End editing of the last ScaffoldPackage, moving up to parent or top scaffold type.
-        '''
+        """
         assert len(self._scaffoldPackages) > 1, 'Attempt to end editing root ScaffoldPackage'
         self._updateScaffoldEdits()
         # store the edited scaffold in the settings option
@@ -469,17 +468,17 @@ class MeshGeneratorModel(object):
         self._generateMesh()
 
     def getInteractiveFunctions(self):
-        '''
+        """
         Return list of interactive functions for current scaffold type.
         :return: list(tuples), (name : str, callable(region, options)).
-        '''
+        """
         return self._scaffoldPackages[-1].getScaffoldType().getInteractiveFunctions()
 
     def getInteractiveFunctionOptions(self, functionName):
-        '''
+        """
         :param functionName: Name of the interactive function.
         :return: Options dict for function with supplied name.
-        '''
+        """
         interactiveFunctions = self.getInteractiveFunctions()
         for interactiveFunction in interactiveFunctions:
             if interactiveFunction[0] == functionName:
@@ -487,12 +486,12 @@ class MeshGeneratorModel(object):
         return {}
 
     def performInteractiveFunction(self, functionName, functionOptions):
-        '''
+        """
         Perform interactive function of supplied name for current scaffold.
         :param functionName: Name of the interactive function.
         :param option: User-modified options to pass to the function.
         :return: True if scaffold settings changed.
-        '''
+        """
         interactiveFunctions = self.getInteractiveFunctions()
         for interactiveFunction in interactiveFunctions:
             if interactiveFunction[0] == functionName:
@@ -511,9 +510,9 @@ class MeshGeneratorModel(object):
         return parameterSetNames
 
     def getParameterSetName(self):
-        '''
+        """
         :return: Name of currently active parameter set.
-        '''
+        """
         return self._parameterSetName
 
     def setParameterSetName(self, parameterSetName):
@@ -529,13 +528,12 @@ class MeshGeneratorModel(object):
         self._unsavedNodeEdits = False
         self._generateMesh()
 
-
     def setScaffoldOption(self, key, value):
-        '''
+        """
         :param value: New option value as a string.
         :return: True if other dependent options have changed, otherwise False.
         On True return client is expected to refresh all option values in UI.
-        '''
+        """
         scaffoldType = self.getEditScaffoldType()
         settings = self.getEditScaffoldSettings()
         oldValue = settings[key]
@@ -590,9 +588,9 @@ class MeshGeneratorModel(object):
             self._generateMesh()
 
     def deleteElementsSelection(self):
-        '''
+        """
         Add the elements in the scene selection to the delete element ranges and delete.
-        '''
+        """
         fm = self._region.getFieldmodule()
         scene = self._region.getScene()
         mesh = self._getMesh()
@@ -609,9 +607,9 @@ class MeshGeneratorModel(object):
                 self._generateMesh()
 
     def applyTransformation(self):
-        '''
+        """
         Apply transformation to nodes and clear it, recording all modified nodes.
-        '''
+        """
         scaffoldPackage = self._scaffoldPackages[-1]
         fieldmodule = self._region.getFieldmodule()
         with ChangeManager(fieldmodule):
@@ -711,16 +709,16 @@ class MeshGeneratorModel(object):
             self._createGraphics()
 
     def getDisplayNodeDerivatives(self):
-        '''
+        """
         :return: tri-state: 0=show none, 1=show selected, 2=show all
-        '''
+        """
         return self._settings['displayNodeDerivatives']
 
     def _setAllGraphicsVisibility(self, graphicsName, show, selectMode=None):
-        '''
+        """
         Ensure visibility of all graphics with graphicsName is set to boolean show.
         :param selectMode: Optional selectMode to set at the same time.
-        '''
+        """
         scene = self._region.getScene()
         graphics = scene.findGraphicsByName(graphicsName)
         while graphics.isValid():
@@ -733,25 +731,25 @@ class MeshGeneratorModel(object):
                     break
 
     def setDisplayNodeDerivatives(self, triState):
-        '''
+        """
         :param triState: From Qt::CheckState: 0=show none, 1=show selected, 2=show all
-        '''
+        """
         self._settings['displayNodeDerivatives'] = triState
         for nodeDerivativeLabel in self._nodeDerivativeLabels:
             self._setAllGraphicsVisibility('displayNodeDerivatives' + nodeDerivativeLabel,
                                            bool(triState) and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel),
-                                           selectMode = Graphics.SELECT_MODE_DRAW_SELECTED if (triState == 1) else Graphics.SELECT_MODE_ON)
+                                           selectMode=Graphics.SELECT_MODE_DRAW_SELECTED if (triState == 1) else Graphics.SELECT_MODE_ON)
 
     def isDisplayNodeDerivativeLabels(self, nodeDerivativeLabel):
-        '''
+        """
         :param nodeDerivativeLabel: Label from self._nodeDerivativeLabels ('D1', 'D2' ...)
-        '''
+        """
         return nodeDerivativeLabel in self._settings['displayNodeDerivativeLabels']
 
     def setDisplayNodeDerivativeLabels(self, nodeDerivativeLabel, show):
-        '''
+        """
         :param nodeDerivativeLabel: Label from self._nodeDerivativeLabels ('D1', 'D2' ...)
-        '''
+        """
         shown = nodeDerivativeLabel in self._settings['displayNodeDerivativeLabels']
         if show:
             if not shown:
@@ -833,7 +831,7 @@ class MeshGeneratorModel(object):
 
     def _getMesh(self):
         fm = self._region.getFieldmodule()
-        for dimension in range(3,0,-1):
+        for dimension in range(3, 0, -1):
             mesh = fm.findMeshByDimension(dimension)
             if mesh.getSize() > 0:
                 break
@@ -859,9 +857,9 @@ class MeshGeneratorModel(object):
         return self._settings
 
     def setSettings(self, settings):
-        '''
+        """
         Called on loading settings from file.
-        '''
+        """
         scaffoldPackage = settings.get('scaffoldPackage')
         if not scaffoldPackage:
             # migrate obsolete options to scaffoldPackage:
@@ -869,12 +867,12 @@ class MeshGeneratorModel(object):
             del settings['meshTypeName']
             scaffoldSettings = settings['meshTypeOptions']
             del settings['meshTypeOptions']
-            scaffoldPackage = ScaffoldPackage(scaffoldType, { 'scaffoldSettings' : scaffoldSettings })
+            scaffoldPackage = ScaffoldPackage(scaffoldType, {'scaffoldSettings': scaffoldSettings})
             settings['scaffoldPackage'] = scaffoldPackage
         # migrate boolean options which are now tri-state
         for name in ['displayNodeDerivatives']:
             value = settings[name]
-            if type(value)==bool:
+            if type(value) == bool:
                 settings[name] = 2 if value else 0
         self._settings.update(settings)
         self._parseDeleteElementsRangesText(self._settings['deleteElementRanges'])
@@ -883,18 +881,18 @@ class MeshGeneratorModel(object):
         if oldScaleText:
             scaffoldPackage.setScale(parseVector3(oldScaleText, delimiter="*", defaultValue=1.0))
             del self._settings['scale']  # remove so can't overwrite scale next time
-        self._scaffoldPackages = [ scaffoldPackage ]
-        self._scaffoldPackageOptionNames = [ None ]
+        self._scaffoldPackages = [scaffoldPackage]
+        self._scaffoldPackageOptionNames = [None]
         self._checkCustomParameterSet()
         self._generateMesh()
 
     def _deleteElementsInRanges(self):
-        '''
+        """
         If this is the root scaffold and there are ranges of element identifiers to delete,
         remove these from the model.
         Also remove marker group nodes embedded in those elements and any nodes used only by
         the deleted elements.
-        '''
+        """
         if (len(self._deleteElementRanges) == 0) or (len(self._scaffoldPackages) > 1):
             return
         fm = self._region.getFieldmodule()
@@ -916,7 +914,7 @@ class MeshGeneratorModel(object):
                         destroyMesh.addElement(element)
                 element = elementIter.next()
             del elementIter
-            #print("Deleting", destroyMesh.getSize(), "element(s)")
+            # print("Deleting", destroyMesh.getSize(), "element(s)")
             if destroyMesh.getSize() > 0:
                 destroyNodeGroup = destroyGroup.getFieldNodeGroup(nodes)
                 destroyNodes = destroyNodeGroup.getNodesetGroup()
@@ -924,7 +922,7 @@ class MeshGeneratorModel(object):
                 if markerGroup.isValid():
                     markerNodes = markerGroup.getFieldNodeGroup(nodes).getNodesetGroup()
                     markerLocation = fm.findFieldByName("marker_location")
-                    #markerName = fm.findFieldByName("marker_name")
+                    # markerName = fm.findFieldByName("marker_name")
                     if markerNodes.isValid() and markerLocation.isValid():
                         fieldcache = fm.createFieldcache()
                         nodeIter = markerNodes.createNodeiterator()
@@ -933,7 +931,7 @@ class MeshGeneratorModel(object):
                             fieldcache.setNode(node)
                             element, xi = markerLocation.evaluateMeshLocation(fieldcache, meshDimension)
                             if element.isValid() and destroyMesh.containsElement(element):
-                                #print("Destroy marker '" + markerName.evaluateString(fieldcache) + "' node", node.getIdentifier(), "in destroyed element", element.getIdentifier(), "at", xi)
+                                # print("Destroy marker '" + markerName.evaluateString(fieldcache) + "' node", node.getIdentifier(), "in destroyed element", element.getIdentifier(), "at", xi)
                                 destroyNodes.addNode(node)  # so destroyed with others below; can't do here as
                             node = nodeIter.next()
                         del nodeIter
@@ -974,9 +972,9 @@ class MeshGeneratorModel(object):
             self._sceneChangeCallback()
 
     def _getAxesScale(self):
-        '''
+        """
         Get sizing for axes, taking into account transformation.
-        '''
+        """
         scale = self._scaffoldPackages[-1].getScale()
         fm = self._region.getFieldmodule()
         nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
@@ -984,21 +982,21 @@ class MeshGeneratorModel(object):
         componentsCount = coordinates.getNumberOfComponents()
         minX, maxX = evaluateFieldNodesetRange(coordinates, nodes)
         if componentsCount == 1:
-            maxRange = (maxX - minX)*scale[0]
+            maxRange = (maxX - minX) * scale[0]
         else:
-            maxRange = max((maxX[c] - minX[c])*scale[c] for c in range(componentsCount))
+            maxRange = max((maxX[c] - minX[c]) * scale[c] for c in range(componentsCount))
         axesScale = 1.0
         if maxRange > 0.0:
-            while axesScale*10.0 < maxRange:
+            while axesScale * 10.0 < maxRange:
                 axesScale *= 10.0
             while axesScale > maxRange:
                 axesScale *= 0.1
         return axesScale
 
     def _setGraphicsTransformation(self):
-        '''
+        """
         Establish 4x4 graphics transformation for current scaffold package.
-        '''
+        """
         transformationMatrix = None
         for scaffoldPackage in reversed(self._scaffoldPackages):
             mat = scaffoldPackage.getTransformationMatrix()
@@ -1016,7 +1014,7 @@ class MeshGeneratorModel(object):
         with ChangeManager(scene):
             axes = scene.findGraphicsByName('displayAxes')
             pointattr = axes.getGraphicspointattributes()
-            pointattr.setBaseSize([ axesScale ])
+            pointattr.setBaseSize([axesScale])
             pointattr.setLabelText(1, '  {:2g}'.format(axesScale))
 
     def _createGraphics(self):
@@ -1030,11 +1028,11 @@ class MeshGeneratorModel(object):
 
             # determine field derivatives for all versions in use: fairly expensive
             # fields in same order as self._nodeDerivativeLabels
-            nodeDerivatives = [ Node.VALUE_LABEL_D_DS1, Node.VALUE_LABEL_D_DS2, Node.VALUE_LABEL_D_DS3,
-                Node.VALUE_LABEL_D2_DS1DS2, Node.VALUE_LABEL_D2_DS1DS3, Node.VALUE_LABEL_D2_DS2DS3, Node.VALUE_LABEL_D3_DS1DS2DS3 ]
-            nodeDerivativeFields = [ [ fm.createFieldNodeValue(coordinates, nodeDerivative, 1) ] for nodeDerivative in nodeDerivatives ]
+            nodeDerivatives = [Node.VALUE_LABEL_D_DS1, Node.VALUE_LABEL_D_DS2, Node.VALUE_LABEL_D_DS3,
+                               Node.VALUE_LABEL_D2_DS1DS2, Node.VALUE_LABEL_D2_DS1DS3, Node.VALUE_LABEL_D2_DS2DS3, Node.VALUE_LABEL_D3_DS1DS2DS3]
+            nodeDerivativeFields = [[fm.createFieldNodeValue(coordinates, nodeDerivative, 1)] for nodeDerivative in nodeDerivatives]
             derivativesCount = len(nodeDerivatives)
-            maxVersions = [ 1 for nodeDerivative in nodeDerivatives ]
+            maxVersions = [1 for nodeDerivative in nodeDerivatives]
             lastVersion = 1
             version = 2
             while True:
@@ -1074,7 +1072,7 @@ class MeshGeneratorModel(object):
                 one = fm.createFieldConstant(1.0)
                 sumLineLength = fm.createFieldMeshIntegral(one, coordinates, mesh1d)
                 result, totalLineLength = sumLineLength.evaluateReal(fieldcache, 1)
-                glyphWidth = 0.1*totalLineLength/lineCount
+                glyphWidth = 0.1 * totalLineLength / lineCount
                 del sumLineLength
                 del one
             if (lineCount == 0) or (glyphWidth == 0.0):
@@ -1092,7 +1090,7 @@ class MeshGeneratorModel(object):
                             first = False
                 if maxScale == 0.0:
                     maxScale = 1.0
-                glyphWidth = 0.01*maxScale
+                glyphWidth = 0.01 * maxScale
             del fieldcache
 
         # make graphics
@@ -1106,7 +1104,7 @@ class MeshGeneratorModel(object):
             pointattr = axes.getGraphicspointattributes()
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_AXES_XYZ)
             axesScale = self._getAxesScale()
-            pointattr.setBaseSize([ axesScale ])
+            pointattr.setBaseSize([axesScale])
             pointattr.setLabelText(1, '  {:2g}'.format(axesScale))
             axes.setMaterial(self._materialmodule.findMaterialByName('grey50'))
             axes.setName('displayAxes')
@@ -1118,8 +1116,8 @@ class MeshGeneratorModel(object):
             lineattr = lines.getGraphicslineattributes()
             if self.isDisplayModelRadius() and radius.isValid():
                 lineattr.setShapeType(lineattr.SHAPE_TYPE_CIRCLE_EXTRUSION)
-                lineattr.setBaseSize([ 0.0 ])
-                lineattr.setScaleFactors([ 2.0 ])
+                lineattr.setBaseSize([0.0])
+                lineattr.setScaleFactors([2.0])
                 lineattr.setOrientationScaleField(radius)
             isTranslucentLines = self.isDisplaySurfacesTranslucent() and (lineattr.getShapeType() == lineattr.SHAPE_TYPE_CIRCLE_EXTRUSION)
             linesMaterial = self._materialmodule.findMaterialByName('trans_blue' if isTranslucentLines else 'default')
@@ -1133,11 +1131,11 @@ class MeshGeneratorModel(object):
             pointattr = nodePoints.getGraphicspointattributes()
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_SPHERE)
             if self.isDisplayModelRadius() and radius.isValid():
-                pointattr.setBaseSize([ 0.0 ])
-                pointattr.setScaleFactors([ 2.0 ])
+                pointattr.setBaseSize([0.0])
+                pointattr.setScaleFactors([2.0])
                 pointattr.setOrientationScaleField(radius)
             else:
-                pointattr.setBaseSize([ glyphWidth ])
+                pointattr.setBaseSize([glyphWidth])
             nodePoints.setMaterial(self._materialmodule.findMaterialByName('white'))
             nodePoints.setName('displayNodePoints')
             nodePoints.setVisibilityFlag(self.isDisplayNodePoints())
@@ -1153,8 +1151,8 @@ class MeshGeneratorModel(object):
             nodeNumbers.setVisibilityFlag(self.isDisplayNodeNumbers())
 
             # names in same order as self._nodeDerivativeLabels 'D1', 'D2', 'D3', 'D12', 'D13', 'D23', 'D123' and nodeDerivativeFields
-            nodeDerivativeMaterialNames = [ 'gold', 'silver', 'green', 'cyan', 'magenta', 'yellow', 'blue' ]
-            derivativeScales = [ 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 ]
+            nodeDerivativeMaterialNames = ['gold', 'silver', 'green', 'cyan', 'magenta', 'yellow', 'blue']
+            derivativeScales = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
             for i in range(len(self._nodeDerivativeLabels)):
                 nodeDerivativeLabel = self._nodeDerivativeLabels[i]
                 maxVersions = len(nodeDerivativeFields[i])
@@ -1166,9 +1164,9 @@ class MeshGeneratorModel(object):
                     pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_ARROW_SOLID)
                     pointattr.setOrientationScaleField(nodeDerivativeFields[i][v])
                     pointattr.setBaseSize([0.0, glyphWidth, glyphWidth])
-                    pointattr.setScaleFactors([ derivativeScales[i], 0.0, 0.0 ])
+                    pointattr.setScaleFactors([derivativeScales[i], 0.0, 0.0])
                     if maxVersions > 1:
-                        pointattr.setLabelOffset([ 1.05, 0.0, 0.0 ])
+                        pointattr.setLabelOffset([1.05, 0.0, 0.0])
                         pointattr.setLabelText(1, str(v + 1))
                     material = self._materialmodule.findMaterialByName(nodeDerivativeMaterialNames[i])
                     nodeDerivatives.setMaterial(material)
@@ -1203,10 +1201,10 @@ class MeshGeneratorModel(object):
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_AXES_123)
             pointattr.setOrientationScaleField(elementDerivativesField)
             if meshDimension == 1:
-                pointattr.setBaseSize([0.0, 2*glyphWidth, 2*glyphWidth])
+                pointattr.setBaseSize([0.0, 2 * glyphWidth, 2 * glyphWidth])
                 pointattr.setScaleFactors([0.25, 0.0, 0.0])
             elif meshDimension == 2:
-                pointattr.setBaseSize([0.0, 0.0, 2*glyphWidth])
+                pointattr.setBaseSize([0.0, 0.0, 2 * glyphWidth])
                 pointattr.setScaleFactors([0.25, 0.25, 0.0])
             else:
                 pointattr.setBaseSize([0.0, 0.0, 0.0])
@@ -1224,19 +1222,18 @@ class MeshGeneratorModel(object):
             pointattr.setLabelText(1, '  ')
             pointattr.setLabelField(markerName)
             pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_CROSS)
-            pointattr.setBaseSize(2*glyphWidth)
+            pointattr.setBaseSize(2 * glyphWidth)
             markerPoints.setMaterial(self._materialmodule.findMaterialByName('yellow'))
             markerPoints.setName('displayMarkerPoints')
             markerPoints.setVisibilityFlag(self.isDisplayMarkerPoints())
-
 
     def updateSettingsBeforeWrite(self):
         self._updateScaffoldEdits()
 
     def done(self):
-        '''
+        """
         Finish generating mesh by applying transformation.
-        '''
+        """
         assert 1 == len(self._scaffoldPackages)
         self._scaffoldPackages[0].applyTransformation()
 
@@ -1261,13 +1258,14 @@ class MeshGeneratorModel(object):
         exportvtk = ExportVtk(self._region, description, self.getAnnotationGroups())
         exportvtk.writeFile(filenameStem + '.vtk')
 
+
 def exnodeStringFromGroup(region, groupName, fieldNames):
-    '''
+    """
     Serialise field within group of groupName to a string.
     :param fieldNames: List of fieldNames to output.
     :param groupName: Name of group to output.
     :return: The string.
-    '''
+    """
     sir = region.createStreaminformationRegion()
     srm = sir.createStreamresourceMemory()
     sir.setResourceGroupName(srm, groupName)
@@ -1276,23 +1274,26 @@ def exnodeStringFromGroup(region, groupName, fieldNames):
     result, exString = srm.getBuffer()
     return exString
 
-def get_scene_selection_group(scene : Scene, subelementHandlingMode = FieldGroup.SUBELEMENT_HANDLING_MODE_FULL):
-    '''
+
+def get_scene_selection_group(scene: Scene, subelementHandlingMode=FieldGroup.SUBELEMENT_HANDLING_MODE_FULL):
+    """
     Get existing scene selection group of standard name.
     :param subelementHandlingMode: Mode controlling how faces, lines and nodes are
     automatically added or removed with higher dimensional elements.
     :return: Existing selection group, or None.
-    '''
+    """
     selection_group = scene.getSelectionField().castGroup()
     if selection_group.isValid():
         selection_group.setSubelementHandlingMode(subelementHandlingMode)
         return selection_group
     return None
 
+
 selection_group_name = 'cmiss_selection'
 
-def create_scene_selection_group(scene : Scene, subelementHandlingMode = FieldGroup.SUBELEMENT_HANDLING_MODE_FULL):
-    '''
+
+def create_scene_selection_group(scene: Scene, subelementHandlingMode=FieldGroup.SUBELEMENT_HANDLING_MODE_FULL):
+    """
     Create empty, unmanaged scene selection group of standard name.
     Should have already called get_selection_group with None returned.
     Can discover orphaned group of that name.
@@ -1301,7 +1302,7 @@ def create_scene_selection_group(scene : Scene, subelementHandlingMode = FieldGr
     :param subelementHandlingMode: Mode controlling how faces, lines and nodes are
     automatically added or removed with higher dimensional elements.
     :return: Selection group for scene.
-    '''
+    """
     region = scene.getRegion()
     fieldmodule = region.getFieldmodule()
     with ChangeManager(fieldmodule):
