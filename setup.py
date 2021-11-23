@@ -38,7 +38,7 @@ readme = readfile("README.rst", split=True)[3:]  # skip title
 # into the 'requirements.txt' file.
 requires = [
     # minimal requirements listing
-    "scaffoldmaker @ https://api.github.com/repos/ABI-Software/scaffoldmaker/tarball/v0.2.0",
+    "scaffoldmaker @ https://api.github.com/repos/ABI-Software/scaffoldmaker/tarball/v0.3.0",
     "opencmiss.maths",
     "opencmiss.utils >= 0.3",
     "opencmiss.zinc > 3.2",
