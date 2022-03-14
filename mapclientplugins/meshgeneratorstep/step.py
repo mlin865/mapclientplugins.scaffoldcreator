@@ -4,7 +4,7 @@ MAP Client Plugin Step
 """
 import json
 
-from PySide2 import QtGui, QtWidgets
+from PySide2 import QtGui
 
 from mapclient.mountpoints.workflowstep import WorkflowStepMountPoint
 from mapclientplugins.meshgeneratorstep.configuredialog import ConfigureDialog
@@ -23,7 +23,7 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         self._configured = False # A step cannot be executed until it has been configured.
         self._category = 'Source'
         # Add any other initialisation code here:
-        self._icon =  QtGui.QImage(':/meshgeneratorstep/images/model-viewer.png')
+        self._icon = QtGui.QImage(':/meshgeneratorstep/images/model-viewer.png')
         # Ports:
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
@@ -32,12 +32,10 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#file_location'))
         # Port data:
-        self._portData0 = None # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
+        self._portData0 = None  # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
         self._port1_inputZincDataFile = None  # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
         # Config:
-        self._config = {}
-        self._config['identifier'] = ''
-        self._config['AutoDone'] = False
+        self._config = {'identifier': '', 'AutoDone': False}
         self._model = None
         self._view = None
 
@@ -68,7 +66,7 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
 
         :param index: Index of the port to return.
         """
-        return self._portData0 # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
+        return self._portData0  # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
 
     def setPortData(self, index, dataIn):
         """
@@ -80,7 +78,7 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         :param dataIn: The data to set for the port at the given index.
         """
         if index == 1:
-            self._port1_inputZincDataFile = dataIn # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
+            self._port1_inputZincDataFile = dataIn  # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
 
     def configure(self):
         """
