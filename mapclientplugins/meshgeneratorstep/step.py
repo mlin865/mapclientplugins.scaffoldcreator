@@ -1,4 +1,3 @@
-
 """
 MAP Client Plugin Step
 """
@@ -20,7 +19,7 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
 
     def __init__(self, location):
         super(MeshGeneratorStep, self).__init__('Mesh Generator', location)
-        self._configured = False # A step cannot be executed until it has been configured.
+        self._configured = False  # A step cannot be executed until it has been configured.
         self._category = 'Source'
         # Add any other initialisation code here:
         self._icon = QtGui.QImage(':/meshgeneratorstep/images/model-viewer.png')
@@ -31,9 +30,17 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#uses',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#file_location'))
+        self.addPort([('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
+                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
+                       'http://physiomeproject.org/workflow/1.0/rdf-schema#file_location'),
+                      ('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
+                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
+                       'https://github.com/ABI-Software/scaffoldmaker#annotation_groups_file_location')
+                      ])
         # Port data:
         self._portData0 = None  # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
         self._port1_inputZincDataFile = None  # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
+        self._port2_annotationsFilename = None  # https://github.com/ABI-Software/scaffoldmaker#annotation_groups_file_location
         # Config:
         self._config = {'identifier': '', 'AutoDone': False}
         self._model = None
@@ -54,6 +61,7 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
 
     def _myDoneExecution(self):
         self._portData0 = self._model.getOutputModelFilename()
+        self._port2_annotationsFilename = self._model.getOutputAnnotationsFilename()
         self._view = None
         self._model = None
         self._doneExecution()
@@ -66,7 +74,10 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
 
         :param index: Index of the port to return.
         """
-        return self._portData0  # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
+        if index == 0:
+            return self._portData0  # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
+
+        return self._port2_annotationsFilename
 
     def setPortData(self, index, dataIn):
         """
@@ -132,5 +143,3 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         d.identifierOccursCount = self._identifierOccursCount
         d.setConfig(self._config)
         self._configured = d.validate()
-
-

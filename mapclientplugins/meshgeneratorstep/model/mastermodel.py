@@ -11,6 +11,7 @@ from mapclientplugins.meshgeneratorstep.model.meshannotationmodel import MeshAnn
 from mapclientplugins.meshgeneratorstep.model.segmentationdatamodel import SegmentationDataModel
 from scaffoldmaker.scaffolds import Scaffolds_decodeJSON, Scaffolds_JSONEncoder
 
+
 class MasterModel(object):
 
     def __init__(self, location, identifier):
@@ -75,6 +76,9 @@ class MasterModel(object):
 
     def getOutputModelFilename(self):
         return self._filenameStem + '.exf'
+
+    def getOutputAnnotationsFilename(self):
+        return self._generator_model.getAnnotationsFilename(self._filenameStem)
 
     def getGeneratorModel(self):
         return self._generator_model

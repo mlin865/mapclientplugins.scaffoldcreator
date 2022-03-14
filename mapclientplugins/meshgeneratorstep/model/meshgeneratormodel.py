@@ -1302,8 +1302,11 @@ class MeshGeneratorModel(object):
     def writeModel(self, file_name):
         self._region.writeFile(file_name)
 
-    def writeAnnotations(self, filenameStem):
-        annotationFilename = filenameStem + '_annotations.csv'
+    def getAnnotationsFilename(self, filename_stem):
+        return filename_stem + '_annotations.csv'
+
+    def writeAnnotations(self, filename_stem):
+        annotationFilename = self.getAnnotationsFilename(filename_stem)
         with open(annotationFilename, 'w') as outstream:
             outstream.write('Term ID,Group name\n')
             annotationGroups = self.getAnnotationGroups()
@@ -1314,11 +1317,11 @@ class MeshGeneratorModel(object):
             for termNameId in termNameIds:
                 outstream.write(termNameId[1] + ',' + termNameId[0] + '\n')
 
-    def exportToVtk(self, filenameStem):
-        base_name = os.path.basename(filenameStem)
+    def exportToVtk(self, filename_stem):
+        base_name = os.path.basename(filename_stem)
         description = 'Scaffold ' + self._scaffoldPackages[0].getScaffoldType().getName() + ': ' + base_name
-        exportvtk = ExportVtk(self._region, description, self.getAnnotationGroups())
-        exportvtk.writeFile(filenameStem + '.vtk')
+        export_vtk = ExportVtk(self._region, description, self.getAnnotationGroups())
+        export_vtk.writeFile(filename_stem + '.vtk')
 
 
 def exnodeStringFromGroup(region, groupName, fieldNames):
