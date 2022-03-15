@@ -3,7 +3,7 @@
 MAP Client Plugin
 """
 
-__version__ = '0.3.2'
+__version__ = '0.3.3'
 __author__ = 'Richard Christie'
 __stepname__ = 'Mesh Generator'
 __location__ = 'https://github.com/ABI-Software/mapclientplugins.meshgeneratorstep'
