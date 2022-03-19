@@ -6,7 +6,7 @@ from __future__ import division
 import copy
 import os
 import math
-import string
+import sys
 
 from opencmiss.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrix_mult, rotation_matrix_to_euler
 from opencmiss.utils.zinc.field import fieldIsManagedCoordinates, findOrCreateFieldCoordinates, findOrCreateFieldStoredMeshLocation, findOrCreateFieldStoredString
@@ -276,6 +276,18 @@ class MeshGeneratorModel(object):
         self.redefineCurrentAnnotationGroupFromSelection()
         return self._currentAnnotationGroup
 
+    def createUserMarkerAnnotationGroup(self):
+        '''
+        Create a new marker annotation group with automatic name.
+        :return: New annotation group.
+        '''
+        self._currentAnnotationGroup = self._scaffoldPackages[-1].createUserAnnotationGroup()
+        try:
+            self._currentAnnotationGroup.createMarkerNode(self._scaffoldPackages[-1].getNextNodeIdentifier())
+        except AssertionError:
+            pass
+        return self._currentAnnotationGroup
+
     def deleteAnnotationGroup(self, annotationGroup):
         '''
         Delete the annotation group. If the current annotation group is deleted, set an empty group.
@@ -291,13 +303,16 @@ class MeshGeneratorModel(object):
     def redefineCurrentAnnotationGroupFromSelection(self):
         if not self._currentAnnotationGroup:
             return False
-        scene = self._region.getScene()
-        group = self._currentAnnotationGroup.getGroup()
-        group.clear()
-        selectionGroup = get_scene_selection_group(scene)
-        if selectionGroup:
-            fieldmodule = self._region.getFieldmodule()
-            with ChangeManager(fieldmodule):
+        # can only redefine user annotation groups which are not markers
+        assert self.isUserAnnotationGroup(self._currentAnnotationGroup)
+        assert not self._currentAnnotationGroup.isMarker()
+        fieldmodule = self._region.getFieldmodule()
+        with ChangeManager(fieldmodule):
+            self._currentAnnotationGroup.clear()
+            scene = self._region.getScene()
+            selectionGroup = get_scene_selection_group(scene)
+            if selectionGroup:
+                group = self._currentAnnotationGroup.getGroup()
                 group.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
                 highest_dimension = group_get_highest_dimension(selectionGroup)
                 group_add_group_elements(group, selectionGroup, highest_dimension)
@@ -306,15 +321,23 @@ class MeshGeneratorModel(object):
                 group_add_group_elements(selectionGroup, group, highest_dimension)
         return True
 
-    def setCurrentAnnotationGroupName(self, newName):
+    def setCurrentAnnotationGroupName(self, newName: str):
         '''
         Rename current annotation group, but ensure it is a user group and name is not already in use.
         :return: True on success, otherwise False
         '''
-        if self._currentAnnotationGroup and self.isUserAnnotationGroup(self._currentAnnotationGroup) and \
-            (not findAnnotationGroupByName(self.getAnnotationGroups(), newName)):
-            return self._currentAnnotationGroup.setName(newName)
-        return False
+        if not self._currentAnnotationGroup:
+            print("No current annotation group to set name of", file=sys.stderr)
+            return False
+        if self._currentAnnotationGroup.getName() == newName:
+            return True  # don't want to be warned about this
+        if not self.isUserAnnotationGroup(self._currentAnnotationGroup):
+            print("Can only rename user-defined annotation groups", file=sys.stderr)
+            return False
+        if findAnnotationGroupByName(self.getAnnotationGroups(), newName):
+            print("Name " + newName + " is in use by another annotation group", file=sys.stderr)
+            return False
+        return self._currentAnnotationGroup.setName(newName)
 
     def setCurrentAnnotationGroupOntId(self, newOntId):
         '''
@@ -646,7 +669,7 @@ class MeshGeneratorModel(object):
         '''
         fm = self._region.getFieldmodule()
         scene = self._region.getScene()
-        mesh = self._getMesh()
+        mesh = self.getMesh()
         selectionGroup = scene.getSelectionField().castGroup()
         meshGroup = selectionGroup.getFieldElementGroup(mesh).getMeshGroup()
         if meshGroup.isValid() and (meshGroup.getSize() > 0):
@@ -882,7 +905,7 @@ class MeshGeneratorModel(object):
             return False
         return self.isDisplayLines() and self.isDisplaySurfaces() and not self.isDisplaySurfacesTranslucent()
 
-    def _getMesh(self):
+    def getMesh(self):
         fm = self._region.getFieldmodule()
         for dimension in range(3,0,-1):
             mesh = fm.findMeshByDimension(dimension)
@@ -893,7 +916,7 @@ class MeshGeneratorModel(object):
         return mesh
 
     def getMeshDimension(self):
-        return self._getMesh().getDimension()
+        return self.getMesh().getDimension()
 
     def getNodeLocation(self, node_id):
         fm = self._region.getFieldmodule()
@@ -949,7 +972,7 @@ class MeshGeneratorModel(object):
         if (len(self._deleteElementRanges) == 0) or (len(self._scaffoldPackages) > 1):
             return
         fm = self._region.getFieldmodule()
-        mesh = self._getMesh()
+        mesh = self.getMesh()
         meshDimension = mesh.getDimension()
         nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
         with ChangeManager(fm):
@@ -1118,7 +1141,7 @@ class MeshGeneratorModel(object):
                 markerGroup = fm.createFieldConstant([0.0])  # show nothing to avoid warnings
             markerName = findOrCreateFieldStoredString(fm, 'marker_name')
             radius = fm.findFieldByName('radius')
-            markerLocation = findOrCreateFieldStoredMeshLocation(fm, self._getMesh(), name='marker_location')
+            markerLocation = findOrCreateFieldStoredMeshLocation(fm, self.getMesh(), name='marker_location')
             markerHostCoordinates = fm.createFieldEmbedded(coordinates, markerLocation)
 
             # fixed width glyph size is based on average element size in all dimensions

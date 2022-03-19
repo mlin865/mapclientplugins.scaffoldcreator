@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>2378</width>
-    <height>1472</height>
+    <width>1672</width>
+    <height>1223</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -113,8 +113,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>822</width>
-            <height>1014</height>
+            <width>446</width>
+            <height>726</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -378,7 +378,7 @@
           </sizepolicy>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>1</number>
          </property>
          <widget class="QWidget" name="display_tab">
           <attribute name="title">
@@ -948,6 +948,13 @@
                </widget>
               </item>
               <item>
+               <widget class="QPushButton" name="annotationGroupNewMarker_pushButton">
+                <property name="text">
+                 <string>New Marker</string>
+                </property>
+               </widget>
+              </item>
+              <item>
                <widget class="QPushButton" name="annotationGroupRedefine_pushButton">
                 <property name="text">
                  <string>Redefine</string>
@@ -1016,21 +1023,90 @@
                 </property>
                </widget>
               </item>
+              <item row="4" column="0" colspan="2">
+               <widget class="QGroupBox" name="marker_groupBox">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="title">
+                 <string>Marker</string>
+                </property>
+                <layout class="QFormLayout" name="formLayout_5">
+                 <property name="fieldGrowthPolicy">
+                  <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+                 </property>
+                 <property name="horizontalSpacing">
+                  <number>7</number>
+                 </property>
+                 <property name="verticalSpacing">
+                  <number>7</number>
+                 </property>
+                 <property name="topMargin">
+                  <number>3</number>
+                 </property>
+                 <property name="bottomMargin">
+                  <number>11</number>
+                 </property>
+                 <item row="0" column="0" colspan="2">
+                  <widget class="QFrame" name="marker_frame">
+                   <property name="frameShape">
+                    <enum>QFrame::StyledPanel</enum>
+                   </property>
+                   <property name="frameShadow">
+                    <enum>QFrame::Raised</enum>
+                   </property>
+                   <layout class="QFormLayout" name="formLayout_4">
+                    <property name="margin">
+                     <number>0</number>
+                    </property>
+                    <item row="3" column="0">
+                     <widget class="QLabel" name="markerMaterialCoordinates_label">
+                      <property name="text">
+                       <string>Material coordinates:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="3" column="1">
+                     <widget class="QLineEdit" name="markerMaterialCoordinates_lineEdit"/>
+                    </item>
+                    <item row="4" column="0">
+                     <widget class="QLabel" name="markerElement_label">
+                      <property name="text">
+                       <string>Element:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="4" column="1">
+                     <widget class="QLineEdit" name="markerElement_lineEdit"/>
+                    </item>
+                    <item row="5" column="0">
+                     <widget class="QLabel" name="markerXiCoordinates_label">
+                      <property name="text">
+                       <string>Element xi coordinates:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="5" column="1">
+                     <widget class="QLineEdit" name="markerXiCoordinates_lineEdit"/>
+                    </item>
+                    <item row="2" column="0">
+                     <widget class="QLabel" name="markerMaterialCoordinatesField_label">
+                      <property name="text">
+                       <string>Material coordinates field:</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="2" column="1">
+                     <widget class="FieldChooserWidget" name="markerMaterialCoordinatesField_fieldChooser"/>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                </layout>
+               </widget>
+              </item>
              </layout>
             </widget>
-           </item>
-           <item>
-            <spacer name="verticalSpacer_2">
-             <property name="orientation">
-              <enum>Qt::Vertical</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>20</width>
-               <height>40</height>
-              </size>
-             </property>
-            </spacer>
            </item>
           </layout>
          </widget>

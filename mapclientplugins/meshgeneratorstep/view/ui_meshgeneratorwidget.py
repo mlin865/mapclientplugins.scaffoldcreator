@@ -21,7 +21,7 @@ class Ui_MeshGeneratorWidget(object):
     def setupUi(self, MeshGeneratorWidget):
         if not MeshGeneratorWidget.objectName():
             MeshGeneratorWidget.setObjectName(u"MeshGeneratorWidget")
-        MeshGeneratorWidget.resize(2378, 1472)
+        MeshGeneratorWidget.resize(1672, 1223)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -70,7 +70,7 @@ class Ui_MeshGeneratorWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents_2 = QWidget()
         self.scrollAreaWidgetContents_2.setObjectName(u"scrollAreaWidgetContents_2")
-        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 822, 1014))
+        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 446, 726))
         sizePolicy1.setHeightForWidth(self.scrollAreaWidgetContents_2.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents_2.setSizePolicy(sizePolicy1)
         self.verticalLayout_2 = QVBoxLayout(self.scrollAreaWidgetContents_2)
@@ -579,6 +579,11 @@ class Ui_MeshGeneratorWidget(object):
 
         self.horizontalLayout_11.addWidget(self.annotationGroupNew_pushButton)
 
+        self.annotationGroupNewMarker_pushButton = QPushButton(self.annoptationModify_frame)
+        self.annotationGroupNewMarker_pushButton.setObjectName(u"annotationGroupNewMarker_pushButton")
+
+        self.horizontalLayout_11.addWidget(self.annotationGroupNewMarker_pushButton)
+
         self.annotationGroupRedefine_pushButton = QPushButton(self.annoptationModify_frame)
         self.annotationGroupRedefine_pushButton.setObjectName(u"annotationGroupRedefine_pushButton")
 
@@ -632,12 +637,68 @@ class Ui_MeshGeneratorWidget(object):
 
         self.formLayout_2.setWidget(3, QFormLayout.FieldRole, self.annotationGroupDimension_spinBox)
 
+        self.marker_groupBox = QGroupBox(self.annotationGroup_frame)
+        self.marker_groupBox.setObjectName(u"marker_groupBox")
+        self.marker_groupBox.setEnabled(True)
+        self.formLayout_5 = QFormLayout(self.marker_groupBox)
+        self.formLayout_5.setObjectName(u"formLayout_5")
+        self.formLayout_5.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        self.formLayout_5.setContentsMargins(-1, 3, -1, 11)
+        self.marker_frame = QFrame(self.marker_groupBox)
+        self.marker_frame.setObjectName(u"marker_frame")
+        self.marker_frame.setFrameShape(QFrame.StyledPanel)
+        self.marker_frame.setFrameShadow(QFrame.Raised)
+        self.formLayout_4 = QFormLayout(self.marker_frame)
+        self.formLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.formLayout_4.setObjectName(u"formLayout_4")
+        self.markerMaterialCoordinates_label = QLabel(self.marker_frame)
+        self.markerMaterialCoordinates_label.setObjectName(u"markerMaterialCoordinates_label")
+
+        self.formLayout_4.setWidget(3, QFormLayout.LabelRole, self.markerMaterialCoordinates_label)
+
+        self.markerMaterialCoordinates_lineEdit = QLineEdit(self.marker_frame)
+        self.markerMaterialCoordinates_lineEdit.setObjectName(u"markerMaterialCoordinates_lineEdit")
+
+        self.formLayout_4.setWidget(3, QFormLayout.FieldRole, self.markerMaterialCoordinates_lineEdit)
+
+        self.markerElement_label = QLabel(self.marker_frame)
+        self.markerElement_label.setObjectName(u"markerElement_label")
+
+        self.formLayout_4.setWidget(4, QFormLayout.LabelRole, self.markerElement_label)
+
+        self.markerElement_lineEdit = QLineEdit(self.marker_frame)
+        self.markerElement_lineEdit.setObjectName(u"markerElement_lineEdit")
+
+        self.formLayout_4.setWidget(4, QFormLayout.FieldRole, self.markerElement_lineEdit)
+
+        self.markerXiCoordinates_label = QLabel(self.marker_frame)
+        self.markerXiCoordinates_label.setObjectName(u"markerXiCoordinates_label")
+
+        self.formLayout_4.setWidget(5, QFormLayout.LabelRole, self.markerXiCoordinates_label)
+
+        self.markerXiCoordinates_lineEdit = QLineEdit(self.marker_frame)
+        self.markerXiCoordinates_lineEdit.setObjectName(u"markerXiCoordinates_lineEdit")
+
+        self.formLayout_4.setWidget(5, QFormLayout.FieldRole, self.markerXiCoordinates_lineEdit)
+
+        self.markerMaterialCoordinatesField_label = QLabel(self.marker_frame)
+        self.markerMaterialCoordinatesField_label.setObjectName(u"markerMaterialCoordinatesField_label")
+
+        self.formLayout_4.setWidget(2, QFormLayout.LabelRole, self.markerMaterialCoordinatesField_label)
+
+        self.markerMaterialCoordinatesField_fieldChooser = FieldChooserWidget(self.marker_frame)
+        self.markerMaterialCoordinatesField_fieldChooser.setObjectName(u"markerMaterialCoordinatesField_fieldChooser")
+
+        self.formLayout_4.setWidget(2, QFormLayout.FieldRole, self.markerMaterialCoordinatesField_fieldChooser)
+
+
+        self.formLayout_5.setWidget(0, QFormLayout.SpanningRole, self.marker_frame)
+
+
+        self.formLayout_2.setWidget(4, QFormLayout.SpanningRole, self.marker_groupBox)
+
 
         self.verticalLayout_12.addWidget(self.annotationGroup_frame)
-
-        self.verticalSpacer_2 = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
-
-        self.verticalLayout_12.addItem(self.verticalSpacer_2)
 
         self.controls_tabWidget.addTab(self.annotation_tab, "")
 
@@ -736,11 +797,17 @@ class Ui_MeshGeneratorWidget(object):
         self.displayMarkerPoints_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Marker points", None))
         self.controls_tabWidget.setTabText(self.controls_tabWidget.indexOf(self.display_tab), QCoreApplication.translate("MeshGeneratorWidget", u"Display", None))
         self.annotationGroupNew_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"New", None))
+        self.annotationGroupNewMarker_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"New Marker", None))
         self.annotationGroupRedefine_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Redefine", None))
         self.annotationGroupDelete_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Delete", None))
         self.annotationGroup_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Group:", None))
         self.annotationGroupOntId_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"ONT:ID:", None))
         self.annotationGroupDimension_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Dimension:", None))
+        self.marker_groupBox.setTitle(QCoreApplication.translate("MeshGeneratorWidget", u"Marker", None))
+        self.markerMaterialCoordinates_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Material coordinates:", None))
+        self.markerElement_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Element:", None))
+        self.markerXiCoordinates_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Element xi coordinates:", None))
+        self.markerMaterialCoordinatesField_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Material coordinates field:", None))
         self.controls_tabWidget.setTabText(self.controls_tabWidget.indexOf(self.annotation_tab), QCoreApplication.translate("MeshGeneratorWidget", u"Annotation", None))
         self.viewAll_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"View All", None))
         self.stdViews_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Std. Views", None))
