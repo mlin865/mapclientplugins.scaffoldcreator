@@ -3,10 +3,10 @@
 MAP Client Plugin
 """
 
-__version__ = '0.2.0'
+__version__ = '0.3.3'
 __author__ = 'Richard Christie'
 __stepname__ = 'Mesh Generator'
-__location__ = ''
+__location__ = 'https://github.com/ABI-Software/mapclientplugins.meshgeneratorstep'
 
 # import class that derives itself from the step mountpoint.
 from mapclientplugins.meshgeneratorstep import step

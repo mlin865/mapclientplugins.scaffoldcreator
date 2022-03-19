@@ -3,7 +3,6 @@ Derived SceneviewerWidget capable of editing node coordinate positions and deriv
 '''
 
 from enum import Enum
-import math
 from PySide2 import QtCore
 from opencmiss.maths.vectorops import add, cross, div, magnitude, mult, sub
 from opencmiss.utils.zinc.general import ChangeManager
@@ -12,6 +11,7 @@ from opencmiss.zinc.field import Field
 from opencmiss.zinc.graphics import Graphics
 from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_LOCAL, SCENECOORDINATESYSTEM_WINDOW_PIXEL_TOP_LEFT
 from opencmiss.zinc.result import RESULT_OK
+
 
 class NodeEditorSceneviewerWidget(SceneviewerWidget):
     '''
@@ -77,17 +77,17 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
         with ChangeManager(scenefiltermodule):
             oldSelectionfilter = self.getSelectionfilter()
             self.setSelectionfilter(scenefiltermodule.createScenefilterFieldDomainType(Field.DOMAIN_TYPE_NODES))
-            #print('pick',x,y,self._selectTol, 'DpiX', self.physicalDpiX(), self.logicalDpiX(), 'DpiY', self.physicalDpiY(), self.logicalDpiY())
-            #print('  width', self.width(), 'widthMM',self.widthMM(),'dpi',25.4*self.width()/self.widthMM(),
+            # print('pick',x,y,self._selectTol, 'DpiX', self.physicalDpiX(), self.logicalDpiX(), 'DpiY', self.physicalDpiY(), self.logicalDpiY())
+            # print('  width', self.width(), 'widthMM',self.widthMM(),'dpi',25.4*self.width()/self.widthMM(),
             #      'height', self.height(), 'heightMM',self.heightMM(),'dpi',25.4*self.height()/self.heightMM())
-            #app = QtCore.QCoreApplication.instance()
-            #desktop = app.desktop()
-            #dpmm = self.width()/self.widthMM()
-            #print('dpmm',dpmm,'physicalDpiX',desktop.physicalDpiX(),'screenGeometry',desktop.screenGeometry(self))
+            # app = QtCore.QCoreApplication.instance()
+            # desktop = app.desktop()
+            # dpmm = self.width()/self.widthMM()
+            # print('dpmm',dpmm,'physicalDpiX',desktop.physicalDpiX(),'screenGeometry',desktop.screenGeometry(self))
             tol = self._selectTol  # *0.1*dpmm
-            #print('tol',tol)
+            # print('tol',tol)
             self._scenepicker.setSceneviewerRectangle(self._sceneviewer, SCENECOORDINATESYSTEM_WINDOW_PIXEL_TOP_LEFT,
-                x - tol, y - tol, x + tol, y + tol)
+                                                      x - tol, y - tol, x + tol, y + tol)
             node = self._scenepicker.getNearestNode()
             if node.isValid():
                 graphics = self._scenepicker.getNearestNodeGraphics()
@@ -130,11 +130,11 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
                 if button == QtCore.Qt.LeftButton:
                     node, graphics = self.getNearestNodeAndGraphics(event.x(), event.y())
                     if node and (graphics.getType() == Graphics.TYPE_POINTS) and (graphics.getFieldDomainType() == Field.DOMAIN_TYPE_NODES):
-                        #print('NodeEditorSceneviewerWidget.mousePressEvent node:', node.getIdentifier())
+                        # print('NodeEditorSceneviewerWidget.mousePressEvent node:', node.getIdentifier())
                         self.selectNode(node)
                         self._editNode = node
                         self._editGraphics = graphics
-                        self._lastMousePos = [ event.x(), event.y() ]
+                        self._lastMousePos = [event.x(), event.y()]
                         event.accept()
                         return
             if self._model and self._alignKeyPressed:
@@ -148,7 +148,7 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
                 if self._alignMode != self.AlignMode.NONE:
                     self._editNode = None
                     self._editGraphics = None
-                    self._lastMousePos = [ event.x(), event.y() ]
+                    self._lastMousePos = [event.x(), event.y()]
                     event.accept()
                     return
         self._lastMousePos = None
@@ -156,7 +156,7 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
 
     def mouseMoveEvent(self, event):
         if self._editNode:
-            mousePos = [ event.x(), event.y() ]
+            mousePos = [event.x(), event.y()]
             nodeset = self._editNode.getNodeset()
             fieldmodule = nodeset.getFieldmodule()
             with ChangeManager(fieldmodule):
@@ -186,16 +186,16 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
                         result, initialVector = editVectorField.evaluateReal(fieldcache, componentsCount)
                         for c in range(componentsCount, 3):
                             initialVector.append(0.0)
-                        initialTipCoordinates = [ (initialCoordinates[c] + initialVector[c]*pointScaleFactor) for c in range(3) ]
+                        initialTipCoordinates = [(initialCoordinates[c] + initialVector[c] * pointScaleFactor) for c in range(3)]
                         windowCoordinates = self.projectLocal(initialTipCoordinates[0], initialTipCoordinates[1], initialTipCoordinates[2], localScene)
                         finalTipCoordinates = self.unprojectLocal(mousePos[0], -mousePos[1], windowCoordinates[2], localScene)
-                        finalVector = [ (finalTipCoordinates[c] - initialCoordinates[c])/pointScaleFactor for c in range(3) ]
+                        finalVector = [(finalTipCoordinates[c] - initialCoordinates[c]) / pointScaleFactor for c in range(3)]
                         result = editVectorField.assignReal(fieldcache, finalVector)
                     else:
                         windowCoordinates = self.projectLocal(initialCoordinates[0], initialCoordinates[1], initialCoordinates[2], localScene)
                         xa = self.unprojectLocal(self._lastMousePos[0], -self._lastMousePos[1], windowCoordinates[2], localScene)
                         xb = self.unprojectLocal(mousePos[0], -mousePos[1], windowCoordinates[2], localScene)
-                        finalCoordinates = [ (initialCoordinates[c] + xb[c] - xa[c]) for c in range(3)]
+                        finalCoordinates = [(initialCoordinates[c] + xb[c] - xa[c]) for c in range(3)]
                         result = editCoordinateField.assignReal(fieldcache, finalCoordinates)
                     del editVectorField
                 del editCoordinateField
@@ -204,8 +204,8 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
             event.accept()
             return
         if self._alignMode != self.AlignMode.NONE:
-            mousePos = [ event.x(), event.y() ]
-            delta = [ mousePos[0] - self._lastMousePos[0], mousePos[1] - self._lastMousePos[1] ]
+            mousePos = [event.x(), event.y()]
+            delta = [mousePos[0] - self._lastMousePos[0], mousePos[1] - self._lastMousePos[1]]
             result, eye = self._sceneviewer.getEyePosition()
             result, lookat = self._sceneviewer.getLookatPosition()
             result, up = self._sceneviewer.getUpVector()
@@ -217,11 +217,11 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
                 mag = magnitude(delta)
                 prop = div(delta, mag)
                 axis = add(mult(up, prop[0]), mult(right, prop[1]))
-                angle = mag*0.002
-                #print('delta', delta, 'axis', axis, 'angle', angle)
+                angle = mag * 0.002
+                # print('delta', delta, 'axis', axis, 'angle', angle)
                 self._model.interactionRotate(axis, angle)
             elif self._alignMode == self.AlignMode.SCALE:
-                factor = 1.0 + delta[1]*0.0005
+                factor = 1.0 + delta[1] * 0.0005
                 if factor < 0.9:
                     factor = 0.9
                 self._model.interactionScale(factor)
@@ -233,7 +233,7 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
                     eyeScale = (t - b) / viewportHeight
                 else:
                     eyeScale = (r - l) / viewportWidth
-                offset = add(mult(right, eyeScale*delta[0]), mult(up, -eyeScale*delta[1]))
+                offset = add(mult(right, eyeScale * delta[0]), mult(up, -eyeScale * delta[1]))
                 self._model.interactionTranslate(offset)
             self._lastMousePos = mousePos
             event.accept()
