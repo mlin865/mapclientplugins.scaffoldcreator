@@ -22,7 +22,8 @@ from opencmiss.zinc.node import Node
 from opencmiss.zinc.result import RESULT_OK, RESULT_WARNING_PART_DONE
 from opencmiss.zinc.scene import Scene
 from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_WORLD
-from scaffoldmaker.annotation.annotationgroup import findAnnotationGroupByName
+from scaffoldmaker.annotation.annotationgroup import findAnnotationGroupByName, getAnnotationMarkerGroup, \
+    getAnnotationMarkerLocationField, getAnnotationMarkerNameField
 from scaffoldmaker.scaffolds import Scaffolds
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 from scaffoldmaker.utils.exportvtk import ExportVtk
@@ -1096,7 +1097,8 @@ class MeshGeneratorModel(object):
     def _createGraphics(self):
         fm = self._region.getFieldmodule()
         with ChangeManager(fm):
-            meshDimension = self.getMeshDimension()
+            mesh = self.getMesh()
+            meshDimension = mesh.getDimension()
             coordinates = self.getModelCoordinatesField()
             componentsCount = coordinates.getNumberOfComponents()
             nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
@@ -1134,12 +1136,10 @@ class MeshGeneratorModel(object):
                 elementDerivativeFields.append(fm.createFieldDerivative(coordinates, d + 1))
             elementDerivativesField = fm.createFieldConcatenate(elementDerivativeFields)
             cmiss_number = fm.findFieldByName('cmiss_number')
-            markerGroup = fm.findFieldByName('marker').castGroup()
-            if not markerGroup.isValid():
-                markerGroup = fm.createFieldConstant([0.0])  # show nothing to avoid warnings
-            markerName = findOrCreateFieldStoredString(fm, 'marker_name')
             radius = fm.findFieldByName('radius')
-            markerLocation = findOrCreateFieldStoredMeshLocation(fm, self.getMesh(), name='marker_location')
+            markerGroup = getAnnotationMarkerGroup(fm)
+            markerLocation = getAnnotationMarkerLocationField(fm, mesh)
+            markerName = getAnnotationMarkerNameField(fm)
             markerHostCoordinates = fm.createFieldEmbedded(coordinates, markerLocation)
 
             # fixed width glyph size is based on average element size in all dimensions
