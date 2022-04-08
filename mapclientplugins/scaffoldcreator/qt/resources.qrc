@@ -1,6 +1,6 @@
 
 <RCC>
-  <qresource prefix="meshgeneratorstep">
+  <qresource prefix="scaffoldcreator">
     <file>images/model-viewer.png</file>
   </qresource>
 </RCC>

@@ -1,5 +1,5 @@
 """
-Mesh generator class. Generates Zinc meshes using scaffoldmaker.
+Scaffold Creator Model class. Generates Zinc meshes using scaffoldmaker.
 """
 
 from __future__ import division
@@ -10,8 +10,7 @@ import sys
 
 from opencmiss.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrix_mult, \
     rotation_matrix_to_euler
-from opencmiss.utils.zinc.field import findOrCreateFieldStoredMeshLocation, findOrCreateFieldStoredString, \
-    fieldIsManagedCoordinates
+from opencmiss.utils.zinc.field import fieldIsManagedCoordinates
 from opencmiss.utils.zinc.finiteelement import evaluateFieldNodesetRange
 from opencmiss.utils.zinc.general import ChangeManager
 
@@ -90,13 +89,13 @@ def parseVector3(vectorText: str, delimiter, defaultValue):
     return vector
 
 
-class MeshGeneratorModel(object):
+class ScaffoldCreatorModel(object):
     """
     Framework for generating meshes of a number of types, with mesh type specific options
     """
 
     def __init__(self, context, region, material_module):
-        super(MeshGeneratorModel, self).__init__()
+        super(ScaffoldCreatorModel, self).__init__()
         self._region_name = "generated_mesh"
         self._context = context
         self._parent_region = region

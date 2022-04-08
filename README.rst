@@ -1,4 +1,4 @@
-Mesh Generator
+Scaffold Creator
 ==============
 
 MAP Client plugin for generating meshes via scripts using OpenCMISS-Zinc.

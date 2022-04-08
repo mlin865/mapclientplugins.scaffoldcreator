@@ -48,8 +48,8 @@ requires = [
 source_license = readfile("LICENSE")
 
 setup(
-    name='mapclientplugins.meshgeneratorstep',
-    version=find_version('mapclientplugins', 'meshgeneratorstep', '__init__.py'),
+    name='mapclientplugins.scaffoldcreator',
+    version=find_version('mapclientplugins', 'scaffoldcreator', '__init__.py'),
     description='MAP Client plugin for generating meshes via scripts using OpenCMISS-Zinc.',
     long_description='\n'.join(readme) + source_license,
     classifiers=[
@@ -59,7 +59,7 @@ setup(
     ],
     author='Richard Christie',
     author_email='',
-    url='https://github.com/ABI-Software/mapclientplugins.meshgeneratorstep',
+    url='https://github.com/ABI-Software/mapclientplugins.scaffoldcreator',
     license='APACHE',
     packages=find_packages(exclude=['ez_setup', ]),
     namespace_packages=['mapclientplugins'],

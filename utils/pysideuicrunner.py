@@ -10,7 +10,7 @@ if __name__ == '__main__':
     to the root directory of the repository.
 
     Script has been used with the following arguments:
-     - mapclientplugins/meshgeneratorstep/qt/meshgeneratorwidget.ui mapclientplugins/meshgeneratorstep/view
+     - mapclientplugins/scaffoldcreator/qt/scaffoldcreatorwidget.ui mapclientplugins/scaffoldcreator/view
     '''
     if len(sys.argv) > 2:
         ui_file = sys.argv[1]

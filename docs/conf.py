@@ -2,7 +2,7 @@
 
 # -- Project information
 
-project = 'mapclienplugins.meshgeneratorstep'
+project = 'mapclienplugins.scaffoldcreator'
 copyright = '2022, University of Auckland'
 author = 'University of Auckland'
 
