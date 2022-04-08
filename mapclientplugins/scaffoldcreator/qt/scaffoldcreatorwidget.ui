@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>MeshGeneratorWidget</class>
- <widget class="QWidget" name="MeshGeneratorWidget">
+ <class>ScaffoldCreatorWidget</class>
+ <widget class="QWidget" name="ScaffoldCreatorWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>Mesh Generator</string>
+   <string>Scaffold Creator</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <item>
@@ -1174,7 +1174,7 @@
   <customwidget>
    <class>NodeEditorSceneviewerWidget</class>
    <extends>QWidget</extends>
-   <header>mapclientplugins/meshgeneratorstep/view/nodeeditorsceneviewerwidget.h</header>
+   <header>mapclientplugins/scaffoldcreator/view/nodeeditorsceneviewerwidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

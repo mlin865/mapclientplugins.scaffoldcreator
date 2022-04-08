@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'meshgeneratorwidget.ui'
+## Form generated from reading UI file 'scaffoldcreatorwidget.ui'
 ##
 ## Created by: Qt User Interface Compiler version 5.15.2
 ##
@@ -12,25 +12,26 @@ from PySide2.QtCore import *
 from PySide2.QtGui import *
 from PySide2.QtWidgets import *
 
-from mapclientplugins.meshgeneratorstep.view.nodeeditorsceneviewerwidget import NodeEditorSceneviewerWidget
+from mapclientplugins.scaffoldcreator.view.nodeeditorsceneviewerwidget import NodeEditorSceneviewerWidget
 from opencmiss.zincwidgets.fieldchooserwidget import FieldChooserWidget
 
-from mapclientplugins.meshgeneratorstep import resources_rc
+from mapclientplugins.scaffoldcreator import resources_rc
 
-class Ui_MeshGeneratorWidget(object):
-    def setupUi(self, MeshGeneratorWidget):
-        if not MeshGeneratorWidget.objectName():
-            MeshGeneratorWidget.setObjectName(u"MeshGeneratorWidget")
-        MeshGeneratorWidget.resize(1672, 1223)
+
+class Ui_ScaffoldCreatorWidget(object):
+    def setupUi(self, ScaffoldCreatorWidget):
+        if not ScaffoldCreatorWidget.objectName():
+            ScaffoldCreatorWidget.setObjectName(u"ScaffoldCreatorWidget")
+        ScaffoldCreatorWidget.resize(1672, 1223)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(MeshGeneratorWidget.sizePolicy().hasHeightForWidth())
-        MeshGeneratorWidget.setSizePolicy(sizePolicy)
-        MeshGeneratorWidget.setMinimumSize(QSize(0, 0))
-        self.horizontalLayout = QHBoxLayout(MeshGeneratorWidget)
+        sizePolicy.setHeightForWidth(ScaffoldCreatorWidget.sizePolicy().hasHeightForWidth())
+        ScaffoldCreatorWidget.setSizePolicy(sizePolicy)
+        ScaffoldCreatorWidget.setMinimumSize(QSize(0, 0))
+        self.horizontalLayout = QHBoxLayout(ScaffoldCreatorWidget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.dockWidget = QDockWidget(MeshGeneratorWidget)
+        self.dockWidget = QDockWidget(ScaffoldCreatorWidget)
         self.dockWidget.setObjectName(u"dockWidget")
         sizePolicy1 = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         sizePolicy1.setHorizontalStretch(0)
@@ -643,6 +644,8 @@ class Ui_MeshGeneratorWidget(object):
         self.formLayout_5 = QFormLayout(self.marker_groupBox)
         self.formLayout_5.setObjectName(u"formLayout_5")
         self.formLayout_5.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        self.formLayout_5.setHorizontalSpacing(7)
+        self.formLayout_5.setVerticalSpacing(7)
         self.formLayout_5.setContentsMargins(-1, 3, -1, 11)
         self.marker_frame = QFrame(self.marker_groupBox)
         self.marker_frame.setObjectName(u"marker_frame")
@@ -735,7 +738,7 @@ class Ui_MeshGeneratorWidget(object):
 
         self.horizontalLayout.addWidget(self.dockWidget)
 
-        self.sceneviewer_widget = NodeEditorSceneviewerWidget(MeshGeneratorWidget)
+        self.sceneviewer_widget = NodeEditorSceneviewerWidget(ScaffoldCreatorWidget)
         self.sceneviewer_widget.setObjectName(u"sceneviewer_widget")
         sizePolicy5 = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         sizePolicy5.setHorizontalStretch(4)
@@ -746,71 +749,71 @@ class Ui_MeshGeneratorWidget(object):
         self.horizontalLayout.addWidget(self.sceneviewer_widget)
 
 
-        self.retranslateUi(MeshGeneratorWidget)
+        self.retranslateUi(ScaffoldCreatorWidget)
 
-        self.controls_tabWidget.setCurrentIndex(0)
+        self.controls_tabWidget.setCurrentIndex(1)
 
 
-        QMetaObject.connectSlotsByName(MeshGeneratorWidget)
+        QMetaObject.connectSlotsByName(ScaffoldCreatorWidget)
     # setupUi
 
-    def retranslateUi(self, MeshGeneratorWidget):
-        MeshGeneratorWidget.setWindowTitle(QCoreApplication.translate("MeshGeneratorWidget", u"Mesh Generator", None))
-        self.dockWidget.setWindowTitle(QCoreApplication.translate("MeshGeneratorWidget", u"Control Panel", None))
-        self.identifier_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Identifier", None))
-        self.subscaffold_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Subscaffold", None))
-        self.subscaffoldBack_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"<< Back", None))
-        self.meshType_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Mesh type:", None))
-        self.parameterSet_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Parameter set:", None))
-        self.deleteElementsRanges_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Delete element ID ranges (e.g. 1,2-5,13):", None))
-        self.deleteElementsSelection_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Delete selected elements", None))
-        self.rotation_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Rotation in degrees about z, y, x", None))
-        self.scale_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Scale x, y, z:", None))
-        self.translation_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Translation x, y, z", None))
-        self.applyTransformation_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Apply transformation", None))
-        self.displayDataPoints_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Data points", None))
-        self.displayDataContours_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Data contours", None))
-        self.displayDataRadius_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Data radius", None))
-        self.displayDataMarkerPoints_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Data marker points", None))
-        self.displayDataMarkerNames_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Data marker names", None))
-        self.displayModelCoordinates_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Model coordinates:", None))
-        self.displayNodePoints_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Node points", None))
-        self.displayNodeNumbers_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Node numbers", None))
-        self.displayNodeDerivatives_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Node derivatives", None))
-        self.displayNodeDerivativeLabelsD1_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"D1", None))
-        self.displayNodeDerivativeLabelsD2_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"D2", None))
-        self.displayNodeDerivativeLabelsD3_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"D3", None))
-        self.displayNodeDerivativeLabelsD12_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"D12", None))
-        self.displayNodeDerivativeLabelsD13_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"D13", None))
-        self.displayNodeDerivativeLabelsD23_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"D23", None))
-        self.displayNodeDerivativeLabelsD123_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"D123", None))
-        self.displayLines_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Lines", None))
-        self.displayLinesExterior_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Exterior", None))
-        self.displayModelRadius_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Model radius", None))
-        self.displaySurfaces_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Surfaces", None))
-        self.displaySurfacesExterior_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Exterior", None))
-        self.displaySurfacesTranslucent_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Transluc.", None))
-        self.displaySurfacesWireframe_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Wireframe", None))
-        self.displayElementNumbers_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Element numbers", None))
-        self.displayElementAxes_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Element axes", None))
-        self.displayAxes_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Axes", None))
-        self.displayMarkerPoints_checkBox.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Marker points", None))
-        self.controls_tabWidget.setTabText(self.controls_tabWidget.indexOf(self.display_tab), QCoreApplication.translate("MeshGeneratorWidget", u"Display", None))
-        self.annotationGroupNew_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"New", None))
-        self.annotationGroupNewMarker_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"New Marker", None))
-        self.annotationGroupRedefine_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Redefine", None))
-        self.annotationGroupDelete_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Delete", None))
-        self.annotationGroup_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Group:", None))
-        self.annotationGroupOntId_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"ONT:ID:", None))
-        self.annotationGroupDimension_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Dimension:", None))
-        self.marker_groupBox.setTitle(QCoreApplication.translate("MeshGeneratorWidget", u"Marker", None))
-        self.markerMaterialCoordinates_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Material coordinates:", None))
-        self.markerElement_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Element:", None))
-        self.markerXiCoordinates_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Element xi coordinates:", None))
-        self.markerMaterialCoordinatesField_label.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Material coordinates field:", None))
-        self.controls_tabWidget.setTabText(self.controls_tabWidget.indexOf(self.annotation_tab), QCoreApplication.translate("MeshGeneratorWidget", u"Annotation", None))
-        self.viewAll_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"View All", None))
-        self.stdViews_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Std. Views", None))
-        self.done_pushButton.setText(QCoreApplication.translate("MeshGeneratorWidget", u"Done", None))
+    def retranslateUi(self, ScaffoldCreatorWidget):
+        ScaffoldCreatorWidget.setWindowTitle(QCoreApplication.translate("ScaffoldCreatorWidget", u"Scaffold Creator", None))
+        self.dockWidget.setWindowTitle(QCoreApplication.translate("ScaffoldCreatorWidget", u"Control Panel", None))
+        self.identifier_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Identifier", None))
+        self.subscaffold_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Subscaffold", None))
+        self.subscaffoldBack_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"<< Back", None))
+        self.meshType_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Mesh type:", None))
+        self.parameterSet_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Parameter set:", None))
+        self.deleteElementsRanges_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Delete element ID ranges (e.g. 1,2-5,13):", None))
+        self.deleteElementsSelection_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Delete selected elements", None))
+        self.rotation_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Rotation in degrees about z, y, x", None))
+        self.scale_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Scale x, y, z:", None))
+        self.translation_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Translation x, y, z", None))
+        self.applyTransformation_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Apply transformation", None))
+        self.displayDataPoints_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Data points", None))
+        self.displayDataContours_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Data contours", None))
+        self.displayDataRadius_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Data radius", None))
+        self.displayDataMarkerPoints_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Data marker points", None))
+        self.displayDataMarkerNames_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Data marker names", None))
+        self.displayModelCoordinates_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Model coordinates:", None))
+        self.displayNodePoints_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Node points", None))
+        self.displayNodeNumbers_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Node numbers", None))
+        self.displayNodeDerivatives_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Node derivatives", None))
+        self.displayNodeDerivativeLabelsD1_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"D1", None))
+        self.displayNodeDerivativeLabelsD2_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"D2", None))
+        self.displayNodeDerivativeLabelsD3_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"D3", None))
+        self.displayNodeDerivativeLabelsD12_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"D12", None))
+        self.displayNodeDerivativeLabelsD13_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"D13", None))
+        self.displayNodeDerivativeLabelsD23_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"D23", None))
+        self.displayNodeDerivativeLabelsD123_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"D123", None))
+        self.displayLines_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Lines", None))
+        self.displayLinesExterior_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Exterior", None))
+        self.displayModelRadius_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Model radius", None))
+        self.displaySurfaces_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Surfaces", None))
+        self.displaySurfacesExterior_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Exterior", None))
+        self.displaySurfacesTranslucent_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Transluc.", None))
+        self.displaySurfacesWireframe_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Wireframe", None))
+        self.displayElementNumbers_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Element numbers", None))
+        self.displayElementAxes_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Element axes", None))
+        self.displayAxes_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Axes", None))
+        self.displayMarkerPoints_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Marker points", None))
+        self.controls_tabWidget.setTabText(self.controls_tabWidget.indexOf(self.display_tab), QCoreApplication.translate("ScaffoldCreatorWidget", u"Display", None))
+        self.annotationGroupNew_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"New", None))
+        self.annotationGroupNewMarker_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"New Marker", None))
+        self.annotationGroupRedefine_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Redefine", None))
+        self.annotationGroupDelete_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Delete", None))
+        self.annotationGroup_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Group:", None))
+        self.annotationGroupOntId_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"ONT:ID:", None))
+        self.annotationGroupDimension_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Dimension:", None))
+        self.marker_groupBox.setTitle(QCoreApplication.translate("ScaffoldCreatorWidget", u"Marker", None))
+        self.markerMaterialCoordinates_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Material coordinates:", None))
+        self.markerElement_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Element:", None))
+        self.markerXiCoordinates_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Element xi coordinates:", None))
+        self.markerMaterialCoordinatesField_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Material coordinates field:", None))
+        self.controls_tabWidget.setTabText(self.controls_tabWidget.indexOf(self.annotation_tab), QCoreApplication.translate("ScaffoldCreatorWidget", u"Annotation", None))
+        self.viewAll_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"View All", None))
+        self.stdViews_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Std. Views", None))
+        self.done_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Done", None))
     # retranslateUi
 

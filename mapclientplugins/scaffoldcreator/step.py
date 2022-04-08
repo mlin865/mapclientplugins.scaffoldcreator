@@ -6,23 +6,23 @@ import json
 from PySide2 import QtGui
 
 from mapclient.mountpoints.workflowstep import WorkflowStepMountPoint
-from mapclientplugins.meshgeneratorstep.configuredialog import ConfigureDialog
-from mapclientplugins.meshgeneratorstep.model.mastermodel import MasterModel
-from mapclientplugins.meshgeneratorstep.view.meshgeneratorwidget import MeshGeneratorWidget
+from mapclientplugins.scaffoldcreator.configuredialog import ConfigureDialog
+from mapclientplugins.scaffoldcreator.model.mastermodel import MasterModel
+from mapclientplugins.scaffoldcreator.view.scaffoldcreatorwidget import ScaffoldCreatorWidget
 
 
-class MeshGeneratorStep(WorkflowStepMountPoint):
+class ScaffoldCreator(WorkflowStepMountPoint):
     """
     Skeleton step which is intended to be a helpful starting point
     for new steps.
     """
 
     def __init__(self, location):
-        super(MeshGeneratorStep, self).__init__('Mesh Generator', location)
+        super(ScaffoldCreator, self).__init__('Scaffold Creator', location)
         self._configured = False  # A step cannot be executed until it has been configured.
         self._category = 'Source'
         # Add any other initialisation code here:
-        self._icon = QtGui.QImage(':/meshgeneratorstep/images/model-viewer.png')
+        self._icon = QtGui.QImage(':/scaffoldcreator/images/model-viewer.png')
         # Ports:
         self.addPort(('http://physiomeproject.org/workflow/1.0/rdf-schema#port',
                       'http://physiomeproject.org/workflow/1.0/rdf-schema#provides',
@@ -54,7 +54,7 @@ class MeshGeneratorStep(WorkflowStepMountPoint):
         self._model = MasterModel(self._location, self._config['identifier'])
         if self._port1_inputZincDataFile:
             self._model.setSegmentationDataFile(self._port1_inputZincDataFile)
-        self._view = MeshGeneratorWidget(self._model)
+        self._view = ScaffoldCreatorWidget(self._model)
         # self._view.setWindowFlags(QtCore.Qt.Widget)
         self._view.registerDoneExecution(self._myDoneExecution)
         self._setCurrentWidget(self._view)

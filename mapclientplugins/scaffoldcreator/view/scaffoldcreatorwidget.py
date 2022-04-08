@@ -1,12 +1,12 @@
 """
-Dialog/UI for interacting with meshgeneratormodel.
+Dialog/UI for interacting with scaffoldcreatormodel.
 """
 
 from PySide2 import QtCore, QtWidgets
 from functools import partial
 
-from mapclientplugins.meshgeneratorstep.view.ui_meshgeneratorwidget import Ui_MeshGeneratorWidget
-from mapclientplugins.meshgeneratorstep.view.functionoptionsdialog import FunctionOptionsDialog
+from mapclientplugins.scaffoldcreator.view.ui_scaffoldcreatorwidget import Ui_ScaffoldCreatorWidget
+from mapclientplugins.scaffoldcreator.view.functionoptionsdialog import FunctionOptionsDialog
 from opencmiss.maths.vectorops import dot, magnitude, mult, normalize, sub
 from opencmiss.utils.zinc.field import fieldIsManagedCoordinates
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
@@ -38,21 +38,21 @@ def QLineEdit_parseVector(lineedit):
     return None
 
 
-class MeshGeneratorWidget(QtWidgets.QWidget):
+class ScaffoldCreatorWidget(QtWidgets.QWidget):
 
     def __init__(self, model, parent=None):
-        super(MeshGeneratorWidget, self).__init__(parent)
-        self._ui = Ui_MeshGeneratorWidget()
+        super(ScaffoldCreatorWidget, self).__init__(parent)
+        self._ui = Ui_ScaffoldCreatorWidget()
         self._ui.setupUi(self)
         self._model = model
-        self._generator_model = model.getGeneratorModel()
+        self._scaffold_model = model.getCreatorModel()
         self._annotation_model = model.getMeshAnnotationModel()
         self._segmentation_data_model = model.getSegmentationDataModel()
         self._ui.sceneviewer_widget.setContext(model.getContext())
-        self._ui.sceneviewer_widget.setGeneratorModel(model.getGeneratorModel())
-        self._model.getGeneratorModel().registerCustomParametersCallback(self._customParametersChange)
+        self._ui.sceneviewer_widget.setGeneratorModel(model.getCreatorModel())
+        self._model.getCreatorModel().registerCustomParametersCallback(self._customParametersChange)
         self._model.registerSceneChangeCallback(self._sceneChanged)
-        self._generator_model.registerTransformationChangeCallback(self._transformationChanged)
+        self._scaffold_model.registerTransformationChangeCallback(self._transformationChanged)
         self._doneCallback = None
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
@@ -84,10 +84,10 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
 
     def _sceneChanged(self):
         # new region for choosing coordinate field from
-        self._ui.displayModelCoordinates_fieldChooser.setRegion(self._generator_model.getRegion())
-        self._ui.displayModelCoordinates_fieldChooser.setField(self._generator_model.getModelCoordinatesField())
-        self._ui.markerMaterialCoordinatesField_fieldChooser.setRegion(self._generator_model.getRegion())
-        if self._generator_model.getCurrentAnnotationGroup():
+        self._ui.displayModelCoordinates_fieldChooser.setRegion(self._scaffold_model.getRegion())
+        self._ui.displayModelCoordinates_fieldChooser.setField(self._scaffold_model.getModelCoordinatesField())
+        self._ui.markerMaterialCoordinatesField_fieldChooser.setRegion(self._scaffold_model.getRegion())
+        if self._scaffold_model.getCurrentAnnotationGroup():
             self._refreshCurrentAnnotationGroupSettings()
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
         if sceneviewer is not None:
@@ -96,9 +96,9 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
             self._autoPerturbLines()
 
     def _transformationChanged(self):
-        self._ui.rotation_lineEdit.setText(self._generator_model.getRotationText())
-        self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
-        self._ui.translation_lineEdit.setText(self._generator_model.getTranslationText())
+        self._ui.rotation_lineEdit.setText(self._scaffold_model.getRotationText())
+        self._ui.scale_lineEdit.setText(self._scaffold_model.getScaleText())
+        self._ui.translation_lineEdit.setText(self._scaffold_model.getTranslationText())
 
     def _autoPerturbLines(self):
         """
@@ -107,7 +107,7 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         """
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
         if sceneviewer is not None:
-            sceneviewer.setPerturbLinesFlag(self._generator_model.needPerturbLines())
+            sceneviewer.setPerturbLinesFlag(self._scaffold_model.needPerturbLines())
 
     def _makeConnections(self):
         self._ui.sceneviewer_widget.graphicsInitialized.connect(self._graphicsInitialized)
@@ -129,7 +129,7 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         self._ui.displayDataMarkerPoints_checkBox.clicked.connect(self._displayDataMarkerPointsClicked)
         self._ui.displayDataMarkerNames_checkBox.clicked.connect(self._displayDataMarkerNamesClicked)
         self._ui.displayMarkerPoints_checkBox.clicked.connect(self._displayMarkerPointsClicked)
-        self._ui.displayModelCoordinates_fieldChooser.setRegion(self._generator_model.getRegion())
+        self._ui.displayModelCoordinates_fieldChooser.setRegion(self._scaffold_model.getRegion())
         self._ui.displayModelCoordinates_fieldChooser.setConditional(fieldIsManagedCoordinates)
         self._ui.displayModelCoordinates_fieldChooser.currentIndexChanged.connect(
             self._displayModelCoordinatesFieldChanged)
@@ -159,7 +159,7 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         self._ui.annotationGroupRedefine_pushButton.clicked.connect(self._annotationGroupRedefineButtonClicked)
         self._ui.annotationGroupDelete_pushButton.clicked.connect(self._annotationGroupDeleteButtonClicked)
         self._ui.annotationGroupOntId_lineEdit.editingFinished.connect(self._annotationGroupOntIdLineEditChanged)
-        self._ui.markerMaterialCoordinatesField_fieldChooser.setRegion(self._generator_model.getRegion())
+        self._ui.markerMaterialCoordinatesField_fieldChooser.setRegion(self._scaffold_model.getRegion())
         self._ui.markerMaterialCoordinatesField_fieldChooser.setNullObjectName("-")
         self._ui.markerMaterialCoordinatesField_fieldChooser.setConditional(fieldIsManagedCoordinates)
         self._ui.markerMaterialCoordinatesField_fieldChooser.currentIndexChanged.connect(
@@ -200,18 +200,18 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
     def _refreshScaffoldTypeNames(self):
         self._refreshComboBoxNames(
             self._ui.meshType_comboBox,
-            self._generator_model.getAvailableScaffoldTypeNames(),
-            self._generator_model.getEditScaffoldTypeName())
+            self._scaffold_model.getAvailableScaffoldTypeNames(),
+            self._scaffold_model.getEditScaffoldTypeName())
 
     def _refreshParameterSetNames(self):
         self._refreshComboBoxNames(
             self._ui.parameterSet_comboBox,
-            self._generator_model.getAvailableParameterSetNames(),
-            self._generator_model.getParameterSetName())
+            self._scaffold_model.getAvailableParameterSetNames(),
+            self._scaffold_model.getParameterSetName())
 
     def _refreshAnnotationGroups(self):
-        annotationGroups = self._generator_model.getAnnotationGroups()
-        currentAnnotationGroup = self._generator_model.getCurrentAnnotationGroup()
+        annotationGroups = self._scaffold_model.getAnnotationGroups()
+        currentAnnotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
         self._refreshComboBoxNames(
             self._ui.annotationGroup_comboBox,
             ['-'] + [annotationGroup.getName() for annotationGroup in annotationGroups],
@@ -264,62 +264,62 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
 
     def _annotationGroupChanged(self, index):
         annotationGroupName = self._ui.annotationGroup_comboBox.itemText(index)
-        self._generator_model.setCurrentAnnotationGroupByName(annotationGroupName)
+        self._scaffold_model.setCurrentAnnotationGroupByName(annotationGroupName)
         self._refreshCurrentAnnotationGroupSettings()
 
     def _annotationGroupNewButtonClicked(self):
-        self._generator_model.createUserAnnotationGroup()
+        self._scaffold_model.createUserAnnotationGroup()
         self._refreshAnnotationGroups()
         self._refreshCurrentAnnotationGroupSettings()
 
     def _annotationGroupNewMarkerButtonClicked(self):
-        self._generator_model.createUserMarkerAnnotationGroup()
+        self._scaffold_model.createUserMarkerAnnotationGroup()
         self._refreshAnnotationGroups()
         self._refreshCurrentAnnotationGroupSettings()
 
     def _annotationGroupRedefineButtonClicked(self):
-        annotationGroup = self._generator_model.getCurrentAnnotationGroup()
+        annotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
         if annotationGroup:
             reply = QtWidgets.QMessageBox.question(
                 self, 'Confirm action',
                 'Redefine annotation group \'' + annotationGroup.getName() + '\' from selection?',
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
             if reply == QtWidgets.QMessageBox.Yes:
-                if self._generator_model.redefineCurrentAnnotationGroupFromSelection():
+                if self._scaffold_model.redefineCurrentAnnotationGroupFromSelection():
                     self._refreshCurrentAnnotationGroupSettings()
 
     def _annotationGroupDeleteButtonClicked(self):
-        annotationGroup = self._generator_model.getCurrentAnnotationGroup()
+        annotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
         if annotationGroup:
             reply = QtWidgets.QMessageBox.question(
                 self, 'Confirm action',
                 'Delete annotation group \'' + annotationGroup.getName() + '\'?',
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
             if reply == QtWidgets.QMessageBox.Yes:
-                if self._generator_model.deleteAnnotationGroup(annotationGroup):
+                if self._scaffold_model.deleteAnnotationGroup(annotationGroup):
                     self._refreshAnnotationGroups()
                     self._refreshCurrentAnnotationGroupSettings()
 
     def _annotationGroupNameLineEditChanged(self):
         newName = self._ui.annotationGroup_comboBox.currentText()
-        annotationGroup = self._generator_model.getCurrentAnnotationGroup()
+        annotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
         if annotationGroup and (annotationGroup.getName() != newName):
-            if self._generator_model.setCurrentAnnotationGroupName(newName):
+            if self._scaffold_model.setCurrentAnnotationGroupName(newName):
                 self._refreshAnnotationGroups()
             else:
                 self._refreshCurrentAnnotationGroupSettings()
 
     def _annotationGroupOntIdLineEditChanged(self):
         newOntId = self._ui.annotationGroupOntId_lineEdit.text()
-        if not self._generator_model.setCurrentAnnotationGroupOntId(newOntId):
+        if not self._scaffold_model.setCurrentAnnotationGroupOntId(newOntId):
             self._refreshCurrentAnnotationGroupSettings()
 
     def _markerMaterialCoordinatesFieldChanged(self, index):
         """
         Callback for change in marker material coordinates field.
         """
-        annotationGroup = self._generator_model.getCurrentAnnotationGroup()
-        isUser = self._generator_model.isUserAnnotationGroup(annotationGroup)
+        annotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
+        isUser = self._scaffold_model.isUserAnnotationGroup(annotationGroup)
         if isUser:
             markerMaterialCoordinatesField = self._ui.markerMaterialCoordinatesField_fieldChooser.getField()
             annotationGroup.setMarkerMaterialCoordinates(markerMaterialCoordinatesField)
@@ -331,8 +331,8 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         """
         Callback for change in marker material coordinates.
         """
-        annotationGroup = self._generator_model.getCurrentAnnotationGroup()
-        isUser = self._generator_model.isUserAnnotationGroup(annotationGroup)
+        annotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
+        isUser = self._scaffold_model.isUserAnnotationGroup(annotationGroup)
         if isUser and annotationGroup.isMarker():
             markerMaterialCoordinatesField = self._ui.markerMaterialCoordinatesField_fieldChooser.getField()
             values = QLineEdit_parseVector(self._ui.markerMaterialCoordinates_lineEdit)
@@ -347,12 +347,12 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         """
         Callback for change in marker location element.
         """
-        annotationGroup = self._generator_model.getCurrentAnnotationGroup()
-        isUser = self._generator_model.isUserAnnotationGroup(annotationGroup)
+        annotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
+        isUser = self._scaffold_model.isUserAnnotationGroup(annotationGroup)
         if isUser and annotationGroup.isMarker():
             xi = annotationGroup.getMarkerLocation()[1]
             identifier = QLineEdit_parseInt(self._ui.markerElement_lineEdit)
-            mesh = self._generator_model.getMesh()
+            mesh = self._scaffold_model.getMesh()
             if isinstance(identifier, int) and isinstance(xi, list):
                 element = mesh.findElementByIdentifier(identifier)
                 if element.isValid():
@@ -363,8 +363,8 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         """
         Callback for change in marker location xi coordinates.
         """
-        annotationGroup = self._generator_model.getCurrentAnnotationGroup()
-        isUser = self._generator_model.isUserAnnotationGroup(annotationGroup)
+        annotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
+        isUser = self._scaffold_model.isUserAnnotationGroup(annotationGroup)
         if isUser and annotationGroup.isMarker():
             element, oldXi = annotationGroup.getMarkerLocation()
             xi = QLineEdit_parseVector(self._ui.markerXiCoordinates_lineEdit)
@@ -379,8 +379,8 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         """
         Display current annotation group settings.
         """
-        annotationGroup = self._generator_model.getCurrentAnnotationGroup()
-        isUser = (annotationGroup is not None) and self._generator_model.isUserAnnotationGroup(annotationGroup)
+        annotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
+        isUser = (annotationGroup is not None) and self._scaffold_model.isUserAnnotationGroup(annotationGroup)
         self._ui.annotationGroup_comboBox.setEditable(isUser)
         if isUser:
             self._ui.annotationGroup_comboBox.lineEdit().editingFinished.connect(
@@ -415,7 +415,7 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
 
     def _scaffoldTypeChanged(self, index):
         scaffoldTypeName = self._ui.meshType_comboBox.itemText(index)
-        self._generator_model.setScaffoldTypeByName(scaffoldTypeName)
+        self._scaffold_model.setScaffoldTypeByName(scaffoldTypeName)
         self._annotation_model.setScaffoldTypeByName(scaffoldTypeName)
         self._refreshParameterSetNames()
         self._refreshScaffoldOptions()
@@ -424,20 +424,20 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
 
     def _parameterSetChanged(self, index):
         parameterSetName = self._ui.parameterSet_comboBox.itemText(index)
-        self._generator_model.setParameterSetName(parameterSetName)
+        self._scaffold_model.setParameterSetName(parameterSetName)
         self._refreshScaffoldOptions()
         self._refreshAnnotationGroups()
         self._refreshCurrentAnnotationGroupSettings()
 
     def _meshTypeOptionCheckBoxClicked(self, checkBox):
-        dependentChanges = self._generator_model.setScaffoldOption(checkBox.objectName(), checkBox.isChecked())
+        dependentChanges = self._scaffold_model.setScaffoldOption(checkBox.objectName(), checkBox.isChecked())
         if dependentChanges:
             self._refreshScaffoldOptions()
         self._refreshAnnotationGroups()
         self._refreshCurrentAnnotationGroupSettings()
 
     def _subscaffoldBackButtonPressed(self):
-        self._generator_model.endEditScaffoldPackageOption()
+        self._scaffold_model.endEditScaffoldPackageOption()
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
         self._refreshScaffoldOptions()
@@ -446,7 +446,7 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
 
     def _meshTypeOptionScaffoldPackageButtonPressed(self, pushButton):
         optionName = pushButton.objectName()
-        self._generator_model.editScaffoldPackageOption(optionName)
+        self._scaffold_model.editScaffoldPackageOption(optionName)
         self._refreshScaffoldTypeNames()
         self._refreshParameterSetNames()
         self._refreshScaffoldOptions()
@@ -455,19 +455,19 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
 
     def _meshTypeInteractiveFunctionButtonPressed(self, pushButton):
         functionName = pushButton.objectName()
-        functionOptions = self._generator_model.getInteractiveFunctionOptions(functionName)
+        functionOptions = self._scaffold_model.getInteractiveFunctionOptions(functionName)
         functionOptionsDialog = FunctionOptionsDialog(functionName, functionOptions, self)
         if functionOptionsDialog.exec():
-            optionsChanged = self._generator_model.performInteractiveFunction(functionName, functionOptions)
+            optionsChanged = self._scaffold_model.performInteractiveFunction(functionName, functionOptions)
             if optionsChanged:
                 self._refreshScaffoldOptions()
 
     def _meshTypeOptionLineEditChanged(self, lineEdit):
-        dependentChanges = self._generator_model.setScaffoldOption(lineEdit.objectName(), lineEdit.text())
+        dependentChanges = self._scaffold_model.setScaffoldOption(lineEdit.objectName(), lineEdit.text())
         if dependentChanges:
             self._refreshScaffoldOptions()
         else:
-            lineEdit.setText(self._generator_model.getEditScaffoldOptionStr(lineEdit.objectName()))
+            lineEdit.setText(self._scaffold_model.getEditScaffoldOptionStr(lineEdit.objectName()))
         self._refreshAnnotationGroups()
         self._refreshCurrentAnnotationGroupSettings()
 
@@ -478,9 +478,9 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
             child = layout.takeAt(0)
             if child.widget():
                 child.widget().deleteLater()
-        optionNames = self._generator_model.getEditScaffoldOrderedOptionNames()
+        optionNames = self._scaffold_model.getEditScaffoldOrderedOptionNames()
         for key in optionNames:
-            value = self._generator_model.getEditScaffoldOption(key)
+            value = self._scaffold_model.getEditScaffoldOption(key)
             # print('key ', key, ' value ', value)
             if type(value) is bool:
                 checkBox = QtWidgets.QCheckBox(self._ui.meshTypeOptions_frame)
@@ -505,11 +505,11 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
                 else:
                     lineEdit = QtWidgets.QLineEdit(self._ui.meshTypeOptions_frame)
                     lineEdit.setObjectName(key)
-                    lineEdit.setText(self._generator_model.getEditScaffoldOptionStr(key))
+                    lineEdit.setText(self._scaffold_model.getEditScaffoldOptionStr(key))
                     callback = partial(self._meshTypeOptionLineEditChanged, lineEdit)
                     lineEdit.editingFinished.connect(callback)
                     layout.addWidget(lineEdit)
-        interativeFunctions = self._generator_model.getInteractiveFunctions()
+        interativeFunctions = self._scaffold_model.getInteractiveFunctions()
         for interactiveFunction in interativeFunctions:
             pushButton = QtWidgets.QPushButton()
             pushButton.setObjectName(interactiveFunction[0])
@@ -518,17 +518,17 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
             pushButton.clicked.connect(callback)
             layout.addWidget(pushButton)
         # refresh or show/hide standard scaffold options for transformation and deleting element ranges
-        editingRootScaffold = self._generator_model.editingRootScaffoldPackage()
+        editingRootScaffold = self._scaffold_model.editingRootScaffoldPackage()
         self._ui.done_pushButton.setEnabled(editingRootScaffold)
         self._ui.subscaffold_frame.setVisible(not editingRootScaffold)
         if editingRootScaffold:
-            self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
+            self._ui.deleteElementsRanges_lineEdit.setText(self._scaffold_model.getDeleteElementsRangesText())
         else:
-            self._ui.subscaffold_label.setText(self._generator_model.getEditScaffoldOptionDisplayName())
+            self._ui.subscaffold_label.setText(self._scaffold_model.getEditScaffoldOptionDisplayName())
         self._ui.deleteElementsRanges_frame.setVisible(editingRootScaffold)
-        self._ui.rotation_lineEdit.setText(self._generator_model.getRotationText())
-        self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
-        self._ui.translation_lineEdit.setText(self._generator_model.getTranslationText())
+        self._ui.rotation_lineEdit.setText(self._scaffold_model.getRotationText())
+        self._ui.scale_lineEdit.setText(self._scaffold_model.getScaleText())
+        self._ui.translation_lineEdit.setText(self._scaffold_model.getTranslationText())
 
     def _refreshOptions(self):
         self._ui.identifier_label.setText('Identifier:  ' + self._model.getIdentifier())
@@ -538,39 +538,39 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         self._ui.displayDataMarkerPoints_checkBox.setChecked(self._segmentation_data_model.isDisplayDataMarkerPoints())
         self._ui.displayDataMarkerNames_checkBox.setChecked(self._segmentation_data_model.isDisplayDataMarkerNames())
         self._ui.displayData_frame.setVisible(self._segmentation_data_model.hasData())
-        self._ui.displayMarkerPoints_checkBox.setChecked(self._generator_model.isDisplayMarkerPoints())
-        self._ui.displayAxes_checkBox.setChecked(self._generator_model.isDisplayAxes())
-        self._ui.displayElementNumbers_checkBox.setChecked(self._generator_model.isDisplayElementNumbers())
-        self._ui.displayElementAxes_checkBox.setChecked(self._generator_model.isDisplayElementAxes())
-        self._ui.displayLines_checkBox.setChecked(self._generator_model.isDisplayLines())
-        self._ui.displayLinesExterior_checkBox.setChecked(self._generator_model.isDisplayLinesExterior())
-        self._ui.displayModelRadius_checkBox.setChecked(self._generator_model.isDisplayModelRadius())
+        self._ui.displayMarkerPoints_checkBox.setChecked(self._scaffold_model.isDisplayMarkerPoints())
+        self._ui.displayAxes_checkBox.setChecked(self._scaffold_model.isDisplayAxes())
+        self._ui.displayElementNumbers_checkBox.setChecked(self._scaffold_model.isDisplayElementNumbers())
+        self._ui.displayElementAxes_checkBox.setChecked(self._scaffold_model.isDisplayElementAxes())
+        self._ui.displayLines_checkBox.setChecked(self._scaffold_model.isDisplayLines())
+        self._ui.displayLinesExterior_checkBox.setChecked(self._scaffold_model.isDisplayLinesExterior())
+        self._ui.displayModelRadius_checkBox.setChecked(self._scaffold_model.isDisplayModelRadius())
         self._ui.displayNodeDerivativeLabelsD1_checkBox.setChecked(
-            self._generator_model.isDisplayNodeDerivativeLabels('D1'))
+            self._scaffold_model.isDisplayNodeDerivativeLabels('D1'))
         self._ui.displayNodeDerivativeLabelsD2_checkBox.setChecked(
-            self._generator_model.isDisplayNodeDerivativeLabels('D2'))
+            self._scaffold_model.isDisplayNodeDerivativeLabels('D2'))
         self._ui.displayNodeDerivativeLabelsD3_checkBox.setChecked(
-            self._generator_model.isDisplayNodeDerivativeLabels('D3'))
+            self._scaffold_model.isDisplayNodeDerivativeLabels('D3'))
         self._ui.displayNodeDerivativeLabelsD12_checkBox.setChecked(
-            self._generator_model.isDisplayNodeDerivativeLabels('D12'))
+            self._scaffold_model.isDisplayNodeDerivativeLabels('D12'))
         self._ui.displayNodeDerivativeLabelsD13_checkBox.setChecked(
-            self._generator_model.isDisplayNodeDerivativeLabels('D13'))
+            self._scaffold_model.isDisplayNodeDerivativeLabels('D13'))
         self._ui.displayNodeDerivativeLabelsD23_checkBox.setChecked(
-            self._generator_model.isDisplayNodeDerivativeLabels('D23'))
+            self._scaffold_model.isDisplayNodeDerivativeLabels('D23'))
         self._ui.displayNodeDerivativeLabelsD123_checkBox.setChecked(
-            self._generator_model.isDisplayNodeDerivativeLabels('D123'))
-        displayNodeDerivatives = self._generator_model.getDisplayNodeDerivatives()
+            self._scaffold_model.isDisplayNodeDerivativeLabels('D123'))
+        displayNodeDerivatives = self._scaffold_model.getDisplayNodeDerivatives()
         self._ui.displayNodeDerivatives_checkBox.setCheckState(
             QtCore.Qt.Unchecked if not displayNodeDerivatives else
             QtCore.Qt.PartiallyChecked if (displayNodeDerivatives == 1) else
             QtCore.Qt.Checked)
-        self._ui.displayNodeNumbers_checkBox.setChecked(self._generator_model.isDisplayNodeNumbers())
-        self._ui.displayNodePoints_checkBox.setChecked(self._generator_model.isDisplayNodePoints())
-        self._ui.displaySurfaces_checkBox.setChecked(self._generator_model.isDisplaySurfaces())
-        self._ui.displaySurfacesExterior_checkBox.setChecked(self._generator_model.isDisplaySurfacesExterior())
-        self._ui.displaySurfacesTranslucent_checkBox.setChecked(self._generator_model.isDisplaySurfacesTranslucent())
-        self._ui.displaySurfacesWireframe_checkBox.setChecked(self._generator_model.isDisplaySurfacesWireframe())
-        index = self._ui.meshType_comboBox.findText(self._generator_model.getEditScaffoldTypeName())
+        self._ui.displayNodeNumbers_checkBox.setChecked(self._scaffold_model.isDisplayNodeNumbers())
+        self._ui.displayNodePoints_checkBox.setChecked(self._scaffold_model.isDisplayNodePoints())
+        self._ui.displaySurfaces_checkBox.setChecked(self._scaffold_model.isDisplaySurfaces())
+        self._ui.displaySurfacesExterior_checkBox.setChecked(self._scaffold_model.isDisplaySurfacesExterior())
+        self._ui.displaySurfacesTranslucent_checkBox.setChecked(self._scaffold_model.isDisplaySurfacesTranslucent())
+        self._ui.displaySurfacesWireframe_checkBox.setChecked(self._scaffold_model.isDisplaySurfacesWireframe())
+        index = self._ui.meshType_comboBox.findText(self._scaffold_model.getEditScaffoldTypeName())
         self._ui.meshType_comboBox.blockSignals(True)
         self._ui.meshType_comboBox.setCurrentIndex(index)
         self._ui.meshType_comboBox.blockSignals(False)
@@ -582,27 +582,27 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         self._ui.subscaffold_frame.setVisible(False)
 
     def _deleteElementRangesLineEditChanged(self):
-        self._generator_model.setDeleteElementsRangesText(self._ui.deleteElementsRanges_lineEdit.text())
-        self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
+        self._scaffold_model.setDeleteElementsRangesText(self._ui.deleteElementsRanges_lineEdit.text())
+        self._ui.deleteElementsRanges_lineEdit.setText(self._scaffold_model.getDeleteElementsRangesText())
 
     def _deleteElementsSelectionButtonPressed(self):
-        self._generator_model.deleteElementsSelection()
-        self._ui.deleteElementsRanges_lineEdit.setText(self._generator_model.getDeleteElementsRangesText())
+        self._scaffold_model.deleteElementsSelection()
+        self._ui.deleteElementsRanges_lineEdit.setText(self._scaffold_model.getDeleteElementsRangesText())
 
     def _rotationLineEditChanged(self):
-        self._generator_model.setRotationText(self._ui.rotation_lineEdit.text())
-        self._ui.rotation_lineEdit.setText(self._generator_model.getRotationText())
+        self._scaffold_model.setRotationText(self._ui.rotation_lineEdit.text())
+        self._ui.rotation_lineEdit.setText(self._scaffold_model.getRotationText())
 
     def _scaleLineEditChanged(self):
-        self._generator_model.setScaleText(self._ui.scale_lineEdit.text())
-        self._ui.scale_lineEdit.setText(self._generator_model.getScaleText())
+        self._scaffold_model.setScaleText(self._ui.scale_lineEdit.text())
+        self._ui.scale_lineEdit.setText(self._scaffold_model.getScaleText())
 
     def _translationLineEditChanged(self):
-        self._generator_model.setTranslationText(self._ui.translation_lineEdit.text())
-        self._ui.translation_lineEdit.setText(self._generator_model.getTranslationText())
+        self._scaffold_model.setTranslationText(self._ui.translation_lineEdit.text())
+        self._ui.translation_lineEdit.setText(self._scaffold_model.getTranslationText())
 
     def _applyTransformationButtonPressed(self):
-        self._generator_model.applyTransformation()
+        self._scaffold_model.applyTransformation()
         self._transformationChanged()
 
     def _displayDataPointsClicked(self):
@@ -621,7 +621,7 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         self._segmentation_data_model.setDisplayDataMarkerNames(self._ui.displayDataMarkerNames_checkBox.isChecked())
 
     def _displayMarkerPointsClicked(self):
-        self._generator_model.setDisplayMarkerPoints(self._ui.displayMarkerPoints_checkBox.isChecked())
+        self._scaffold_model.setDisplayMarkerPoints(self._ui.displayMarkerPoints_checkBox.isChecked())
 
     def _displayModelCoordinatesFieldChanged(self, index):
         """
@@ -629,76 +629,76 @@ class MeshGeneratorWidget(QtWidgets.QWidget):
         """
         field = self._ui.displayModelCoordinates_fieldChooser.getField()
         if field:
-            self._generator_model.setModelCoordinatesField(field)  # will re-create graphics
+            self._scaffold_model.setModelCoordinatesField(field)  # will re-create graphics
 
     def _displayAxesClicked(self):
-        self._generator_model.setDisplayAxes(self._ui.displayAxes_checkBox.isChecked())
+        self._scaffold_model.setDisplayAxes(self._ui.displayAxes_checkBox.isChecked())
 
     def _displayElementAxesClicked(self):
-        self._generator_model.setDisplayElementAxes(self._ui.displayElementAxes_checkBox.isChecked())
+        self._scaffold_model.setDisplayElementAxes(self._ui.displayElementAxes_checkBox.isChecked())
 
     def _displayElementNumbersClicked(self):
-        self._generator_model.setDisplayElementNumbers(self._ui.displayElementNumbers_checkBox.isChecked())
+        self._scaffold_model.setDisplayElementNumbers(self._ui.displayElementNumbers_checkBox.isChecked())
 
     def _displayLinesClicked(self):
-        self._generator_model.setDisplayLines(self._ui.displayLines_checkBox.isChecked())
+        self._scaffold_model.setDisplayLines(self._ui.displayLines_checkBox.isChecked())
         self._autoPerturbLines()
 
     def _displayLinesExteriorClicked(self):
-        self._generator_model.setDisplayLinesExterior(self._ui.displayLinesExterior_checkBox.isChecked())
+        self._scaffold_model.setDisplayLinesExterior(self._ui.displayLinesExterior_checkBox.isChecked())
 
     def _displayModelRadiusClicked(self):
-        self._generator_model.setDisplayModelRadius(self._ui.displayModelRadius_checkBox.isChecked())
+        self._scaffold_model.setDisplayModelRadius(self._ui.displayModelRadius_checkBox.isChecked())
 
     def _displayNodeDerivativesClicked(self):
         checkState = self._ui.displayNodeDerivatives_checkBox.checkState()
         triState = 0 if (checkState == QtCore.Qt.Unchecked) else 1 if (checkState == QtCore.Qt.PartiallyChecked) else 2
-        self._generator_model.setDisplayNodeDerivatives(triState)
+        self._scaffold_model.setDisplayNodeDerivatives(triState)
 
     def _displayNodeDerivativeLabelsD1Clicked(self):
-        self._generator_model.setDisplayNodeDerivativeLabels(
+        self._scaffold_model.setDisplayNodeDerivativeLabels(
             'D1', self._ui.displayNodeDerivativeLabelsD1_checkBox.isChecked())
 
     def _displayNodeDerivativeLabelsD2Clicked(self):
-        self._generator_model.setDisplayNodeDerivativeLabels(
+        self._scaffold_model.setDisplayNodeDerivativeLabels(
             'D2', self._ui.displayNodeDerivativeLabelsD2_checkBox.isChecked())
 
     def _displayNodeDerivativeLabelsD3Clicked(self):
-        self._generator_model.setDisplayNodeDerivativeLabels(
+        self._scaffold_model.setDisplayNodeDerivativeLabels(
             'D3', self._ui.displayNodeDerivativeLabelsD3_checkBox.isChecked())
 
     def _displayNodeDerivativeLabelsD12Clicked(self):
-        self._generator_model.setDisplayNodeDerivativeLabels(
+        self._scaffold_model.setDisplayNodeDerivativeLabels(
             'D12', self._ui.displayNodeDerivativeLabelsD12_checkBox.isChecked())
 
     def _displayNodeDerivativeLabelsD13Clicked(self):
-        self._generator_model.setDisplayNodeDerivativeLabels(
+        self._scaffold_model.setDisplayNodeDerivativeLabels(
             'D13', self._ui.displayNodeDerivativeLabelsD13_checkBox.isChecked())
 
     def _displayNodeDerivativeLabelsD23Clicked(self):
-        self._generator_model.setDisplayNodeDerivativeLabels(
+        self._scaffold_model.setDisplayNodeDerivativeLabels(
             'D23', self._ui.displayNodeDerivativeLabelsD23_checkBox.isChecked())
 
     def _displayNodeDerivativeLabelsD123Clicked(self):
-        self._generator_model.setDisplayNodeDerivativeLabels(
+        self._scaffold_model.setDisplayNodeDerivativeLabels(
             'D123', self._ui.displayNodeDerivativeLabelsD123_checkBox.isChecked())
 
     def _displayNodeNumbersClicked(self):
-        self._generator_model.setDisplayNodeNumbers(self._ui.displayNodeNumbers_checkBox.isChecked())
+        self._scaffold_model.setDisplayNodeNumbers(self._ui.displayNodeNumbers_checkBox.isChecked())
 
     def _displayNodePointsClicked(self):
-        self._generator_model.setDisplayNodePoints(self._ui.displayNodePoints_checkBox.isChecked())
+        self._scaffold_model.setDisplayNodePoints(self._ui.displayNodePoints_checkBox.isChecked())
 
     def _displaySurfacesClicked(self):
-        self._generator_model.setDisplaySurfaces(self._ui.displaySurfaces_checkBox.isChecked())
+        self._scaffold_model.setDisplaySurfaces(self._ui.displaySurfaces_checkBox.isChecked())
         self._autoPerturbLines()
 
     def _displaySurfacesExteriorClicked(self):
-        self._generator_model.setDisplaySurfacesExterior(self._ui.displaySurfacesExterior_checkBox.isChecked())
+        self._scaffold_model.setDisplaySurfacesExterior(self._ui.displaySurfacesExterior_checkBox.isChecked())
 
     def _displaySurfacesTranslucentClicked(self):
-        self._generator_model.setDisplaySurfacesTranslucent(self._ui.displaySurfacesTranslucent_checkBox.isChecked())
+        self._scaffold_model.setDisplaySurfacesTranslucent(self._ui.displaySurfacesTranslucent_checkBox.isChecked())
         self._autoPerturbLines()
 
     def _displaySurfacesWireframeClicked(self):
-        self._generator_model.setDisplaySurfacesWireframe(self._ui.displaySurfacesWireframe_checkBox.isChecked())
+        self._scaffold_model.setDisplaySurfacesWireframe(self._ui.displaySurfacesWireframe_checkBox.isChecked())
