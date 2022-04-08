@@ -1,7 +1,7 @@
-Scaffold Creator Step
-=====================
+Scaffold Creator
+================
 
-The **Scaffold Creator Step** is part of the software that is used in the collection of tools used for mapping data to scaffolds.
+The **Scaffold Creator** project is a MAP Client plugin that is a component in the collection of tools that can be used to map data to scaffolds.
 
 .. note::
 
