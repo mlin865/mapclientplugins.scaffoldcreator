@@ -106,10 +106,10 @@ class MasterModel(object):
         self._creator_model.exportToVtk(self._filenameStem)
 
     def _getSettings(self):
-        '''
+        """
         Ensures master model settings includes current settings for sub models.
         :return: Master setting dict.
-        '''
+        """
         settings = self._settings
         settings['scaffold_settings'] = self._creator_model.getSettings()
         settings['segmentation_data_settings'] = self._segmentation_data_model.getSettings()
@@ -121,8 +121,11 @@ class MasterModel(object):
             with open(self._filenameStem + '-settings.json', 'r') as f:
                 savedSettings = json.loads(f.read(), object_hook=Scaffolds_decodeJSON)
                 settings.update(savedSettings)
-            if not 'scaffold_settings' in settings:
-                # migrate from old settings before named generator_settings
+            # migrate from generator_settings in version 0.3.2
+            if 'generator_settings' in settings:
+                settings = {'scaffold_settings': settings['generator_settings']}
+            if 'scaffold_settings' not in settings:
+                # migrate from version 0.2.0 settings
                 settings = {'scaffold_settings': settings}
         except:
             # no settings saved yet, following gets defaults
