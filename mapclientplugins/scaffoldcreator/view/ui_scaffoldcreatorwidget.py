@@ -751,7 +751,7 @@ class Ui_ScaffoldCreatorWidget(object):
 
         self.retranslateUi(ScaffoldCreatorWidget)
 
-        self.controls_tabWidget.setCurrentIndex(1)
+        self.controls_tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(ScaffoldCreatorWidget)

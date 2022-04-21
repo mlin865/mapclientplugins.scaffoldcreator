@@ -123,13 +123,17 @@ class MasterModel(object):
                 settings.update(savedSettings)
             # migrate from generator_settings in version 0.3.2
             if 'generator_settings' in settings:
-                settings = {
+                settings = self._settings = {
                     'scaffold_settings': settings['generator_settings'],
                     'segmentation_data_settings': settings['segmentation_data_settings']
                 }
             if 'scaffold_settings' not in settings:
                 # migrate from version 0.2.0 settings
-                settings = {'scaffold_settings': settings, 'segmentation_data_settings': {}}
+                segmentation_data_settings = settings.pop('segmentation_data_settings', {})
+                settings = self._settings = {
+                    'scaffold_settings': settings,
+                    'segmentation_data_settings': segmentation_data_settings
+                }
         except:
             # no settings saved yet, following gets defaults
             settings = self._getSettings()
