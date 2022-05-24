@@ -2,7 +2,7 @@
 
 # -- Project information
 
-project = 'mapclienplugins.scaffoldcreator'
+project = 'mapclientplugins.scaffoldcreator'
 copyright = '2022, University of Auckland'
 author = 'University of Auckland'
 

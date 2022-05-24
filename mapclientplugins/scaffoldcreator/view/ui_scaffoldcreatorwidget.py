@@ -751,7 +751,7 @@ class Ui_ScaffoldCreatorWidget(object):
 
         self.retranslateUi(ScaffoldCreatorWidget)
 
-        self.controls_tabWidget.setCurrentIndex(1)
+        self.controls_tabWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(ScaffoldCreatorWidget)
@@ -763,7 +763,7 @@ class Ui_ScaffoldCreatorWidget(object):
         self.identifier_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Identifier", None))
         self.subscaffold_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Subscaffold", None))
         self.subscaffoldBack_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"<< Back", None))
-        self.meshType_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Mesh type:", None))
+        self.meshType_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Scaffold type:", None))
         self.parameterSet_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Parameter set:", None))
         self.deleteElementsRanges_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Delete element ID ranges (e.g. 1,2-5,13):", None))
         self.deleteElementsSelection_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Delete selected elements", None))

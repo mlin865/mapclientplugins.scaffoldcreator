@@ -215,7 +215,7 @@
                    <item row="0" column="0">
                     <widget class="QLabel" name="meshType_label">
                      <property name="text">
-                      <string>Mesh type:</string>
+                      <string>Scaffold type:</string>
                      </property>
                     </widget>
                    </item>
@@ -378,7 +378,7 @@
           </sizepolicy>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="display_tab">
           <attribute name="title">
