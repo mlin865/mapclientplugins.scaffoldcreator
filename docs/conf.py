@@ -33,3 +33,6 @@ html_theme = 'nature'
 
 # -- Options for EPUB output
 epub_show_urls = 'footnote'
+
+# If true, enable figure numbering
+numfig = True
