@@ -88,9 +88,9 @@ Anatomical Regions and Annotations
 
 What makes a scaffold more than just a simple mesh is the rich collection of annotated sub-regions defined with it. Anatomical regions of the scaffold are defined by *groups* of elements, their faces or edges/lines, which are named and identified with terms from a controlled vocabulary (particularly `UBERON <https://www.ebi.ac.uk/ols/ontologies/uberon>`_, plus other standands). Fiducial marker points are similarly defined as annotated embedded material points.
 
-It is key to the whole anatomical mapping process that investigators digitizing their specimen images use the same anatomical terms to label contours or points for matching subregions, as shown in :numref:`fig-scaffold-data-annotation-groups`. 
+It is key to the whole anatomical mapping process that investigators digitizing their specimen images use the same anatomical terms to label contours or points for matching subregions, as shown in :numref:`fig-mcpsc-scaffold-data-annotation-groups`.
 
-.. _fig-scaffold-data-annotation-groups:
+.. _fig-mcpsc-scaffold-data-annotation-groups:
 
 .. figure:: _images/scaffold-data-annotation-groups.png
    :figwidth: 80%
