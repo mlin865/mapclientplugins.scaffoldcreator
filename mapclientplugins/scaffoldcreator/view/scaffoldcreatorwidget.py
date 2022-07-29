@@ -224,10 +224,12 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
         self._doneCallback = doneCallback
 
     def _doneButtonClicked(self):
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         self._ui.dockWidget.setFloating(False)
         self._model.done()
         self._model = None
         self._doneCallback()
+        QtWidgets.QApplication.restoreOverrideCursor()
 
     def _stdViewsButtonClicked(self):
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()

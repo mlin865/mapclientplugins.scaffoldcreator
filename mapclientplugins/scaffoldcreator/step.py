@@ -3,7 +3,7 @@ MAP Client Plugin Step
 """
 import json
 
-from PySide2 import QtGui
+from PySide2 import QtGui, QtWidgets, QtCore
 
 from mapclient.mountpoints.workflowstep import WorkflowStepMountPoint
 from mapclientplugins.scaffoldcreator.configuredialog import ConfigureDialog
@@ -51,6 +51,7 @@ class ScaffoldCreator(WorkflowStepMountPoint):
         Kick off the execution of the step, in this case an interactive dialog.
         User invokes the _doneExecution() method when finished, via pushbutton.
         """
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
         self._model = MasterModel(self._location, self._config['identifier'])
         if self._port1_inputZincDataFile:
             self._model.setSegmentationDataFile(self._port1_inputZincDataFile)
@@ -58,6 +59,7 @@ class ScaffoldCreator(WorkflowStepMountPoint):
         # self._view.setWindowFlags(QtCore.Qt.Widget)
         self._view.registerDoneExecution(self._myDoneExecution)
         self._setCurrentWidget(self._view)
+        QtWidgets.QApplication.restoreOverrideCursor()
 
     def _myDoneExecution(self):
         self._portData0 = self._model.getOutputModelFilename()
