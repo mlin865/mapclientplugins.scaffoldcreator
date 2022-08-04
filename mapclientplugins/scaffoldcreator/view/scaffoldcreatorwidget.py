@@ -1,6 +1,7 @@
 """
 Dialog/UI for interacting with scaffoldcreatormodel.
 """
+import webbrowser
 
 from PySide2 import QtCore, QtWidgets
 from functools import partial
@@ -111,6 +112,7 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
 
     def _makeConnections(self):
         self._ui.sceneviewer_widget.graphicsInitialized.connect(self._graphicsInitialized)
+        self._ui.pushButtonDocumentation.clicked.connect(self._documentationButtonClicked)
         self._ui.done_pushButton.clicked.connect(self._doneButtonClicked)
         self._ui.stdViews_pushButton.clicked.connect(self._stdViewsButtonClicked)
         self._ui.viewAll_pushButton.clicked.connect(self._viewAllButtonClicked)
@@ -219,6 +221,9 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
 
     def getModel(self):
         return self._model
+
+    def _documentationButtonClicked(self):
+        webbrowser.open("https://abi-mapping-tools.readthedocs.io/en/latest/mapclientplugins.argonviewerstep/docs/index.html")
 
     def registerDoneExecution(self, doneCallback):
         self._doneCallback = doneCallback

@@ -714,6 +714,11 @@ class Ui_ScaffoldCreatorWidget(object):
         self.horizontalLayout_2 = QHBoxLayout(self.bottom_frame)
         self.horizontalLayout_2.setContentsMargins(3, 3, 3, 3)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.pushButtonDocumentation = QPushButton(self.bottom_frame)
+        self.pushButtonDocumentation.setObjectName(u"pushButtonDocumentation")
+
+        self.horizontalLayout_2.addWidget(self.pushButtonDocumentation)
+
         self.viewAll_pushButton = QPushButton(self.bottom_frame)
         self.viewAll_pushButton.setObjectName(u"viewAll_pushButton")
 
@@ -812,6 +817,7 @@ class Ui_ScaffoldCreatorWidget(object):
         self.markerXiCoordinates_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Element xi coordinates:", None))
         self.markerMaterialCoordinatesField_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Material coordinates field:", None))
         self.controls_tabWidget.setTabText(self.controls_tabWidget.indexOf(self.annotation_tab), QCoreApplication.translate("ScaffoldCreatorWidget", u"Annotation", None))
+        self.pushButtonDocumentation.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Online Documentation", None))
         self.viewAll_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"View All", None))
         self.stdViews_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Std. Views", None))
         self.done_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Done", None))
