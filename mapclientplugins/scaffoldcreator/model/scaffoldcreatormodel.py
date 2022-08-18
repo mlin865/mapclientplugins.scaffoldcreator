@@ -959,66 +959,7 @@ class ScaffoldCreatorModel(object):
         self._scaffoldPackageOptionNames = [None]
         self._checkCustomParameterSet()
         self._generateMesh()
-
-    def _deleteElementsInRanges(self):
-        """
-        If this is the root scaffold and there are ranges of element identifiers to delete,
-        remove these from the model.
-        Also remove marker group nodes embedded in those elements and any nodes used only by
-        the deleted elements.
-        """
-        if (len(self._deleteElementRanges) == 0) or (len(self._scaffoldPackages) > 1):
-            return
-        fm = self._region.getFieldmodule()
-        mesh = self.getMesh()
-        meshDimension = mesh.getDimension()
-        nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
-        with ChangeManager(fm):
-            # put the elements in a group and use subelement handling to get nodes in use by it
-            destroyGroup = fm.createFieldGroup()
-            destroyGroup.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
-            destroyElementGroup = destroyGroup.createFieldElementGroup(mesh)
-            destroyMesh = destroyElementGroup.getMeshGroup()
-            elementIter = mesh.createElementiterator()
-            element = elementIter.next()
-            while element.isValid():
-                identifier = element.getIdentifier()
-                for deleteElementRange in self._deleteElementRanges:
-                    if (identifier >= deleteElementRange[0]) and (identifier <= deleteElementRange[1]):
-                        destroyMesh.addElement(element)
-                element = elementIter.next()
-            del elementIter
-            # print("Deleting", destroyMesh.getSize(), "element(s)")
-            if destroyMesh.getSize() > 0:
-                destroyNodeGroup = destroyGroup.getFieldNodeGroup(nodes)
-                destroyNodes = destroyNodeGroup.getNodesetGroup()
-                markerGroup = fm.findFieldByName("marker").castGroup()
-                if markerGroup.isValid():
-                    markerNodes = markerGroup.getFieldNodeGroup(nodes).getNodesetGroup()
-                    markerLocation = fm.findFieldByName("marker_location")
-                    # markerName = fm.findFieldByName("marker_name")
-                    if markerNodes.isValid() and markerLocation.isValid():
-                        fieldcache = fm.createFieldcache()
-                        nodeIter = markerNodes.createNodeiterator()
-                        node = nodeIter.next()
-                        while node.isValid():
-                            fieldcache.setNode(node)
-                            element, xi = markerLocation.evaluateMeshLocation(fieldcache, meshDimension)
-                            if element.isValid() and destroyMesh.containsElement(element):
-                                # print("Destroy marker '" + markerName.evaluateString(fieldcache) + "' node", node.getIdentifier(), "in destroyed element", element.getIdentifier(), "at", xi)
-                                destroyNodes.addNode(node)  # so destroyed with others below; can't do here as
-                            node = nodeIter.next()
-                        del nodeIter
-                        del fieldcache
-                # must destroy elements first as Zinc won't destroy nodes that are in use
-                mesh.destroyElementsConditional(destroyElementGroup)
-                nodes.destroyNodesConditional(destroyNodeGroup)
-                # clean up group so no external code hears is notified of its existence
-                del destroyNodes
-                del destroyNodeGroup
-            del destroyMesh
-            del destroyElementGroup
-            del destroyGroup
+        
 
     def _generateMesh(self):
         currentAnnotationGroupName = self._currentAnnotationGroup.getName() if self._currentAnnotationGroup else None
@@ -1033,12 +974,13 @@ class ScaffoldCreatorModel(object):
             logger = self._context.getLogger()
             scaffoldPackage.generate(self._region, applyTransformation=False)
             annotationGroups = scaffoldPackage.getAnnotationGroups()
+            scaffoldPackage.deleteElementsInRanges(self._deleteElementRanges)
             loggerMessageCount = logger.getNumberOfMessages()
             if loggerMessageCount > 0:
                 for i in range(1, loggerMessageCount + 1):
                     print(logger.getMessageTypeAtIndex(i), logger.getMessageTextAtIndex(i))
                 logger.removeAllMessages()
-            self._deleteElementsInRanges()
+
             self.setCurrentAnnotationGroupByName(currentAnnotationGroupName)
         # Zinc won't create cmiss_number and xi fields until endChange called
         # Hence must create graphics outside of ChangeManager lifetime:
