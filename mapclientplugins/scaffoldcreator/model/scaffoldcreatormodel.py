@@ -959,7 +959,7 @@ class ScaffoldCreatorModel(object):
         self._scaffoldPackageOptionNames = [None]
         self._checkCustomParameterSet()
         self._generateMesh()
-        
+
 
     def _generateMesh(self):
         currentAnnotationGroupName = self._currentAnnotationGroup.getName() if self._currentAnnotationGroup else None
@@ -973,8 +973,8 @@ class ScaffoldCreatorModel(object):
         with ChangeManager(fm):
             logger = self._context.getLogger()
             scaffoldPackage.generate(self._region, applyTransformation=False)
-            annotationGroups = scaffoldPackage.getAnnotationGroups()
-            scaffoldPackage.deleteElementsInRanges(self._deleteElementRanges)
+            deleteElementRanges = self._deleteElementRanges
+            scaffoldPackage.deleteElementsInRanges(self._region, deleteElementRanges)
             loggerMessageCount = logger.getNumberOfMessages()
             if loggerMessageCount > 0:
                 for i in range(1, loggerMessageCount + 1):
@@ -982,6 +982,7 @@ class ScaffoldCreatorModel(object):
                 logger.removeAllMessages()
 
             self.setCurrentAnnotationGroupByName(currentAnnotationGroupName)
+
         # Zinc won't create cmiss_number and xi fields until endChange called
         # Hence must create graphics outside of ChangeManager lifetime:
         self._discoverModelCoordinatesField()
