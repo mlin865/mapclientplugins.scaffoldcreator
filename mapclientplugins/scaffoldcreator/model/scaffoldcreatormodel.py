@@ -667,6 +667,7 @@ class ScaffoldCreatorModel(object):
 
     def setDeleteElementsRangesText(self, elementRangesTextIn):
         if self._parseDeleteElementsRangesText(elementRangesTextIn):
+            self._updateScaffoldEdits()
             self._generateMesh()
 
     def deleteElementsSelection(self):
