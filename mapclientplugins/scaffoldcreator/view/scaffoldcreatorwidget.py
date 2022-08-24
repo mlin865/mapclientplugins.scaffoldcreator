@@ -88,8 +88,8 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
         self._ui.displayModelCoordinates_fieldChooser.setRegion(self._scaffold_model.getRegion())
         self._ui.displayModelCoordinates_fieldChooser.setField(self._scaffold_model.getModelCoordinatesField())
         self._ui.markerMaterialCoordinatesField_fieldChooser.setRegion(self._scaffold_model.getRegion())
-        if self._scaffold_model.getCurrentAnnotationGroup():
-            self._refreshCurrentAnnotationGroupSettings()
+        self._refreshAnnotationGroups()
+        self._refreshCurrentAnnotationGroupSettings()
         sceneviewer = self._ui.sceneviewer_widget.getSceneviewer()
         if sceneviewer is not None:
             scene = self._model.getScene()
