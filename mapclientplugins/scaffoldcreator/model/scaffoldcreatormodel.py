@@ -369,17 +369,26 @@ class ScaffoldCreatorModel(object):
         """
         # print('setCurrentAnnotationGroup', annotationGroup.getName() if annotationGroup else None)
         self._currentAnnotationGroup = annotationGroup
+        scene = self._region.getScene()
         fieldmodule = self._region.getFieldmodule()
-        with ChangeManager(fieldmodule):
-            scene = self._region.getScene()
+        with ChangeManager(scene), ChangeManager(fieldmodule):
             selectionGroup = get_scene_selection_group(scene)
             if annotationGroup:
                 if selectionGroup:
                     selectionGroup.clear()
                 else:
                     selectionGroup = create_scene_selection_group(scene)
-                group = annotationGroup.getGroup()
-                group_add_group_elements(selectionGroup, group, group_get_highest_dimension(group))
+                if annotationGroup.isMarker():
+                    markerNode = annotationGroup.getMarkerNode()
+                    nodes = markerNode.getNodeset()
+                    selectionNodeGroup = selectionGroup.getFieldNodeGroup(nodes)
+                    if not selectionNodeGroup.isValid():
+                        selectionNodeGroup = selectionGroup.createFieldNodeGroup(nodes)
+                    selectionNodesetGroup = selectionNodeGroup.getNodesetGroup()
+                    selectionNodesetGroup.addNode(markerNode)
+                else:
+                    group = annotationGroup.getGroup()
+                    group_add_group_elements(selectionGroup, group, group_get_highest_dimension(group))
             else:
                 if selectionGroup:
                     selectionGroup.clear()
