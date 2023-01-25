@@ -3,7 +3,7 @@ Dialog/UI for interacting with scaffoldcreatormodel.
 """
 import webbrowser
 
-from PySide2 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 from functools import partial
 
 from mapclientplugins.scaffoldcreator.view.ui_scaffoldcreatorwidget import Ui_ScaffoldCreatorWidget
