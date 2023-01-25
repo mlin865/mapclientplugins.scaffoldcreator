@@ -3,7 +3,7 @@ Derived SceneviewerWidget capable of editing node coordinate positions and deriv
 '''
 
 from enum import Enum
-from PySide2 import QtCore
+from PySide6 import QtCore
 from opencmiss.maths.vectorops import add, cross, div, magnitude, mult, sub
 from opencmiss.utils.zinc.general import ChangeManager
 from opencmiss.zincwidgets.sceneviewerwidget import SceneviewerWidget
