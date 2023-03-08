@@ -310,11 +310,10 @@ class ScaffoldCreatorModel(object):
         # can only redefine user annotation groups which are not markers
         assert self.isUserAnnotationGroup(self._currentAnnotationGroup)
         assert not self._currentAnnotationGroup.isMarker()
-        fieldmodule = self._region.getFieldmodule()
-        with ChangeManager(fieldmodule):
+        parentScene = self._parentRegion.getScene()
+        scene = self._region.getScene()
+        with ChangeManager(parentScene), ChangeManager(scene), HierarchicalChangeManager(self._parentRegion):
             self._currentAnnotationGroup.clear()
-            parentScene = self._parentRegion.getScene()
-            scene = self._region.getScene()
             selectionGroup = get_scene_selection_group(parentScene)
             if selectionGroup:
                 subregionGroup = selectionGroup.getSubregionFieldGroup(self._region)
