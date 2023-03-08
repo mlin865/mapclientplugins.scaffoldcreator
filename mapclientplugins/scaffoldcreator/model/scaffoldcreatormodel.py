@@ -12,7 +12,7 @@ from opencmiss.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_ro
     rotation_matrix_to_euler
 from opencmiss.utils.zinc.field import fieldIsManagedCoordinates
 from opencmiss.utils.zinc.finiteelement import evaluateFieldNodesetRange
-from opencmiss.utils.zinc.general import ChangeManager
+from opencmiss.utils.zinc.general import ChangeManager, HierarchicalChangeManager
 
 from opencmiss.zinc.field import Field, FieldGroup
 from opencmiss.zinc.glyph import Glyph
@@ -21,6 +21,7 @@ from opencmiss.zinc.node import Node
 from opencmiss.zinc.result import RESULT_OK, RESULT_WARNING_PART_DONE
 from opencmiss.zinc.scene import Scene
 from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_WORLD
+from opencmiss.zincwidgets.definitions import SELECTION_GROUP_NAME
 from scaffoldmaker.annotation.annotationgroup import findAnnotationGroupByName, getAnnotationMarkerGroup, \
     getAnnotationMarkerLocationField, getAnnotationMarkerNameField
 from scaffoldmaker.scaffolds import Scaffolds
@@ -94,11 +95,11 @@ class ScaffoldCreatorModel(object):
     Framework for generating meshes of a number of types, with mesh type specific options
     """
 
-    def __init__(self, context, region, material_module):
+    def __init__(self, context, parent_region, material_module):
         super(ScaffoldCreatorModel, self).__init__()
         self._region_name = "generated_mesh"
         self._context = context
-        self._parent_region = region
+        self._parentRegion = parent_region
         self._materialmodule = material_module
         self._region = None
         self._modelCoordinatesField = None
@@ -312,16 +313,19 @@ class ScaffoldCreatorModel(object):
         fieldmodule = self._region.getFieldmodule()
         with ChangeManager(fieldmodule):
             self._currentAnnotationGroup.clear()
+            parentScene = self._parentRegion.getScene()
             scene = self._region.getScene()
-            selectionGroup = get_scene_selection_group(scene)
+            selectionGroup = get_scene_selection_group(parentScene)
             if selectionGroup:
-                group = self._currentAnnotationGroup.getGroup()
-                group.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
-                highest_dimension = group_get_highest_dimension(selectionGroup)
-                group_add_group_elements(group, selectionGroup, highest_dimension)
-                # redefine selection to match group, removes orphaned lower dimensional elements.
-                selectionGroup.clear()
-                group_add_group_elements(selectionGroup, group, highest_dimension)
+                subregionGroup = selectionGroup.getSubregionFieldGroup(self._region)
+                if subregionGroup.isValid():
+                    group = self._currentAnnotationGroup.getGroup()
+                    group.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
+                    highest_dimension = group_get_highest_dimension(subregionGroup)
+                    group_add_group_elements(group, subregionGroup, highest_dimension)
+                    # redefine selection to match group, removes orphaned lower dimensional elements.
+                    selectionGroup.clear()
+                    group_add_group_elements(selectionGroup, group, highest_dimension)
         return True
 
     def setCurrentAnnotationGroupName(self, newName: str):
@@ -369,15 +373,15 @@ class ScaffoldCreatorModel(object):
         """
         # print('setCurrentAnnotationGroup', annotationGroup.getName() if annotationGroup else None)
         self._currentAnnotationGroup = annotationGroup
+        parentScene = self._parentRegion.getScene()
         scene = self._region.getScene()
-        fieldmodule = self._region.getFieldmodule()
-        with ChangeManager(scene), ChangeManager(fieldmodule):
-            selectionGroup = get_scene_selection_group(scene)
+        with ChangeManager(parentScene), ChangeManager(scene), HierarchicalChangeManager(self._parentRegion):
+            selectionGroup = get_scene_selection_group(parentScene)
             if annotationGroup:
                 if selectionGroup:
                     selectionGroup.clear()
                 else:
-                    selectionGroup = create_scene_selection_group(scene)
+                    selectionGroup = create_scene_selection_group(parentScene)
                 if annotationGroup.isMarker():
                     markerNode = annotationGroup.getMarkerNode()
                     nodes = markerNode.getNodeset()
@@ -392,7 +396,7 @@ class ScaffoldCreatorModel(object):
             else:
                 if selectionGroup:
                     selectionGroup.clear()
-                    scene.setSelectionField(Field())
+                    parentScene.setSelectionField(Field())
 
     def setCurrentAnnotationGroupByName(self, annotationGroupName):
         annotationGroup = findAnnotationGroupByName(self.getAnnotationGroups(), annotationGroupName)
@@ -975,9 +979,9 @@ class ScaffoldCreatorModel(object):
         currentAnnotationGroupName = self._currentAnnotationGroup.getName() if self._currentAnnotationGroup else None
         scaffoldPackage = self._scaffoldPackages[-1]
         if self._region:
-            self._parent_region.removeChild(self._region)
+            self._parentRegion.removeChild(self._region)
         self._resetModelCoordinatesField()
-        self._region = self._parent_region.createChild(self._region_name)
+        self._region = self._parentRegion.createChild(self._region_name)
         self._scene = self._region.getScene()
         fm = self._region.getFieldmodule()
         with ChangeManager(fm):
@@ -1329,9 +1333,6 @@ def get_scene_selection_group(scene: Scene, subelementHandlingMode=FieldGroup.SU
     return None
 
 
-selection_group_name = 'cmiss_selection'
-
-
 def create_scene_selection_group(scene: Scene, subelementHandlingMode=FieldGroup.SUBELEMENT_HANDLING_MODE_FULL):
     """
     Create empty, unmanaged scene selection group of standard name.
@@ -1346,7 +1347,7 @@ def create_scene_selection_group(scene: Scene, subelementHandlingMode=FieldGroup
     region = scene.getRegion()
     fieldmodule = region.getFieldmodule()
     with ChangeManager(fieldmodule):
-        selection_group = fieldmodule.findFieldByName(selection_group_name)
+        selection_group = fieldmodule.findFieldByName(SELECTION_GROUP_NAME)
         if selection_group.isValid():
             selection_group = selection_group.castGroup()
             if selection_group.isValid():
@@ -1354,7 +1355,7 @@ def create_scene_selection_group(scene: Scene, subelementHandlingMode=FieldGroup
                 selection_group.setManaged(False)
         if not selection_group.isValid():
             selection_group = fieldmodule.createFieldGroup()
-            selection_group.setName(selection_group_name)
+            selection_group.setName(SELECTION_GROUP_NAME)
         selection_group.setSubelementHandlingMode(subelementHandlingMode)
     scene.setSelectionField(selection_group)
     return selection_group
