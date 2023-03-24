@@ -1,6 +1,6 @@
-'''
+"""
 Derived SceneviewerWidget capable of editing node coordinate positions and derivatives.
-'''
+"""
 
 from enum import Enum
 from PySide2 import QtCore
@@ -14,9 +14,6 @@ from opencmiss.zinc.result import RESULT_OK
 
 
 class NodeEditorSceneviewerWidget(SceneviewerWidget):
-    '''
-    classdocs
-    '''
 
     class AlignMode(Enum):
         NONE = 0
@@ -25,9 +22,6 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
         TRANSLATION = 3
 
     def __init__(self, parent=None):
-        '''
-        Constructor
-        '''
         super(NodeEditorSceneviewerWidget, self).__init__(parent)
         self._model = None
         self._alignKeyPressed = False
@@ -70,9 +64,9 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
         self._model = model
 
     def getNearestNodeAndGraphics(self, x, y):
-        '''
+        """
         :return: Node, Graphics OR None, None if none found.
-        '''
+        """
         scenefiltermodule = self._context.getScenefiltermodule()
         with ChangeManager(scenefiltermodule):
             oldSelectionfilter = self.getSelectionfilter()
