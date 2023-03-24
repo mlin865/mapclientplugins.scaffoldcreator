@@ -215,11 +215,11 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
             right = cross(up, front)
             if self._alignMode == self.AlignMode.ROTATION:
                 mag = magnitude(delta)
-                prop = div(delta, mag)
-                axis = add(mult(up, prop[0]), mult(right, prop[1]))
-                angle = mag * 0.002
-                # print('delta', delta, 'axis', axis, 'angle', angle)
-                self._model.interactionRotate(axis, angle)
+                if abs(mag) >= 1e-12:
+                    prop = div(delta, mag)
+                    axis = add(mult(up, prop[0]), mult(right, prop[1]))
+                    angle = mag * 0.002
+                    self._model.interactionRotate(axis, angle)
             elif self._alignMode == self.AlignMode.SCALE:
                 factor = 1.0 + delta[1] * 0.0005
                 if factor < 0.9:
