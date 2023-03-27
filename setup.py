@@ -41,7 +41,7 @@ requires = [
     "scaffoldmaker >= 0.8",
     "opencmiss.maths",
     "opencmiss.utils >= 0.3",
-    "opencmiss.zinc >= 3.9",
+    "opencmiss.zinc >= 3.10.2",
     "opencmiss.zincwidgets >= 2.0",
     "PySide6"
 ]

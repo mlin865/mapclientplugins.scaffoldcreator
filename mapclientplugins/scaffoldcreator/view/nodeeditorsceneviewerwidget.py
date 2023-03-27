@@ -1,6 +1,6 @@
-'''
+"""
 Derived SceneviewerWidget capable of editing node coordinate positions and derivatives.
-'''
+"""
 
 from enum import Enum
 from PySide6 import QtCore
@@ -14,9 +14,6 @@ from opencmiss.zinc.result import RESULT_OK
 
 
 class NodeEditorSceneviewerWidget(SceneviewerWidget):
-    '''
-    classdocs
-    '''
 
     class AlignMode(Enum):
         NONE = 0
@@ -25,9 +22,6 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
         TRANSLATION = 3
 
     def __init__(self, parent=None):
-        '''
-        Constructor
-        '''
         super(NodeEditorSceneviewerWidget, self).__init__(parent)
         self._model = None
         self._alignKeyPressed = False
@@ -70,9 +64,9 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
         self._model = model
 
     def getNearestNodeAndGraphics(self, x, y):
-        '''
+        """
         :return: Node, Graphics OR None, None if none found.
-        '''
+        """
         scenefiltermodule = self._context.getScenefiltermodule()
         with ChangeManager(scenefiltermodule):
             oldSelectionfilter = self.getSelectionfilter()
@@ -215,11 +209,11 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
             right = cross(up, front)
             if self._alignMode == self.AlignMode.ROTATION:
                 mag = magnitude(delta)
-                prop = div(delta, mag)
-                axis = add(mult(up, prop[0]), mult(right, prop[1]))
-                angle = mag * 0.002
-                # print('delta', delta, 'axis', axis, 'angle', angle)
-                self._model.interactionRotate(axis, angle)
+                if abs(mag) >= 1e-12:
+                    prop = div(delta, mag)
+                    axis = add(mult(up, prop[0]), mult(right, prop[1]))
+                    angle = mag * 0.002
+                    self._model.interactionRotate(axis, angle)
             elif self._alignMode == self.AlignMode.SCALE:
                 factor = 1.0 + delta[1] * 0.0005
                 if factor < 0.9:
