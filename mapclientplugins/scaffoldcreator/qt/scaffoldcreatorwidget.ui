@@ -1187,7 +1187,7 @@
   <customwidget>
    <class>FieldChooserWidget</class>
    <extends>QComboBox</extends>
-   <header>opencmiss/zincwidgets/fieldchooserwidget.h</header>
+   <header>cmlibs/widgets/fieldchooserwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources>

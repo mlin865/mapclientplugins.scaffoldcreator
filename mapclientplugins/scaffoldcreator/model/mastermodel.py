@@ -3,8 +3,8 @@ import json
 
 from PySide6 import QtCore
 
-from opencmiss.zinc.context import Context
-from opencmiss.zinc.material import Material
+from cmlibs.zinc.context import Context
+from cmlibs.zinc.material import Material
 
 from mapclientplugins.scaffoldcreator.model.scaffoldcreatormodel import ScaffoldCreatorModel
 from mapclientplugins.scaffoldcreator.model.meshannotationmodel import MeshAnnotationModel

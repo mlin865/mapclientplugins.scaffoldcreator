@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDockWidget,
     QVBoxLayout, QWidget)
 
 from mapclientplugins.scaffoldcreator.view.nodeeditorsceneviewerwidget import NodeEditorSceneviewerWidget
-from opencmiss.zincwidgets.fieldchooserwidget import FieldChooserWidget
+from cmlibs.widgets.fieldchooserwidget import FieldChooserWidget
 from mapclientplugins.scaffoldcreator import resources_rc
 
 class Ui_ScaffoldCreatorWidget(object):
