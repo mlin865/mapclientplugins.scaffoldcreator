@@ -8,8 +8,8 @@ from functools import partial
 
 from mapclientplugins.scaffoldcreator.view.ui_scaffoldcreatorwidget import Ui_ScaffoldCreatorWidget
 from mapclientplugins.scaffoldcreator.view.functionoptionsdialog import FunctionOptionsDialog
-from opencmiss.maths.vectorops import dot, magnitude, mult, normalize, sub
-from opencmiss.utils.zinc.field import fieldIsManagedCoordinates
+from cmlibs.maths.vectorops import dot, magnitude, mult, normalize, sub
+from cmlibs.utils.zinc.field import fieldIsManagedCoordinates
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 
 

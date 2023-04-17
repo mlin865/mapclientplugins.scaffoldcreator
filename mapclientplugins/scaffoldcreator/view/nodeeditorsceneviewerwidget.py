@@ -4,13 +4,13 @@ Derived SceneviewerWidget capable of editing node coordinate positions and deriv
 
 from enum import Enum
 from PySide6 import QtCore
-from opencmiss.maths.vectorops import add, cross, div, magnitude, mult, sub
-from opencmiss.utils.zinc.general import ChangeManager
-from opencmiss.zincwidgets.sceneviewerwidget import SceneviewerWidget
-from opencmiss.zinc.field import Field
-from opencmiss.zinc.graphics import Graphics
-from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_LOCAL, SCENECOORDINATESYSTEM_WINDOW_PIXEL_TOP_LEFT
-from opencmiss.zinc.result import RESULT_OK
+from cmlibs.maths.vectorops import add, cross, div, magnitude, mult, sub
+from cmlibs.utils.zinc.general import ChangeManager
+from cmlibs.widgets.sceneviewerwidget import SceneviewerWidget
+from cmlibs.zinc.field import Field
+from cmlibs.zinc.graphics import Graphics
+from cmlibs.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_LOCAL, SCENECOORDINATESYSTEM_WINDOW_PIXEL_TOP_LEFT
+from cmlibs.zinc.result import RESULT_OK
 
 
 class NodeEditorSceneviewerWidget(SceneviewerWidget):
@@ -111,7 +111,7 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
             super(NodeEditorSceneviewerWidget, self).keyPressEvent(event)
 
     def keyReleaseEvent(self, event):
-        if (event.key() == QtCore.Qt.Key_A) and (event.isAutoRepeat() == False):
+        if (event.key() == QtCore.Qt.Key_A) and not event.isAutoRepeat():
             self._alignKeyPressed = False
             event.setAccepted(True)
         else:
@@ -122,18 +122,20 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
             button = event.button()
             if self._selectionKeyPressed:
                 if button == QtCore.Qt.LeftButton:
-                    node, graphics = self.getNearestNodeAndGraphics(event.x(), event.y())
+                    node, graphics = self.getNearestNodeAndGraphics(
+                        event.x() * self._pixel_scale, event.y() * self._pixel_scale)
                     if node and (graphics.getType() == Graphics.TYPE_POINTS) and (graphics.getFieldDomainType() == Field.DOMAIN_TYPE_NODES):
                         # print('NodeEditorSceneviewerWidget.mousePressEvent node:', node.getIdentifier())
                         self.selectNode(node)
                         self._editNode = node
                         self._editGraphics = graphics
-                        self._lastMousePos = [event.x(), event.y()]
+                        self._lastMousePos = [event.x() * self._pixel_scale, event.y() * self._pixel_scale]
                         event.accept()
                         return
             if self._model and self._alignKeyPressed:
                 # shift-Left button becomes middle button, to support Mac
-                if (button == QtCore.Qt.MiddleButton) or ((button == QtCore.Qt.LeftButton) and (event.modifiers() & QtCore.Qt.SHIFT)):
+                if (button == QtCore.Qt.MiddleButton) or (
+                        (button == QtCore.Qt.LeftButton) and (event.modifiers() & QtCore.Qt.ShiftModifier)):
                     self._alignMode = self.AlignMode.TRANSLATION
                 elif button == QtCore.Qt.LeftButton:
                     self._alignMode = self.AlignMode.ROTATION
@@ -142,7 +144,7 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
                 if self._alignMode != self.AlignMode.NONE:
                     self._editNode = None
                     self._editGraphics = None
-                    self._lastMousePos = [event.x(), event.y()]
+                    self._lastMousePos = [event.x() * self._pixel_scale, event.y() * self._pixel_scale]
                     event.accept()
                     return
         self._lastMousePos = None
@@ -150,7 +152,7 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
 
     def mouseMoveEvent(self, event):
         if self._editNode:
-            mousePos = [event.x(), event.y()]
+            mousePos = [event.x() * self._pixel_scale, event.y() * self._pixel_scale]
             nodeset = self._editNode.getNodeset()
             fieldmodule = nodeset.getFieldmodule()
             with ChangeManager(fieldmodule):

@@ -38,11 +38,11 @@ readme = readfile("README.rst", split=True)[3:]  # skip title
 # into the 'requirements.txt' file.
 requires = [
     # minimal requirements listing
-    "scaffoldmaker >= 0.8",
-    "opencmiss.maths",
-    "opencmiss.utils >= 0.3",
-    "opencmiss.zinc >= 3.10.2",
-    "opencmiss.zincwidgets >= 2.0",
+    "scaffoldmaker >= 0.8.1",
+    "cmlibs.maths >= 0.3",
+    "cmlibs.utils >= 0.4.1",
+    "cmlibs.zinc >= 3.99",
+    "cmlibs.widgets >= 2.3",
     "PySide6"
 ]
 source_license = readfile("LICENSE")
@@ -50,7 +50,7 @@ source_license = readfile("LICENSE")
 setup(
     name='mapclientplugins.scaffoldcreator',
     version=find_version('mapclientplugins', 'scaffoldcreator', '__init__.py'),
-    description='MAP Client plugin for generating meshes via scripts using OpenCMISS-Zinc.',
+    description='MAP Client plugin for generating meshes via scripts using CMLibs-Zinc.',
     long_description='\n'.join(readme) + source_license,
     classifiers=[
         "Development Status :: 3 - Alpha",
