@@ -4,13 +4,13 @@ Derived SceneviewerWidget capable of editing node coordinate positions and deriv
 
 from enum import Enum
 from PySide6 import QtCore
-from opencmiss.maths.vectorops import add, cross, div, magnitude, mult, sub
-from opencmiss.utils.zinc.general import ChangeManager
-from opencmiss.zincwidgets.sceneviewerwidget import SceneviewerWidget
-from opencmiss.zinc.field import Field
-from opencmiss.zinc.graphics import Graphics
-from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_LOCAL, SCENECOORDINATESYSTEM_WINDOW_PIXEL_TOP_LEFT
-from opencmiss.zinc.result import RESULT_OK
+from cmlibs.maths.vectorops import add, cross, div, magnitude, mult, sub
+from cmlibs.utils.zinc.general import ChangeManager
+from cmlibs.widgets.sceneviewerwidget import SceneviewerWidget
+from cmlibs.zinc.field import Field
+from cmlibs.zinc.graphics import Graphics
+from cmlibs.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_LOCAL, SCENECOORDINATESYSTEM_WINDOW_PIXEL_TOP_LEFT
+from cmlibs.zinc.result import RESULT_OK
 
 
 class NodeEditorSceneviewerWidget(SceneviewerWidget):

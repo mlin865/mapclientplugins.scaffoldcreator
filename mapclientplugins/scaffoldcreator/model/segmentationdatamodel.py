@@ -1,8 +1,8 @@
-from opencmiss.utils.zinc.general import ChangeManager
-from opencmiss.zinc.field import Field
-from opencmiss.zinc.glyph import Glyph
-from opencmiss.zinc.result import RESULT_OK
-from opencmiss.zinc.spectrum import Spectrum, Spectrumcomponent
+from cmlibs.utils.zinc.general import ChangeManager
+from cmlibs.zinc.field import Field
+from cmlibs.zinc.glyph import Glyph
+from cmlibs.zinc.result import RESULT_OK
+from cmlibs.zinc.spectrum import Spectrum, Spectrumcomponent
 
 STRING_FLOAT_FORMAT = '{:.8g}'
 

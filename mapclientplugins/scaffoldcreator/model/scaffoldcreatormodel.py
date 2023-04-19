@@ -8,20 +8,20 @@ import os
 import math
 import sys
 
-from opencmiss.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrix_mult, \
+from cmlibs.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrix_mult, \
     rotation_matrix_to_euler
-from opencmiss.utils.zinc.field import fieldIsManagedCoordinates
-from opencmiss.utils.zinc.finiteelement import evaluateFieldNodesetRange
-from opencmiss.utils.zinc.general import ChangeManager, HierarchicalChangeManager
+from cmlibs.utils.zinc.field import fieldIsManagedCoordinates
+from cmlibs.utils.zinc.finiteelement import evaluateFieldNodesetRange
+from cmlibs.utils.zinc.general import ChangeManager, HierarchicalChangeManager
 
-from opencmiss.zinc.field import Field, FieldGroup
-from opencmiss.zinc.glyph import Glyph
-from opencmiss.zinc.graphics import Graphics
-from opencmiss.zinc.node import Node
-from opencmiss.zinc.result import RESULT_OK, RESULT_WARNING_PART_DONE
-from opencmiss.zinc.scene import Scene
-from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_WORLD
-from opencmiss.zincwidgets.definitions import SELECTION_GROUP_NAME
+from cmlibs.zinc.field import Field, FieldGroup
+from cmlibs.zinc.glyph import Glyph
+from cmlibs.zinc.graphics import Graphics
+from cmlibs.zinc.node import Node
+from cmlibs.zinc.result import RESULT_OK, RESULT_WARNING_PART_DONE
+from cmlibs.zinc.scene import Scene
+from cmlibs.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_WORLD
+from cmlibs.widgets.definitions import SELECTION_GROUP_NAME
 from scaffoldmaker.annotation.annotationgroup import findAnnotationGroupByName, getAnnotationMarkerGroup, \
     getAnnotationMarkerLocationField, getAnnotationMarkerNameField
 from scaffoldmaker.scaffolds import Scaffolds
