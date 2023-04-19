@@ -2,7 +2,6 @@
 Scaffold Creator Model class. Generates Zinc meshes using scaffoldmaker.
 """
 
-from __future__ import division
 import copy
 import os
 import math
