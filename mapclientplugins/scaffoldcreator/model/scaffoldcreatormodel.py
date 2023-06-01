@@ -230,10 +230,7 @@ class ScaffoldCreatorModel(object):
                 group.setManaged(True)
             self._unsavedNodeEdits = True
             self._useCustomScaffoldPackage()
-            fieldNodeGroup = group.getFieldNodeGroup(nodeset)
-            if not fieldNodeGroup.isValid():
-                fieldNodeGroup = group.createFieldNodeGroup(nodeset)
-            nodesetGroup = fieldNodeGroup.getNodesetGroup()
+            nodesetGroup = group.getOrCreateNodesetGroup(nodeset)
         return nodesetGroup
 
     def interactionRotate(self, axis, angle):
@@ -383,10 +380,7 @@ class ScaffoldCreatorModel(object):
                 if annotationGroup.isMarker():
                     markerNode = annotationGroup.getMarkerNode()
                     nodes = markerNode.getNodeset()
-                    selectionNodeGroup = selectionGroup.getFieldNodeGroup(nodes)
-                    if not selectionNodeGroup.isValid():
-                        selectionNodeGroup = selectionGroup.createFieldNodeGroup(nodes)
-                    selectionNodesetGroup = selectionNodeGroup.getNodesetGroup()
+                    selectionNodesetGroup = selectionGroup.getOrCreateNodesetGroup(nodes)
                     selectionNodesetGroup.addNode(markerNode)
                 else:
                     group = annotationGroup.getGroup()
