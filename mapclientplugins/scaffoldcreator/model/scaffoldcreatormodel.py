@@ -678,9 +678,9 @@ class ScaffoldCreatorModel(object):
         """
         Add the elements in the scene selection to the delete element ranges and delete.
         """
-        scene = self._region.getScene()
+        parentScene = self._parentRegion.getScene()
+        selectionGroup = scene_get_selection_group(parentScene)
         mesh = self.getMesh()
-        selectionGroup = scene_get_selection_group(scene)
         meshGroup = selectionGroup.getMeshGroup(mesh)
         if meshGroup.isValid() and (meshGroup.getSize() > 0):
             # merge selection with current delete element ranges
