@@ -149,7 +149,7 @@ class SegmentationDataModel():
             markerGroup = self._fieldmodule.findFieldByName("marker").castGroup()
             markerName = self._fieldmodule.findFieldByName("marker_name")
             if markerGroup.isValid():
-                markerNodeset = markerGroup.getFieldNodeGroup(datapoints).getNodesetGroup()
+                markerNodeset = markerGroup.getNodesetGroup(datapoints)
                 markerDataCoordinates = get_field_coordinates_on_nodeset(self._fieldmodule, markerNodeset, "coordinates") if markerNodeset.isValid() else None
             else:
                 markerDataCoordinates = None

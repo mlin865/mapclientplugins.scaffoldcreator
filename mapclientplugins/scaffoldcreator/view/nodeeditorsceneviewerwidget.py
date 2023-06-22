@@ -97,10 +97,7 @@ class NodeEditorSceneviewerWidget(SceneviewerWidget):
         with ChangeManager(fieldmodule):
             selectionGroup = self.getOrCreateSelectionGroup()
             selectionGroup.clear()
-            nodegroup = selectionGroup.getFieldNodeGroup(nodeset)
-            if not nodegroup.isValid():
-                nodegroup = selectionGroup.createFieldNodeGroup(nodeset)
-            nodesetGroup = nodegroup.getNodesetGroup()
+            nodesetGroup = selectionGroup.getOrCreateNodesetGroup(nodeset)
             result = nodesetGroup.addNode(node)
 
     def keyPressEvent(self, event):

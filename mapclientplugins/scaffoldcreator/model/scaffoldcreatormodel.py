@@ -12,22 +12,21 @@ from cmlibs.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotat
 from cmlibs.utils.zinc.field import fieldIsManagedCoordinates
 from cmlibs.utils.zinc.finiteelement import evaluateFieldNodesetRange
 from cmlibs.utils.zinc.general import ChangeManager, HierarchicalChangeManager
+from cmlibs.utils.zinc.group import group_add_group_elements, group_get_highest_dimension, \
+    identifier_ranges_fix, identifier_ranges_from_string, identifier_ranges_to_string, mesh_group_to_identifier_ranges
+from cmlibs.utils.zinc.scene import scene_create_selection_group, scene_get_selection_group
 
 from cmlibs.zinc.field import Field, FieldGroup
 from cmlibs.zinc.glyph import Glyph
 from cmlibs.zinc.graphics import Graphics
 from cmlibs.zinc.node import Node
 from cmlibs.zinc.result import RESULT_OK, RESULT_WARNING_PART_DONE
-from cmlibs.zinc.scene import Scene
 from cmlibs.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_WORLD
-from cmlibs.widgets.definitions import SELECTION_GROUP_NAME
 from scaffoldmaker.annotation.annotationgroup import findAnnotationGroupByName, getAnnotationMarkerGroup, \
     getAnnotationMarkerLocationField, getAnnotationMarkerNameField
 from scaffoldmaker.scaffolds import Scaffolds
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 from scaffoldmaker.utils.exportvtk import ExportVtk
-from scaffoldmaker.utils.zinc_utils import group_add_group_elements, group_get_highest_dimension, \
-    identifier_ranges_fix, identifier_ranges_from_string, identifier_ranges_to_string, mesh_group_to_identifier_ranges
 
 STRING_FLOAT_FORMAT = '{:.8g}'
 
@@ -230,10 +229,7 @@ class ScaffoldCreatorModel(object):
                 group.setManaged(True)
             self._unsavedNodeEdits = True
             self._useCustomScaffoldPackage()
-            fieldNodeGroup = group.getFieldNodeGroup(nodeset)
-            if not fieldNodeGroup.isValid():
-                fieldNodeGroup = group.createFieldNodeGroup(nodeset)
-            nodesetGroup = fieldNodeGroup.getNodesetGroup()
+            nodesetGroup = group.getOrCreateNodesetGroup(nodeset)
         return nodesetGroup
 
     def interactionRotate(self, axis, angle):
@@ -313,7 +309,7 @@ class ScaffoldCreatorModel(object):
         scene = self._region.getScene()
         with ChangeManager(parentScene), ChangeManager(scene), HierarchicalChangeManager(self._parentRegion):
             self._currentAnnotationGroup.clear()
-            selectionGroup = get_scene_selection_group(parentScene)
+            selectionGroup = scene_get_selection_group(parentScene)
             if selectionGroup:
                 subregionGroup = selectionGroup.getSubregionFieldGroup(self._region)
                 if subregionGroup.isValid():
@@ -374,19 +370,16 @@ class ScaffoldCreatorModel(object):
         parentScene = self._parentRegion.getScene()
         scene = self._region.getScene()
         with ChangeManager(parentScene), ChangeManager(scene), HierarchicalChangeManager(self._parentRegion):
-            selectionGroup = get_scene_selection_group(parentScene)
+            selectionGroup = scene_get_selection_group(parentScene)
             if annotationGroup:
                 if selectionGroup:
                     selectionGroup.clear()
                 else:
-                    selectionGroup = create_scene_selection_group(parentScene)
+                    selectionGroup = scene_create_selection_group(parentScene)
                 if annotationGroup.isMarker():
                     markerNode = annotationGroup.getMarkerNode()
                     nodes = markerNode.getNodeset()
-                    selectionNodeGroup = selectionGroup.getFieldNodeGroup(nodes)
-                    if not selectionNodeGroup.isValid():
-                        selectionNodeGroup = selectionGroup.createFieldNodeGroup(nodes)
-                    selectionNodesetGroup = selectionNodeGroup.getNodesetGroup()
+                    selectionNodesetGroup = selectionGroup.getOrCreateNodesetGroup(nodes)
                     selectionNodesetGroup.addNode(markerNode)
                 else:
                     group = annotationGroup.getGroup()
@@ -685,10 +678,10 @@ class ScaffoldCreatorModel(object):
         """
         Add the elements in the scene selection to the delete element ranges and delete.
         """
-        scene = self._region.getScene()
+        parentScene = self._parentRegion.getScene()
+        selectionGroup = scene_get_selection_group(parentScene)
         mesh = self.getMesh()
-        selectionGroup = scene.getSelectionField().castGroup()
-        meshGroup = selectionGroup.getFieldElementGroup(mesh).getMeshGroup()
+        meshGroup = selectionGroup.getMeshGroup(mesh)
         if meshGroup.isValid() and (meshGroup.getSize() > 0):
             # merge selection with current delete element ranges
             elementRanges = self._deleteElementRanges + mesh_group_to_identifier_ranges(meshGroup)
@@ -1315,45 +1308,3 @@ def exnodeStringFromGroup(region, groupName, fieldNames):
     region.write(sir)
     result, exString = srm.getBuffer()
     return exString
-
-
-def get_scene_selection_group(scene: Scene, subelementHandlingMode=FieldGroup.SUBELEMENT_HANDLING_MODE_FULL):
-    """
-    Get existing scene selection group of standard name.
-    :param subelementHandlingMode: Mode controlling how faces, lines and nodes are
-    automatically added or removed with higher dimensional elements.
-    :return: Existing selection group, or None.
-    """
-    selection_group = scene.getSelectionField().castGroup()
-    if selection_group.isValid():
-        selection_group.setSubelementHandlingMode(subelementHandlingMode)
-        return selection_group
-    return None
-
-
-def create_scene_selection_group(scene: Scene, subelementHandlingMode=FieldGroup.SUBELEMENT_HANDLING_MODE_FULL):
-    """
-    Create empty, unmanaged scene selection group of standard name.
-    Should have already called get_selection_group with None returned.
-    Can discover orphaned group of that name.
-    New group has subelement handling on.
-    :param scene: Zinc Scene to create selection for.
-    :param subelementHandlingMode: Mode controlling how faces, lines and nodes are
-    automatically added or removed with higher dimensional elements.
-    :return: Selection group for scene.
-    """
-    region = scene.getRegion()
-    fieldmodule = region.getFieldmodule()
-    with ChangeManager(fieldmodule):
-        selection_group = fieldmodule.findFieldByName(SELECTION_GROUP_NAME)
-        if selection_group.isValid():
-            selection_group = selection_group.castGroup()
-            if selection_group.isValid():
-                selection_group.clear()
-                selection_group.setManaged(False)
-        if not selection_group.isValid():
-            selection_group = fieldmodule.createFieldGroup()
-            selection_group.setName(SELECTION_GROUP_NAME)
-        selection_group.setSubelementHandlingMode(subelementHandlingMode)
-    scene.setSelectionField(selection_group)
-    return selection_group
