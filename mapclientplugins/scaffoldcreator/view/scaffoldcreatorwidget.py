@@ -9,7 +9,7 @@ from functools import partial
 from mapclientplugins.scaffoldcreator.view.ui_scaffoldcreatorwidget import Ui_ScaffoldCreatorWidget
 from mapclientplugins.scaffoldcreator.view.functionoptionsdialog import FunctionOptionsDialog
 from cmlibs.maths.vectorops import dot, magnitude, mult, normalize, sub
-from cmlibs.widgets.groupmanagerwidget import GroupManagerWidget
+from cmlibs.widgets.groupeditorwidget import GroupEditorWidget
 from cmlibs.utils.zinc.field import fieldIsManagedCoordinates
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 
@@ -314,10 +314,10 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
         currentAnnotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
         current_zinc_group = currentAnnotationGroup.getGroup()
 
-        group_manager = GroupManagerWidget(current_zinc_group, zinc_groups)
-        group_manager.group_updated.connect(self._refresh)
+        group_editor = GroupEditorWidget(self, current_zinc_group, zinc_groups)
+        group_editor.group_updated.connect(self._refresh)
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(group_manager)
+        layout.addWidget(group_editor)
         dlg = QtWidgets.QDialog(self)
         dlg.setWindowFlags(dlg.windowFlags() | QtCore.Qt.WindowContextHelpButtonHint)
         dlg.setLayout(layout)
