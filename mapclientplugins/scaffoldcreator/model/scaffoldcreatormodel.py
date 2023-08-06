@@ -523,6 +523,9 @@ class ScaffoldCreatorModel(object):
     def _clearMeshEdits(self):
         self._scaffoldPackages[-1].setMeshEdits(None)
         self._unsavedNodeEdits = False
+        meshEditsGroup = self.getMeshEditsGroup()
+        if meshEditsGroup.isValid():
+            meshEditsGroup.setManaged(False)
 
     def editScaffoldPackageOption(self, optionName):
         """
@@ -566,7 +569,13 @@ class ScaffoldCreatorModel(object):
         interactiveFunctions = self.getInteractiveFunctions()
         for interactiveFunction in interactiveFunctions:
             if interactiveFunction[0] == functionName:
-                return interactiveFunction[1]
+                options = interactiveFunction[1]
+                # None-valued options are initialised with same-key value from settings
+                settings = self._scaffoldPackages[-1].getScaffoldSettings()
+                for key, value in options.items():
+                    if value is None:
+                        options[key] = settings[key]
+                return options
         return {}
 
     def performInteractiveFunction(self, functionName, functionOptions):
@@ -579,10 +588,17 @@ class ScaffoldCreatorModel(object):
         interactiveFunctions = self.getInteractiveFunctions()
         for interactiveFunction in interactiveFunctions:
             if interactiveFunction[0] == functionName:
+                scaffoldPackage = self._scaffoldPackages[-1]
                 settingsChanged, nodesChanged = interactiveFunction[2](
-                    self._region, self._scaffoldPackages[-1].getScaffoldSettings(), functionOptions, 'meshEdits')
+                    self._region, scaffoldPackage.getScaffoldSettings(), scaffoldPackage.getConstructionObject(),
+                    functionOptions, 'meshEdits')
                 if nodesChanged:
                     self._unsavedNodeEdits = True
+                else:
+                    # handle empty mesh edits due to model being reset
+                    meshEditsGroup = self.getMeshEditsGroup()
+                    if (not meshEditsGroup.isValid()) or meshEditsGroup.isEmpty():
+                        self._clearMeshEdits()
                 self._updateScaffoldEdits()
                 self._checkCustomParameterSet()
                 return settingsChanged
