@@ -303,8 +303,8 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
             reply = QtWidgets.QMessageBox.question(
                 self, 'Confirm action',
                 'Redefine annotation group \'' + annotationGroup.getName() + '\' from selection?',
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
-            if reply == QtWidgets.QMessageBox.Yes:
+                QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No, QtWidgets.QMessageBox.StandardButton.No)
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                 if self._scaffold_model.redefineCurrentAnnotationGroupFromSelection():
                     self._refreshCurrentAnnotationGroupSettings()
 
@@ -314,12 +314,15 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
         currentAnnotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
         current_zinc_group = currentAnnotationGroup.getGroup()
 
+        # Call a refresh to make the current selection view consistent with the current group.
+        self._refresh()
         group_editor = GroupEditorWidget(self, current_zinc_group, zinc_groups)
         group_editor.group_updated.connect(self._refresh)
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(group_editor)
         dlg = QtWidgets.QDialog(self)
-        dlg.setWindowFlags(dlg.windowFlags() | QtCore.Qt.WindowContextHelpButtonHint)
+        group_editor.close_requested.connect(dlg.close)
+        dlg.setWindowFlags(dlg.windowFlags() | QtCore.Qt.WindowType.WindowContextHelpButtonHint)
         dlg.setLayout(layout)
         dlg.resize(600, 400)
         dlg.show()
@@ -333,8 +336,8 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
             reply = QtWidgets.QMessageBox.question(
                 self, 'Confirm action',
                 'Delete annotation group \'' + annotationGroup.getName() + '\'?',
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
-            if reply == QtWidgets.QMessageBox.Yes:
+                QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No, QtWidgets.QMessageBox.StandardButton.No)
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                 if self._scaffold_model.deleteAnnotationGroup(annotationGroup):
                     self._refreshAnnotationGroups()
                     self._refreshCurrentAnnotationGroupSettings()
