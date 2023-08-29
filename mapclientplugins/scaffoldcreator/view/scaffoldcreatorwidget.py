@@ -9,6 +9,7 @@ from functools import partial
 from mapclientplugins.scaffoldcreator.view.ui_scaffoldcreatorwidget import Ui_ScaffoldCreatorWidget
 from mapclientplugins.scaffoldcreator.view.functionoptionsdialog import FunctionOptionsDialog
 from cmlibs.maths.vectorops import dot, magnitude, mult, normalize, sub
+from cmlibs.widgets.groupeditorwidget import GroupEditorWidget
 from cmlibs.utils.zinc.field import fieldIsManagedCoordinates
 from scaffoldmaker.scaffoldpackage import ScaffoldPackage
 
@@ -37,6 +38,17 @@ def QLineEdit_parseVector(lineedit):
     except ValueError:
         pass
     return None
+
+
+def get_zinc_groups(annotation_groups):
+    """
+    Convert a list of AnnotationGroups into a list of Zinc FieldGroups.
+    """
+    zinc_groups = []
+    for annotation_group in annotation_groups:
+        zinc_group = annotation_group.getGroup()
+        zinc_groups.append(zinc_group)
+    return zinc_groups
 
 
 class ScaffoldCreatorWidget(QtWidgets.QWidget):
@@ -159,6 +171,7 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
         self._ui.annotationGroupNew_pushButton.clicked.connect(self._annotationGroupNewButtonClicked)
         self._ui.annotationGroupNewMarker_pushButton.clicked.connect(self._annotationGroupNewMarkerButtonClicked)
         self._ui.annotationGroupRedefine_pushButton.clicked.connect(self._annotationGroupRedefineButtonClicked)
+        self._ui.annotationGroupEdit_pushButton.clicked.connect(self._annotationGroupEditButtonClicked)
         self._ui.annotationGroupDelete_pushButton.clicked.connect(self._annotationGroupDeleteButtonClicked)
         self._ui.annotationGroupOntId_lineEdit.editingFinished.connect(self._annotationGroupOntIdLineEditChanged)
         self._ui.markerMaterialCoordinatesField_fieldChooser.setRegion(self._scaffold_model.getRegion())
@@ -290,10 +303,32 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
             reply = QtWidgets.QMessageBox.question(
                 self, 'Confirm action',
                 'Redefine annotation group \'' + annotationGroup.getName() + '\' from selection?',
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
-            if reply == QtWidgets.QMessageBox.Yes:
+                QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No, QtWidgets.QMessageBox.StandardButton.No)
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                 if self._scaffold_model.redefineCurrentAnnotationGroupFromSelection():
                     self._refreshCurrentAnnotationGroupSettings()
+
+    def _annotationGroupEditButtonClicked(self):
+        annotationGroups = self._scaffold_model.getAnnotationGroups()
+        zinc_groups = get_zinc_groups(annotationGroups)
+        currentAnnotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
+        current_zinc_group = currentAnnotationGroup.getGroup()
+
+        # Call a refresh to make the current selection view consistent with the current group.
+        self._refresh()
+        group_editor = GroupEditorWidget(self, current_zinc_group, zinc_groups)
+        group_editor.group_updated.connect(self._refresh)
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(group_editor)
+        dlg = QtWidgets.QDialog(self)
+        group_editor.close_requested.connect(dlg.close)
+        dlg.setWindowFlags(dlg.windowFlags() | QtCore.Qt.WindowType.WindowContextHelpButtonHint)
+        dlg.setLayout(layout)
+        dlg.resize(600, 400)
+        dlg.show()
+
+    def _refresh(self):
+        self._annotationGroupChanged(self._ui.annotationGroup_comboBox.currentIndex())
 
     def _annotationGroupDeleteButtonClicked(self):
         annotationGroup = self._scaffold_model.getCurrentAnnotationGroup()
@@ -301,8 +336,8 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
             reply = QtWidgets.QMessageBox.question(
                 self, 'Confirm action',
                 'Delete annotation group \'' + annotationGroup.getName() + '\'?',
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
-            if reply == QtWidgets.QMessageBox.Yes:
+                QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No, QtWidgets.QMessageBox.StandardButton.No)
+            if reply == QtWidgets.QMessageBox.StandardButton.Yes:
                 if self._scaffold_model.deleteAnnotationGroup(annotationGroup):
                     self._refreshAnnotationGroups()
                     self._refreshCurrentAnnotationGroupSettings()
@@ -398,6 +433,7 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
         self._ui.annotationGroupDimension_spinBox.setValue(annotationGroup.getDimension() if annotationGroup else 0)
         self._ui.annotationGroupDimension_spinBox.setEnabled(False)
         self._ui.annotationGroupRedefine_pushButton.setEnabled(isUser and not annotationGroup.isMarker())
+        self._ui.annotationGroupEdit_pushButton.setEnabled(isUser and not annotationGroup.isMarker())
         self._ui.annotationGroupDelete_pushButton.setEnabled(isUser)
         markerMaterialCoordinatesField = None
         markerMaterialCoordinatesText = ""
