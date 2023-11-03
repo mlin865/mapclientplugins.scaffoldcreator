@@ -118,7 +118,7 @@ class MasterModel(object):
     def loadSettings(self):
         try:
             settings = self._settings
-            with open(self._filenameStem + '-settings.json', 'r') as f:
+            with open(self.getSettingsFilename(), 'r') as f:
                 savedSettings = json.loads(f.read(), object_hook=Scaffolds_decodeJSON)
                 settings.update(savedSettings)
             # migrate from generator_settings in version 0.3.2
@@ -145,8 +145,11 @@ class MasterModel(object):
     def _saveSettings(self):
         self._creator_model.updateSettingsBeforeWrite()
         settings = self._getSettings()
-        with open(self._filenameStem + '-settings.json', 'w') as f:
+        with open(self.getSettingsFilename(), 'w') as f:
             f.write(json.dumps(settings, cls=Scaffolds_JSONEncoder, sort_keys=True, indent=4))
 
     def setSegmentationDataFile(self, data_filename):
         self._segmentation_data_model.setDataFilename(data_filename)
+
+    def getSettingsFilename(self):
+        return self._filenameStem + '-settings.json'
