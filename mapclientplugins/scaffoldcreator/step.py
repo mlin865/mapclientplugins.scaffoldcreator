@@ -51,15 +51,17 @@ class ScaffoldCreator(WorkflowStepMountPoint):
         Kick off the execution of the step, in this case an interactive dialog.
         User invokes the _doneExecution() method when finished, via pushbutton.
         """
-        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-        self._model = MasterModel(self._location, self._config['identifier'])
-        if self._port1_inputZincDataFile:
-            self._model.setSegmentationDataFile(self._port1_inputZincDataFile)
-        self._view = ScaffoldCreatorWidget(self._model)
-        # self._view.setWindowFlags(QtCore.Qt.Widget)
-        self._view.registerDoneExecution(self._myDoneExecution)
-        self._setCurrentWidget(self._view)
-        QtWidgets.QApplication.restoreOverrideCursor()
+        QtWidgets.QApplication.setOverrideCursor(QtCore.Qt.CursorShape.WaitCursor)
+        try:
+            self._model = MasterModel(self._location, self._config['identifier'])
+            if self._port1_inputZincDataFile:
+                self._model.setSegmentationDataFile(self._port1_inputZincDataFile)
+            self._view = ScaffoldCreatorWidget(self._model)
+            # self._view.setWindowFlags(QtCore.Qt.Widget)
+            self._view.registerDoneExecution(self._myDoneExecution)
+            self._setCurrentWidget(self._view)
+        finally:
+            QtWidgets.QApplication.restoreOverrideCursor()
 
     def _myDoneExecution(self):
         self._portData0 = self._model.getOutputModelFilename()
@@ -145,3 +147,8 @@ class ScaffoldCreator(WorkflowStepMountPoint):
         d.identifierOccursCount = self._identifierOccursCount
         d.setConfig(self._config)
         self._configured = d.validate()
+
+    def getAdditionalConfigFiles(self):
+        if self._model is None:
+            self._model = MasterModel(self._location, self._config['identifier'])
+        return [self._model.getSettingsFilename()]
