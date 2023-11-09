@@ -96,7 +96,7 @@ class FunctionOptionsDialog(QtWidgets.QDialog):
                 else:
                     lineEdit = QtWidgets.QLineEdit(self)
                     lineEdit.setObjectName(key)
-                    lineEdit.setText(value)
+                    lineEdit.setText(str(value))
                     callback = partial(self._optionLineEditChanged, lineEdit)
                     lineEdit.editingFinished.connect(callback)
                     self._dialogLayout.addWidget(lineEdit)
