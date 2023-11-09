@@ -1022,17 +1022,18 @@ class ScaffoldCreatorModel(object):
         nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
         coordinates = fm.findFieldByName('coordinates').castFiniteElement()
         componentsCount = coordinates.getNumberOfComponents()
-        minX, maxX = evaluateFieldNodesetRange(coordinates, nodes)
-        if componentsCount == 1:
-            maxRange = (maxX - minX) * scale[0]
-        else:
-            maxRange = max((maxX[c] - minX[c]) * scale[c] for c in range(componentsCount))
         axesScale = 1.0
-        if maxRange > 0.0:
-            while axesScale * 10.0 < maxRange:
-                axesScale *= 10.0
-            while axesScale > maxRange:
-                axesScale *= 0.1
+        if nodes.getSize() > 0:
+            minX, maxX = evaluateFieldNodesetRange(coordinates, nodes)
+            if componentsCount == 1:
+                maxRange = (maxX - minX) * scale[0]
+            else:
+                maxRange = max((maxX[c] - minX[c]) * scale[c] for c in range(componentsCount))
+            if maxRange > 0.0:
+                while axesScale * 10.0 < maxRange:
+                    axesScale *= 10.0
+                while axesScale > maxRange:
+                    axesScale *= 0.1
         return axesScale
 
     def _setGraphicsTransformation(self):
@@ -1119,21 +1120,22 @@ class ScaffoldCreatorModel(object):
                 del sumLineLength
                 del one
             if (lineCount == 0) or (glyphWidth == 0.0):
-                # fallback if no lines: use graphics range
-                minX, maxX = evaluateFieldNodesetRange(coordinates, nodes)
-                # use function of coordinate range if no elements
-                if componentsCount == 1:
-                    maxScale = maxX - minX
-                else:
-                    first = True
-                    for c in range(componentsCount):
-                        scale = maxX[c] - minX[c]
-                        if first or (scale > maxScale):
-                            maxScale = scale
-                            first = False
-                if maxScale == 0.0:
-                    maxScale = 1.0
-                glyphWidth = 0.01 * maxScale
+                glyphWidth = 0.01
+                if nodes.getSize() > 0:
+                    # fallback if no lines: use nodeset range
+                    minX, maxX = evaluateFieldNodesetRange(coordinates, nodes)
+                    # use function of coordinate range if no elements
+                    if componentsCount == 1:
+                        maxScale = maxX - minX
+                    else:
+                        first = True
+                        for c in range(componentsCount):
+                            scale = maxX[c] - minX[c]
+                            if first or (scale > maxScale):
+                                maxScale = scale
+                                first = False
+                    if maxScale > 0.0:
+                        glyphWidth = 0.01 * maxScale
             del fieldcache
 
         # make graphics
