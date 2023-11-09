@@ -311,6 +311,7 @@ class ScaffoldCreatorModel(object):
             self._currentAnnotationGroup.clear()
             selectionGroup = scene_get_selection_group(parentScene)
             if selectionGroup:
+                selectionGroup.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
                 subregionGroup = selectionGroup.getSubregionFieldGroup(self._region)
                 if subregionGroup.isValid():
                     group = self._currentAnnotationGroup.getGroup()
@@ -374,6 +375,7 @@ class ScaffoldCreatorModel(object):
             if annotationGroup:
                 if selectionGroup:
                     selectionGroup.clear()
+                    selectionGroup.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
                 else:
                     selectionGroup = scene_create_selection_group(parentScene)
                 if annotationGroup.isMarker():
