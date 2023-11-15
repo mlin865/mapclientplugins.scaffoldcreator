@@ -146,7 +146,12 @@ class ScaffoldCreatorModel(object):
         Ensure mesh and annotation group edits are up-to-date.
         """
         if self._unsavedNodeEdits:
-            self._scaffoldPackages[-1].setMeshEdits(exnodeStringFromGroup(self._region, 'meshEdits', ['coordinates']))
+            fieldmodule = self._region.getFieldmodule()
+            editFieldNames = []
+            for editFieldName in ['coordinates', 'inner coordinates']:
+                if fieldmodule.findFieldByName(editFieldName).isValid():
+                    editFieldNames.append(editFieldName)
+            self._scaffoldPackages[-1].setMeshEdits(exnodeStringFromGroup(self._region, 'meshEdits', editFieldNames))
             self._unsavedNodeEdits = False
         self._scaffoldPackages[-1].updateUserAnnotationGroups()
 
@@ -883,7 +888,7 @@ class ScaffoldCreatorModel(object):
 
     def getDisplayNodeDerivativeVersion(self):
         """
-        :return: 0 to show all versions, otherwise version number.
+        :return: 0 to show all versions, otherwise vers ion number.
         """
         return self._settings['displayNodeDerivativeVersion']
 
