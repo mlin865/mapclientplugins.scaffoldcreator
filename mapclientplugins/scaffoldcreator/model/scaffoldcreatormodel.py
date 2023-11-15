@@ -124,6 +124,7 @@ class ScaffoldCreatorModel(object):
             'displayNodeNumbers': False,
             'displayNodeDerivatives': 0,  # tri-state: 0=show none, 1=show selected, 2=show all
             'displayNodeDerivativeLabels': self._nodeDerivativeLabels[0:3],
+            'displayNodeDerivativeVersion': 0,  # 0 = all or version number
             'displayLines': True,
             'displayLinesExterior': False,
             'displayModelRadius': False,
@@ -818,32 +819,38 @@ class ScaffoldCreatorModel(object):
         """
         return self._settings['displayNodeDerivatives']
 
-    def _setAllGraphicsVisibility(self, graphicsName, show, selectMode=None):
+    def _setMultipleGraphicsVisibility(self, graphicsPartName, show, selectMode=None):
         """
-        Ensure visibility of all graphics with graphicsName is set to boolean show.
+        Ensure visibility of all graphics starting with graphicsStemName is set to boolean show.
         :param selectMode: Optional selectMode to set at the same time.
         """
         scene = self._region.getScene()
-        graphics = scene.findGraphicsByName(graphicsName)
+        graphics = scene.getFirstGraphics()
         while graphics.isValid():
-            graphics.setVisibilityFlag(show)
-            if selectMode:
-                graphics.setSelectMode(selectMode)
-            while True:
-                graphics = scene.getNextGraphics(graphics)
-                if (not graphics.isValid()) or (graphics.getName() == graphicsName):
-                    break
+            graphicsName = graphics.getName()
+            if graphicsPartName in graphicsName:
+                graphics.setVisibilityFlag(show)
+                if selectMode:
+                    graphics.setSelectMode(selectMode)
+            graphics = scene.getNextGraphics(graphics)
 
     def setDisplayNodeDerivatives(self, triState):
         """
         :param triState: From Qt::CheckState: 0=show none, 1=show selected, 2=show all
         """
         self._settings['displayNodeDerivatives'] = triState
-        for nodeDerivativeLabel in self._nodeDerivativeLabels:
-            self._setAllGraphicsVisibility(
-                'displayNodeDerivatives' + nodeDerivativeLabel,
-                bool(triState) and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel),
-                selectMode=Graphics.SELECT_MODE_DRAW_SELECTED if (triState == 1) else Graphics.SELECT_MODE_ON)
+        displayVersion = self.getDisplayNodeDerivativeVersion()
+        with ChangeManager(self._scene):
+            for nodeDerivativeLabel in self._nodeDerivativeLabels:
+                graphicsPartName = 'displayNodeDerivatives_' + nodeDerivativeLabel
+                if displayVersion > 0:
+                    # hide all then display chosen version below
+                    self._setMultipleGraphicsVisibility(graphicsPartName, show=False)
+                    graphicsPartName += '_v' + str(displayVersion)
+                self._setMultipleGraphicsVisibility(
+                    graphicsPartName,
+                    bool(triState) and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel),
+                    selectMode=Graphics.SELECT_MODE_DRAW_SELECTED if (triState == 1) else Graphics.SELECT_MODE_ON)
 
     def isDisplayNodeDerivativeLabels(self, nodeDerivativeLabel):
         """
@@ -868,8 +875,25 @@ class ScaffoldCreatorModel(object):
         else:
             if shown:
                 self._settings['displayNodeDerivativeLabels'].remove(nodeDerivativeLabel)
-        self._setAllGraphicsVisibility('displayNodeDerivatives' + nodeDerivativeLabel,
-                                       show and bool(self.getDisplayNodeDerivatives()))
+        displayVersion = self.getDisplayNodeDerivativeVersion()
+        graphicsPartName = 'displayNodeDerivatives_' + nodeDerivativeLabel
+        if displayVersion > 0:
+            graphicsPartName += '_v' + str(displayVersion)
+        self._setMultipleGraphicsVisibility(graphicsPartName, show and bool(self.getDisplayNodeDerivatives()))
+
+    def getDisplayNodeDerivativeVersion(self):
+        """
+        :return: 0 to show all versions, otherwise version number.
+        """
+        return self._settings['displayNodeDerivativeVersion']
+
+    def setDisplayNodeDerivativeVersion(self, version):
+        """
+        :param version: Integer >= 0; 0 to show all versions, otherwise version number.
+        """
+        assert isinstance(version, int) and (version >= 0)
+        self._settings['displayNodeDerivativeVersion'] = version
+        self.setDisplayNodeDerivatives(self.getDisplayNodeDerivatives())
 
     def isDisplayNodeNumbers(self):
         return self._getVisibility('displayNodeNumbers')
@@ -1198,6 +1222,7 @@ class ScaffoldCreatorModel(object):
             # names in same order as self._nodeDerivativeLabels 'D1', 'D2', 'D3', 'D12', 'D13', 'D23', 'D123' and nodeDerivativeFields
             nodeDerivativeMaterialNames = ['gold', 'silver', 'green', 'cyan', 'magenta', 'yellow', 'blue']
             derivativeScales = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+            displayVersion = self.getDisplayNodeDerivativeVersion()
             for i in range(len(self._nodeDerivativeLabels)):
                 nodeDerivativeLabel = self._nodeDerivativeLabels[i]
                 maxVersions = len(nodeDerivativeFields[i])
@@ -1216,10 +1241,12 @@ class ScaffoldCreatorModel(object):
                     material = self._materialmodule.findMaterialByName(nodeDerivativeMaterialNames[i])
                     nodeDerivatives.setMaterial(material)
                     nodeDerivatives.setSelectedMaterial(material)
-                    nodeDerivatives.setName('displayNodeDerivatives' + nodeDerivativeLabel)
+                    nodeDerivatives.setName('displayNodeDerivatives_' + nodeDerivativeLabel + '_v' + str(v + 1))
                     displayNodeDerivatives = self.getDisplayNodeDerivatives()  # tri-state: 0=show none, 1=show selected, 2=show all
                     nodeDerivatives.setSelectMode(Graphics.SELECT_MODE_DRAW_SELECTED if (displayNodeDerivatives == 1) else Graphics.SELECT_MODE_ON)
-                    nodeDerivatives.setVisibilityFlag(bool(displayNodeDerivatives) and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel))
+                    nodeDerivatives.setVisibilityFlag(bool(displayNodeDerivatives) and
+                                                      self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel) and
+                                                      ((displayVersion == 0) or (displayVersion == (v + 1))))
 
             elementNumbers = scene.createGraphicsPoints()
             elementNumbers.setFieldDomainType(Field.DOMAIN_TYPE_MESH_HIGHEST_DIMENSION)

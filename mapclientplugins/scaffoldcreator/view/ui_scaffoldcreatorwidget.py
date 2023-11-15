@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'scaffoldcreatorwidget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.4.1
+## Created by: Qt User Interface Compiler version 6.5.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -21,8 +21,8 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDockWidget,
     QSizePolicy, QSpacerItem, QSpinBox, QTabWidget,
     QVBoxLayout, QWidget)
 
-from mapclientplugins.scaffoldcreator.view.nodeeditorsceneviewerwidget import NodeEditorSceneviewerWidget
 from cmlibs.widgets.fieldchooserwidget import FieldChooserWidget
+from mapclientplugins.scaffoldcreator.view.nodeeditorsceneviewerwidget import NodeEditorSceneviewerWidget
 from mapclientplugins.scaffoldcreator import resources_rc
 
 class Ui_ScaffoldCreatorWidget(object):
@@ -78,7 +78,7 @@ class Ui_ScaffoldCreatorWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents_2 = QWidget()
         self.scrollAreaWidgetContents_2.setObjectName(u"scrollAreaWidgetContents_2")
-        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 446, 726))
+        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 380, 768))
         sizePolicy1.setHeightForWidth(self.scrollAreaWidgetContents_2.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents_2.setSizePolicy(sizePolicy1)
         self.verticalLayout_2 = QVBoxLayout(self.scrollAreaWidgetContents_2)
@@ -379,9 +379,10 @@ class Ui_ScaffoldCreatorWidget(object):
 
         self.horizontalLayout_6.addWidget(self.displayNodeDerivatives_checkBox)
 
-        self.displayNodes_horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.displayNodeDerivativesVersion_spinBox = QSpinBox(self.displayNodes_frame)
+        self.displayNodeDerivativesVersion_spinBox.setObjectName(u"displayNodeDerivativesVersion_spinBox")
 
-        self.horizontalLayout_6.addItem(self.displayNodes_horizontalSpacer)
+        self.horizontalLayout_6.addWidget(self.displayNodeDerivativesVersion_spinBox)
 
 
         self.verticalLayout_13.addWidget(self.displayNodes_frame)
@@ -391,6 +392,7 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displayNodeDerivativeLabels_frame.setFrameShape(QFrame.StyledPanel)
         self.displayNodeDerivativeLabels_frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_7 = QHBoxLayout(self.displayNodeDerivativeLabels_frame)
+        self.horizontalLayout_7.setSpacing(2)
         self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.displayNodeDerivativeLabels_horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -791,7 +793,13 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displayModelCoordinates_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Model coordinates:", None))
         self.displayNodePoints_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Node points", None))
         self.displayNodeNumbers_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Node numbers", None))
+#if QT_CONFIG(tooltip)
+        self.displayNodeDerivatives_checkBox.setToolTip(QCoreApplication.translate("ScaffoldCreatorWidget", u"<html><head/><body><p>Show node derivatives on:<br/>[ ] None<br/>[-] Selected nodes<br/>[/] All nodes</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.displayNodeDerivatives_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Node derivatives", None))
+#if QT_CONFIG(tooltip)
+        self.displayNodeDerivativesVersion_spinBox.setToolTip(QCoreApplication.translate("ScaffoldCreatorWidget", u"<html><head/><body><p>Show specified node derivative version, or 0 to show all versions.</p></body></html>", None))
+#endif // QT_CONFIG(tooltip)
         self.displayNodeDerivativeLabelsD1_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"D1", None))
         self.displayNodeDerivativeLabelsD2_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"D2", None))
         self.displayNodeDerivativeLabelsD3_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"D3", None))

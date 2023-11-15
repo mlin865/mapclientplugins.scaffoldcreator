@@ -113,8 +113,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>446</width>
-            <height>726</height>
+            <width>380</width>
+            <height>768</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -124,7 +124,7 @@
            </sizepolicy>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
-           <property name="margin">
+           <property name="margin" stdset="0">
             <number>0</number>
            </property>
            <item>
@@ -171,7 +171,7 @@
                    <enum>QFrame::Raised</enum>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_5">
-                   <property name="margin">
+                   <property name="margin" stdset="0">
                     <number>0</number>
                    </property>
                    <item>
@@ -284,7 +284,7 @@
                       <enum>QFrame::Raised</enum>
                      </property>
                      <layout class="QVBoxLayout" name="verticalLayout_10">
-                      <property name="margin">
+                      <property name="margin" stdset="0">
                        <number>0</number>
                       </property>
                       <item>
@@ -394,7 +394,7 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_11">
-              <property name="margin">
+              <property name="margin" stdset="0">
                <number>0</number>
               </property>
               <item>
@@ -406,7 +406,7 @@
                  <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_9">
-                 <property name="margin">
+                 <property name="margin" stdset="0">
                   <number>0</number>
                  </property>
                  <item>
@@ -455,7 +455,7 @@
                  <enum>QFrame::Raised</enum>
                 </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_10">
-                 <property name="margin">
+                 <property name="margin" stdset="0">
                   <number>0</number>
                  </property>
                  <item>
@@ -503,7 +503,7 @@
               <property name="fieldGrowthPolicy">
                <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
               </property>
-              <property name="margin">
+              <property name="margin" stdset="0">
                <number>0</number>
               </property>
               <item row="0" column="0">
@@ -528,7 +528,7 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_6">
-              <property name="margin">
+              <property name="margin" stdset="0">
                <number>0</number>
               </property>
               <item>
@@ -559,6 +559,9 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show node derivatives on:&lt;br/&gt;[ ] None&lt;br/&gt;[-] Selected nodes&lt;br/&gt;[/] All nodes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Node derivatives</string>
                 </property>
@@ -568,17 +571,11 @@
                </widget>
               </item>
               <item>
-               <spacer name="displayNodes_horizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+               <widget class="QSpinBox" name="displayNodeDerivativesVersion_spinBox">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show specified node derivative version, or 0 to show all versions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
+               </widget>
               </item>
              </layout>
             </widget>
@@ -592,7 +589,10 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
-              <property name="margin">
+              <property name="spacing">
+               <number>2</number>
+              </property>
+              <property name="margin" stdset="0">
                <number>0</number>
               </property>
               <item>
@@ -711,7 +711,7 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_5">
-              <property name="margin">
+              <property name="margin" stdset="0">
                <number>0</number>
               </property>
               <item>
@@ -766,7 +766,7 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <property name="margin">
+              <property name="margin" stdset="0">
                <number>0</number>
               </property>
               <item>
@@ -840,7 +840,7 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_4">
-              <property name="margin">
+              <property name="margin" stdset="0">
                <number>0</number>
               </property>
               <item>
@@ -888,7 +888,7 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_8">
-              <property name="margin">
+              <property name="margin" stdset="0">
                <number>0</number>
               </property>
               <item>
@@ -937,7 +937,7 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_11">
-              <property name="margin">
+              <property name="margin" stdset="0">
                <number>0</number>
               </property>
               <item>
@@ -980,7 +980,7 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QFormLayout" name="formLayout_2">
-              <property name="margin">
+              <property name="margin" stdset="0">
                <number>0</number>
               </property>
               <item row="1" column="0">
@@ -1056,7 +1056,7 @@
                     <enum>QFrame::Raised</enum>
                    </property>
                    <layout class="QFormLayout" name="formLayout_4">
-                    <property name="margin">
+                    <property name="margin" stdset="0">
                      <number>0</number>
                     </property>
                     <item row="3" column="0">
@@ -1121,16 +1121,16 @@
           <enum>QFrame::Raised</enum>
          </property>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
-          <property name="margin">
+          <property name="margin" stdset="0">
            <number>3</number>
           </property>
-            <item>
-                <widget class="QPushButton" name="pushButtonDocumentation">
-                    <property name="text">
-                    <string>Online Documentation</string>
-                    </property>
-                </widget>
-            </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonDocumentation">
+            <property name="text">
+             <string>Online Documentation</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QPushButton" name="viewAll_pushButton">
             <property name="text">
