@@ -9,12 +9,13 @@ import sys
 
 from cmlibs.maths.vectorops import axis_angle_to_rotation_matrix, euler_to_rotation_matrix, matrix_mult, \
     rotation_matrix_to_euler
-from cmlibs.utils.zinc.field import fieldIsManagedCoordinates
+from cmlibs.utils.zinc.field import fieldIsManagedCoordinates, determine_node_field_derivatives
 from cmlibs.utils.zinc.finiteelement import evaluateFieldNodesetRange
 from cmlibs.utils.zinc.general import ChangeManager, HierarchicalChangeManager
 from cmlibs.utils.zinc.group import group_add_group_elements, group_get_highest_dimension, \
     identifier_ranges_fix, identifier_ranges_from_string, identifier_ranges_to_string, mesh_group_to_identifier_ranges
-from cmlibs.utils.zinc.scene import scene_create_selection_group, scene_get_selection_group
+from cmlibs.utils.zinc.region import determine_appropriate_glyph_size
+from cmlibs.utils.zinc.scene import scene_create_selection_group, scene_get_selection_group, scene_create_node_derivative_graphics
 
 from cmlibs.zinc.field import Field, FieldGroup
 from cmlibs.zinc.glyph import Glyph
@@ -965,7 +966,6 @@ class ScaffoldCreatorModel(object):
         self._checkCustomParameterSet()
         self._generateMesh()
 
-
     def _generateMesh(self):
         currentAnnotationGroupName = self._currentAnnotationGroup.getName() if self._currentAnnotationGroup else None
         scaffoldPackage = self._scaffoldPackages[-1]
@@ -1047,37 +1047,7 @@ class ScaffoldCreatorModel(object):
             mesh = self.getMesh()
             meshDimension = mesh.getDimension()
             coordinates = self.getModelCoordinatesField()
-            componentsCount = coordinates.getNumberOfComponents()
-            nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
-            fieldcache = fm.createFieldcache()
 
-            # determine field derivatives for all versions in use: fairly expensive
-            # fields in same order as self._nodeDerivativeLabels
-            nodeDerivatives = [Node.VALUE_LABEL_D_DS1, Node.VALUE_LABEL_D_DS2, Node.VALUE_LABEL_D_DS3,
-                               Node.VALUE_LABEL_D2_DS1DS2, Node.VALUE_LABEL_D2_DS1DS3, Node.VALUE_LABEL_D2_DS2DS3, Node.VALUE_LABEL_D3_DS1DS2DS3]
-            nodeDerivativeFields = [[fm.createFieldNodeValue(coordinates, nodeDerivative, 1)] for nodeDerivative in nodeDerivatives]
-            derivativesCount = len(nodeDerivatives)
-            maxVersions = [1 for nodeDerivative in nodeDerivatives]
-            lastVersion = 1
-            version = 2
-            while True:
-                nodeIter = nodes.createNodeiterator()
-                node = nodeIter.next()
-                foundCount = sum((1 if (v < lastVersion) else 0) for v in maxVersions)
-                while (node.isValid()) and (foundCount < derivativesCount):
-                    fieldcache.setNode(node)
-                    for d in range(derivativesCount):
-                        if maxVersions[d] == lastVersion:  # only look one higher than last version found
-                            result, values = coordinates.getNodeParameters(fieldcache, -1, nodeDerivatives[d], version, componentsCount)
-                            if (result == RESULT_OK) or (result == RESULT_WARNING_PART_DONE):
-                                maxVersions[d] = version
-                                nodeDerivativeFields[d].append(fm.createFieldNodeValue(coordinates, nodeDerivatives[d], version))
-                                foundCount += 1
-                    node = nodeIter.next()
-                if foundCount >= derivativesCount:
-                    break
-                lastVersion = version
-                version += 1
             elementDerivativeFields = []
             for d in range(meshDimension):
                 elementDerivativeFields.append(fm.createFieldDerivative(coordinates, d + 1))
@@ -1089,34 +1059,7 @@ class ScaffoldCreatorModel(object):
             markerName = getAnnotationMarkerNameField(fm)
             markerHostCoordinates = fm.createFieldEmbedded(coordinates, markerLocation)
 
-            # fixed width glyph size is based on average element size in all dimensions
-            mesh1d = fm.findMeshByDimension(1)
-            meanLineLength = 0.0
-            lineCount = mesh1d.getSize()
-            if lineCount > 0:
-                one = fm.createFieldConstant(1.0)
-                sumLineLength = fm.createFieldMeshIntegral(one, coordinates, mesh1d)
-                result, totalLineLength = sumLineLength.evaluateReal(fieldcache, 1)
-                glyphWidth = 0.1 * totalLineLength / lineCount
-                del sumLineLength
-                del one
-            if (lineCount == 0) or (glyphWidth == 0.0):
-                # fallback if no lines: use graphics range
-                minX, maxX = evaluateFieldNodesetRange(coordinates, nodes)
-                # use function of coordinate range if no elements
-                if componentsCount == 1:
-                    maxScale = maxX - minX
-                else:
-                    first = True
-                    for c in range(componentsCount):
-                        scale = maxX[c] - minX[c]
-                        if first or (scale > maxScale):
-                            maxScale = scale
-                            first = False
-                if maxScale == 0.0:
-                    maxScale = 1.0
-                glyphWidth = 0.01 * maxScale
-            del fieldcache
+            glyphWidth = determine_appropriate_glyph_size(self._region, coordinates)
 
         # make graphics
         scene = self._region.getScene()
@@ -1175,31 +1118,9 @@ class ScaffoldCreatorModel(object):
             nodeNumbers.setName('displayNodeNumbers')
             nodeNumbers.setVisibilityFlag(self.isDisplayNodeNumbers())
 
-            # names in same order as self._nodeDerivativeLabels 'D1', 'D2', 'D3', 'D12', 'D13', 'D23', 'D123' and nodeDerivativeFields
-            nodeDerivativeMaterialNames = ['gold', 'silver', 'green', 'cyan', 'magenta', 'yellow', 'blue']
-            derivativeScales = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-            for i in range(len(self._nodeDerivativeLabels)):
-                nodeDerivativeLabel = self._nodeDerivativeLabels[i]
-                maxVersions = len(nodeDerivativeFields[i])
-                for v in range(maxVersions):
-                    nodeDerivatives = scene.createGraphicsPoints()
-                    nodeDerivatives.setFieldDomainType(Field.DOMAIN_TYPE_NODES)
-                    nodeDerivatives.setCoordinateField(coordinates)
-                    pointattr = nodeDerivatives.getGraphicspointattributes()
-                    pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_ARROW_SOLID)
-                    pointattr.setOrientationScaleField(nodeDerivativeFields[i][v])
-                    pointattr.setBaseSize([0.0, glyphWidth, glyphWidth])
-                    pointattr.setScaleFactors([derivativeScales[i], 0.0, 0.0])
-                    if maxVersions > 1:
-                        pointattr.setLabelOffset([1.05, 0.0, 0.0])
-                        pointattr.setLabelText(1, str(v + 1))
-                    material = self._materialmodule.findMaterialByName(nodeDerivativeMaterialNames[i])
-                    nodeDerivatives.setMaterial(material)
-                    nodeDerivatives.setSelectedMaterial(material)
-                    nodeDerivatives.setName('displayNodeDerivatives' + nodeDerivativeLabel)
-                    displayNodeDerivatives = self.getDisplayNodeDerivatives()  # tri-state: 0=show none, 1=show selected, 2=show all
-                    nodeDerivatives.setSelectMode(Graphics.SELECT_MODE_DRAW_SELECTED if (displayNodeDerivatives == 1) else Graphics.SELECT_MODE_ON)
-                    nodeDerivatives.setVisibilityFlag(bool(displayNodeDerivatives) and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel))
+            nodeDerivativeFields = determine_node_field_derivatives(self._region, coordinates, True)
+            scene_create_node_derivative_graphics(scene, coordinates, nodeDerivativeFields, glyphWidth, self._nodeDerivativeLabels,
+                                                  self.getDisplayNodeDerivatives(), self._settings['displayNodeDerivativeLabels'])
 
             elementNumbers = scene.createGraphicsPoints()
             elementNumbers.setFieldDomainType(Field.DOMAIN_TYPE_MESH_HIGHEST_DIMENSION)

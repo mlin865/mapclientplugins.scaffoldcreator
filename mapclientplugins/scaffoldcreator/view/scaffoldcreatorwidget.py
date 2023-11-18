@@ -368,7 +368,6 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
             self._ui.markerMaterialCoordinates_lineEdit.setEnabled(markerMaterialCoordinatesField is not None)
         self._refreshCurrentAnnotationGroupSettings()
 
-
     def _markerMaterialCoordinatesLineEditChanged(self):
         """
         Callback for change in marker material coordinates.
