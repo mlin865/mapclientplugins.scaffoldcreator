@@ -42,7 +42,7 @@ requires = [
     "cmlibs.maths >= 0.3",
     "cmlibs.utils >= 0.6",
     "cmlibs.zinc >= 4.0",
-    "cmlibs.widgets >= 0.4",
+    "cmlibs.widgets >= 0.5",
     "PySide6"
 ]
 source_license = readfile("LICENSE")
