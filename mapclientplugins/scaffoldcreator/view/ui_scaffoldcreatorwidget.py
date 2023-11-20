@@ -29,7 +29,7 @@ class Ui_ScaffoldCreatorWidget(object):
     def setupUi(self, ScaffoldCreatorWidget):
         if not ScaffoldCreatorWidget.objectName():
             ScaffoldCreatorWidget.setObjectName(u"ScaffoldCreatorWidget")
-        ScaffoldCreatorWidget.resize(1672, 1223)
+        ScaffoldCreatorWidget.resize(1672, 1221)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -78,12 +78,12 @@ class Ui_ScaffoldCreatorWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents_2 = QWidget()
         self.scrollAreaWidgetContents_2.setObjectName(u"scrollAreaWidgetContents_2")
-        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 380, 768))
+        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 423, 766))
         sizePolicy1.setHeightForWidth(self.scrollAreaWidgetContents_2.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents_2.setSizePolicy(sizePolicy1)
         self.verticalLayout_2 = QVBoxLayout(self.scrollAreaWidgetContents_2)
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setObjectName(u"verticalLayout_2")
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_3 = QVBoxLayout()
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
         self.scaffoldFrame = QFrame(self.scrollAreaWidgetContents_2)
@@ -103,8 +103,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.subscaffold_frame.setFrameShape(QFrame.StyledPanel)
         self.subscaffold_frame.setFrameShadow(QFrame.Raised)
         self.verticalLayout_5 = QVBoxLayout(self.subscaffold_frame)
-        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_5.setObjectName(u"verticalLayout_5")
+        self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.subscaffold_label = QLabel(self.subscaffold_frame)
         self.subscaffold_label.setObjectName(u"subscaffold_label")
 
@@ -182,8 +182,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.deleteElementsRanges_frame.setFrameShape(QFrame.StyledPanel)
         self.deleteElementsRanges_frame.setFrameShadow(QFrame.Raised)
         self.verticalLayout_10 = QVBoxLayout(self.deleteElementsRanges_frame)
-        self.verticalLayout_10.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
+        self.verticalLayout_10.setContentsMargins(0, 0, 0, 0)
         self.deleteElementsRanges_label = QLabel(self.deleteElementsRanges_frame)
         self.deleteElementsRanges_label.setObjectName(u"deleteElementsRanges_label")
 
@@ -270,15 +270,15 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displayData_frame.setFrameShape(QFrame.StyledPanel)
         self.displayData_frame.setFrameShadow(QFrame.Raised)
         self.verticalLayout_11 = QVBoxLayout(self.displayData_frame)
-        self.verticalLayout_11.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_11.setObjectName(u"verticalLayout_11")
+        self.verticalLayout_11.setContentsMargins(0, 0, 0, 0)
         self.displayDataPoints_frame = QFrame(self.displayData_frame)
         self.displayDataPoints_frame.setObjectName(u"displayDataPoints_frame")
         self.displayDataPoints_frame.setFrameShape(QFrame.StyledPanel)
         self.displayDataPoints_frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_9 = QHBoxLayout(self.displayDataPoints_frame)
-        self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
         self.displayDataPoints_checkBox = QCheckBox(self.displayDataPoints_frame)
         self.displayDataPoints_checkBox.setObjectName(u"displayDataPoints_checkBox")
 
@@ -306,8 +306,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displayDataMarkers_frame.setFrameShape(QFrame.StyledPanel)
         self.displayDataMarkers_frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_10 = QHBoxLayout(self.displayDataMarkers_frame)
-        self.horizontalLayout_10.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
+        self.horizontalLayout_10.setContentsMargins(0, 0, 0, 0)
         self.displayDataMarkerPoints_checkBox = QCheckBox(self.displayDataMarkers_frame)
         self.displayDataMarkerPoints_checkBox.setObjectName(u"displayDataMarkerPoints_checkBox")
 
@@ -333,9 +333,9 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displayModelCoordinates_frame.setFrameShape(QFrame.StyledPanel)
         self.displayModelCoordinates_frame.setFrameShadow(QFrame.Raised)
         self.formLayout_3 = QFormLayout(self.displayModelCoordinates_frame)
-        self.formLayout_3.setContentsMargins(0, 0, 0, 0)
         self.formLayout_3.setObjectName(u"formLayout_3")
         self.formLayout_3.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+        self.formLayout_3.setContentsMargins(0, 0, 0, 0)
         self.displayModelCoordinates_label = QLabel(self.displayModelCoordinates_frame)
         self.displayModelCoordinates_label.setObjectName(u"displayModelCoordinates_label")
 
@@ -354,8 +354,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displayNodes_frame.setFrameShape(QFrame.StyledPanel)
         self.displayNodes_frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_6 = QHBoxLayout(self.displayNodes_frame)
-        self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.displayNodePoints_checkBox = QCheckBox(self.displayNodes_frame)
         self.displayNodePoints_checkBox.setObjectName(u"displayNodePoints_checkBox")
 
@@ -393,8 +393,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displayNodeDerivativeLabels_frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_7 = QHBoxLayout(self.displayNodeDerivativeLabels_frame)
         self.horizontalLayout_7.setSpacing(2)
-        self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
         self.displayNodeDerivativeLabels_horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_7.addItem(self.displayNodeDerivativeLabels_horizontalSpacer)
@@ -456,8 +456,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displayLines_frame.setFrameShape(QFrame.StyledPanel)
         self.displayLines_frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_5 = QHBoxLayout(self.displayLines_frame)
-        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.displayLines_checkBox = QCheckBox(self.displayLines_frame)
         self.displayLines_checkBox.setObjectName(u"displayLines_checkBox")
 
@@ -487,8 +487,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displaySurfaces_frame.setFrameShape(QFrame.StyledPanel)
         self.displaySurfaces_frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_3 = QHBoxLayout(self.displaySurfaces_frame)
-        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.displaySurfaces_checkBox = QCheckBox(self.displaySurfaces_frame)
         self.displaySurfaces_checkBox.setObjectName(u"displaySurfaces_checkBox")
 
@@ -527,8 +527,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displayElements_frame.setFrameShape(QFrame.StyledPanel)
         self.displayElements_frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_4 = QHBoxLayout(self.displayElements_frame)
-        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
+        self.horizontalLayout_4.setContentsMargins(0, 0, 0, 0)
         self.displayElementNumbers_checkBox = QCheckBox(self.displayElements_frame)
         self.displayElementNumbers_checkBox.setObjectName(u"displayElementNumbers_checkBox")
 
@@ -553,8 +553,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displayMisc_frame.setFrameShape(QFrame.StyledPanel)
         self.displayMisc_frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_8 = QHBoxLayout(self.displayMisc_frame)
-        self.horizontalLayout_8.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.horizontalLayout_8.setContentsMargins(0, 0, 0, 0)
         self.displayAxes_checkBox = QCheckBox(self.displayMisc_frame)
         self.displayAxes_checkBox.setObjectName(u"displayAxes_checkBox")
 
@@ -582,8 +582,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.annoptationModify_frame.setFrameShape(QFrame.StyledPanel)
         self.annoptationModify_frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_11 = QHBoxLayout(self.annoptationModify_frame)
-        self.horizontalLayout_11.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.horizontalLayout_11.setContentsMargins(0, 0, 0, 0)
         self.annotationGroupNew_pushButton = QPushButton(self.annoptationModify_frame)
         self.annotationGroupNew_pushButton.setObjectName(u"annotationGroupNew_pushButton")
 
@@ -599,6 +599,11 @@ class Ui_ScaffoldCreatorWidget(object):
 
         self.horizontalLayout_11.addWidget(self.annotationGroupRedefine_pushButton)
 
+        self.annotationGroupEdit_pushButton = QPushButton(self.annoptationModify_frame)
+        self.annotationGroupEdit_pushButton.setObjectName(u"annotationGroupEdit_pushButton")
+
+        self.horizontalLayout_11.addWidget(self.annotationGroupEdit_pushButton)
+
         self.annotationGroupDelete_pushButton = QPushButton(self.annoptationModify_frame)
         self.annotationGroupDelete_pushButton.setObjectName(u"annotationGroupDelete_pushButton")
 
@@ -612,8 +617,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.annotationGroup_frame.setFrameShape(QFrame.StyledPanel)
         self.annotationGroup_frame.setFrameShadow(QFrame.Raised)
         self.formLayout_2 = QFormLayout(self.annotationGroup_frame)
-        self.formLayout_2.setContentsMargins(0, 0, 0, 0)
         self.formLayout_2.setObjectName(u"formLayout_2")
+        self.formLayout_2.setContentsMargins(0, 0, 0, 0)
         self.annotationGroup_label = QLabel(self.annotationGroup_frame)
         self.annotationGroup_label.setObjectName(u"annotationGroup_label")
 
@@ -661,8 +666,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.marker_frame.setFrameShape(QFrame.StyledPanel)
         self.marker_frame.setFrameShadow(QFrame.Raised)
         self.formLayout_4 = QFormLayout(self.marker_frame)
-        self.formLayout_4.setContentsMargins(0, 0, 0, 0)
         self.formLayout_4.setObjectName(u"formLayout_4")
+        self.formLayout_4.setContentsMargins(0, 0, 0, 0)
         self.markerMaterialCoordinates_label = QLabel(self.marker_frame)
         self.markerMaterialCoordinates_label.setObjectName(u"markerMaterialCoordinates_label")
 
@@ -721,8 +726,8 @@ class Ui_ScaffoldCreatorWidget(object):
         self.bottom_frame.setFrameShape(QFrame.StyledPanel)
         self.bottom_frame.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_2 = QHBoxLayout(self.bottom_frame)
-        self.horizontalLayout_2.setContentsMargins(3, 3, 3, 3)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(3, 3, 3, 3)
         self.pushButtonDocumentation = QPushButton(self.bottom_frame)
         self.pushButtonDocumentation.setObjectName(u"pushButtonDocumentation")
 
@@ -822,6 +827,7 @@ class Ui_ScaffoldCreatorWidget(object):
         self.annotationGroupNew_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"New", None))
         self.annotationGroupNewMarker_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"New Marker", None))
         self.annotationGroupRedefine_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Redefine", None))
+        self.annotationGroupEdit_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Edit", None))
         self.annotationGroupDelete_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Delete", None))
         self.annotationGroup_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Group:", None))
         self.annotationGroupOntId_label.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"ONT:ID:", None))
