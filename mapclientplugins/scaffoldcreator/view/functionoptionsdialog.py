@@ -84,7 +84,8 @@ class FunctionOptionsDialog(QtWidgets.QDialog):
                 label.setText(key)
                 self._dialogLayout.addWidget(label)
                 if type(value) is dict:
-                    # radio buttons
+                    # group radio buttons to keep independent
+                    radioButtonGroup = QtWidgets.QButtonGroup(self)
                     for subKey, subValue in value.items():
                         radioButton = QtWidgets.QRadioButton(self)
                         radioButton.setObjectName(key)
@@ -92,6 +93,7 @@ class FunctionOptionsDialog(QtWidgets.QDialog):
                         radioButton.setChecked(subValue)
                         callback = partial(self._optionRadioButtonClicked, radioButton)
                         radioButton.clicked.connect(callback)
+                        radioButtonGroup.addButton(radioButton)
                         self._dialogLayout.addWidget(radioButton)
                 else:
                     lineEdit = QtWidgets.QLineEdit(self)
