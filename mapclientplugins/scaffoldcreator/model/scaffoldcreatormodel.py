@@ -888,7 +888,7 @@ class ScaffoldCreatorModel(object):
 
     def getDisplayNodeDerivativeVersion(self):
         """
-        :return: 0 to show all versions, otherwise vers ion number.
+        :return: 0 to show all versions, otherwise version number > 0.
         """
         return self._settings['displayNodeDerivativeVersion']
 
