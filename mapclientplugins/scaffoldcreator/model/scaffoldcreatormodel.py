@@ -716,23 +716,23 @@ class ScaffoldCreatorModel(object):
             if self._settings['deleteElementRanges'] != oldText:
                 self._generateMesh()
 
-    def applyTransformation(self):
+    def applyTransformation(self, editCoordinates):
         """
         Apply transformation to nodes and clear it, recording all modified nodes.
         """
         scaffoldPackage = self._scaffoldPackages[-1]
         fieldmodule = self._region.getFieldmodule()
         with ChangeManager(fieldmodule):
-            if scaffoldPackage.applyTransformation():
+            if scaffoldPackage.applyTransformation(editCoordinates):
                 scaffoldPackage.setRotation([0.0, 0.0, 0.0])
                 scaffoldPackage.setScale([1.0, 1.0, 1.0])
                 scaffoldPackage.setTranslation([0.0, 0.0, 0.0])
                 # mark all nodes as edited:
-                coordinates = fieldmodule.findFieldByName('coordinates')
-                if coordinates.isValid():
+                editCoordinates = fieldmodule.findFieldByName(editCoordinates.getName())
+                if editCoordinates.isValid():
                     nodes = fieldmodule.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
                     meshEditsNodeset = self.getOrCreateMeshEditsNodesetGroup(nodes)
-                    meshEditsNodeset.addNodesConditional(fieldmodule.createFieldIsDefined(coordinates))
+                    meshEditsNodeset.addNodesConditional(fieldmodule.createFieldIsDefined(editCoordinates))
                 self._updateScaffoldEdits()
                 self._checkCustomParameterSet()
                 self._setGraphicsTransformation()
@@ -1327,7 +1327,9 @@ class ScaffoldCreatorModel(object):
         Finish generating mesh by applying transformation.
         """
         assert 1 == len(self._scaffoldPackages)
-        self._scaffoldPackages[0].applyTransformation()
+        self._region.getFieldmodule()
+        coordinates = self.getModelCoordinatesField()
+        self._scaffoldPackages[0].applyTransformation(coordinates)
 
     def writeModel(self, file_name):
         self._region.writeFile(file_name)

@@ -648,7 +648,7 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
         self._ui.translation_lineEdit.setText(self._scaffold_model.getTranslationText())
 
     def _applyTransformationButtonPressed(self):
-        self._scaffold_model.applyTransformation()
+        self._scaffold_model.applyTransformation(self._ui.displayModelCoordinates_fieldChooser.getField())
         self._transformationChanged()
 
     def _displayDataPointsClicked(self):
