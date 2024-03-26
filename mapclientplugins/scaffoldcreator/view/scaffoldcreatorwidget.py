@@ -161,6 +161,8 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
         self._ui.displayNodeDerivativeLabelsD23_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD23Clicked)
         self._ui.displayNodeDerivativeLabelsD123_checkBox.clicked.connect(self._displayNodeDerivativeLabelsD123Clicked)
         self._ui.displayNodeDerivatives_checkBox.clicked.connect(self._displayNodeDerivativesClicked)
+        self._ui.displayNodeDerivativesVersion_spinBox.valueChanged.connect(
+            self._displayNodeDerivativeVersionValueChanged)
         self._ui.displayNodeNumbers_checkBox.clicked.connect(self._displayNodeNumbersClicked)
         self._ui.displayNodePoints_checkBox.clicked.connect(self._displayNodePointsClicked)
         self._ui.displaySurfaces_checkBox.clicked.connect(self._displaySurfacesClicked)
@@ -606,6 +608,7 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
             QtCore.Qt.Unchecked if not displayNodeDerivatives else
             QtCore.Qt.PartiallyChecked if (displayNodeDerivatives == 1) else
             QtCore.Qt.Checked)
+        self._ui.displayNodeDerivativesVersion_spinBox.setValue(self._scaffold_model.getDisplayNodeDerivativeVersion())
         self._ui.displayNodeNumbers_checkBox.setChecked(self._scaffold_model.isDisplayNodeNumbers())
         self._ui.displayNodePoints_checkBox.setChecked(self._scaffold_model.isDisplayNodePoints())
         self._ui.displaySurfaces_checkBox.setChecked(self._scaffold_model.isDisplaySurfaces())
@@ -724,6 +727,9 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
     def _displayNodeDerivativeLabelsD123Clicked(self):
         self._scaffold_model.setDisplayNodeDerivativeLabels(
             'D123', self._ui.displayNodeDerivativeLabelsD123_checkBox.isChecked())
+
+    def _displayNodeDerivativeVersionValueChanged(self, version):
+        self._scaffold_model.setDisplayNodeDerivativeVersion(version)
 
     def _displayNodeNumbersClicked(self):
         self._scaffold_model.setDisplayNodeNumbers(self._ui.displayNodeNumbers_checkBox.isChecked())

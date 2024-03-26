@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1672</width>
-    <height>1223</height>
+    <height>1221</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -113,8 +113,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>521</width>
-            <height>716</height>
+            <width>423</width>
+            <height>766</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -631,6 +631,9 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show node derivatives on:&lt;br/&gt;[ ] None&lt;br/&gt;[-] Selected nodes&lt;br/&gt;[/] All nodes&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string>Node derivatives</string>
                 </property>
@@ -640,17 +643,11 @@
                </widget>
               </item>
               <item>
-               <spacer name="displayNodes_horizontalSpacer">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
+               <widget class="QSpinBox" name="displayNodeDerivativesVersion_spinBox">
+                <property name="toolTip">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show specified node derivative version, or 0 to show all versions.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
+               </widget>
               </item>
              </layout>
             </widget>
@@ -664,6 +661,9 @@
               <enum>QFrame::Raised</enum>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_7">
+              <property name="spacing">
+               <number>2</number>
+              </property>
               <property name="leftMargin">
                <number>0</number>
               </property>

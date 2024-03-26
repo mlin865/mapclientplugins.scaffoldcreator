@@ -125,6 +125,7 @@ class ScaffoldCreatorModel(object):
             'displayNodeNumbers': False,
             'displayNodeDerivatives': 0,  # tri-state: 0=show none, 1=show selected, 2=show all
             'displayNodeDerivativeLabels': self._nodeDerivativeLabels[0:3],
+            'displayNodeDerivativeVersion': 0,  # 0 = all or version number
             'displayLines': True,
             'displayLinesExterior': False,
             'displayModelRadius': False,
@@ -146,7 +147,12 @@ class ScaffoldCreatorModel(object):
         Ensure mesh and annotation group edits are up-to-date.
         """
         if self._unsavedNodeEdits:
-            self._scaffoldPackages[-1].setMeshEdits(exnodeStringFromGroup(self._region, 'meshEdits', ['coordinates']))
+            fieldmodule = self._region.getFieldmodule()
+            editFieldNames = []
+            for editFieldName in ['coordinates', 'inner coordinates']:
+                if fieldmodule.findFieldByName(editFieldName).isValid():
+                    editFieldNames.append(editFieldName)
+            self._scaffoldPackages[-1].setMeshEdits(exnodeStringFromGroup(self._region, 'meshEdits', editFieldNames))
             self._unsavedNodeEdits = False
         self._scaffoldPackages[-1].updateUserAnnotationGroups()
 
@@ -312,6 +318,7 @@ class ScaffoldCreatorModel(object):
             self._currentAnnotationGroup.clear()
             selectionGroup = scene_get_selection_group(parentScene)
             if selectionGroup:
+                selectionGroup.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
                 subregionGroup = selectionGroup.getSubregionFieldGroup(self._region)
                 if subregionGroup.isValid():
                     group = self._currentAnnotationGroup.getGroup()
@@ -375,6 +382,7 @@ class ScaffoldCreatorModel(object):
             if annotationGroup:
                 if selectionGroup:
                     selectionGroup.clear()
+                    selectionGroup.setSubelementHandlingMode(FieldGroup.SUBELEMENT_HANDLING_MODE_FULL)
                 else:
                     selectionGroup = scene_create_selection_group(parentScene)
                 if annotationGroup.isMarker():
@@ -524,6 +532,9 @@ class ScaffoldCreatorModel(object):
     def _clearMeshEdits(self):
         self._scaffoldPackages[-1].setMeshEdits(None)
         self._unsavedNodeEdits = False
+        meshEditsGroup = self.getMeshEditsGroup()
+        if meshEditsGroup.isValid():
+            meshEditsGroup.setManaged(False)
 
     def editScaffoldPackageOption(self, optionName):
         """
@@ -567,7 +578,13 @@ class ScaffoldCreatorModel(object):
         interactiveFunctions = self.getInteractiveFunctions()
         for interactiveFunction in interactiveFunctions:
             if interactiveFunction[0] == functionName:
-                return interactiveFunction[1]
+                options = interactiveFunction[1]
+                # None-valued options are initialised with same-key value from settings
+                settings = self._scaffoldPackages[-1].getScaffoldSettings()
+                for key, value in options.items():
+                    if value is None:
+                        options[key] = settings[key]
+                return options
         return {}
 
     def performInteractiveFunction(self, functionName, functionOptions):
@@ -580,10 +597,17 @@ class ScaffoldCreatorModel(object):
         interactiveFunctions = self.getInteractiveFunctions()
         for interactiveFunction in interactiveFunctions:
             if interactiveFunction[0] == functionName:
+                scaffoldPackage = self._scaffoldPackages[-1]
                 settingsChanged, nodesChanged = interactiveFunction[2](
-                    self._region, self._scaffoldPackages[-1].getScaffoldSettings(), functionOptions, 'meshEdits')
+                    self._region, scaffoldPackage.getScaffoldSettings(), scaffoldPackage.getConstructionObject(),
+                    functionOptions, 'meshEdits')
                 if nodesChanged:
                     self._unsavedNodeEdits = True
+                else:
+                    # handle empty mesh edits due to model being reset
+                    meshEditsGroup = self.getMeshEditsGroup()
+                    if (not meshEditsGroup.isValid()) or meshEditsGroup.isEmpty():
+                        self._clearMeshEdits()
                 self._updateScaffoldEdits()
                 self._checkCustomParameterSet()
                 return settingsChanged
@@ -801,32 +825,38 @@ class ScaffoldCreatorModel(object):
         """
         return self._settings['displayNodeDerivatives']
 
-    def _setAllGraphicsVisibility(self, graphicsName, show, selectMode=None):
+    def _setMultipleGraphicsVisibility(self, graphicsPartName, show, selectMode=None):
         """
-        Ensure visibility of all graphics with graphicsName is set to boolean show.
+        Ensure visibility of all graphics starting with graphicsStemName is set to boolean show.
         :param selectMode: Optional selectMode to set at the same time.
         """
         scene = self._region.getScene()
-        graphics = scene.findGraphicsByName(graphicsName)
+        graphics = scene.getFirstGraphics()
         while graphics.isValid():
-            graphics.setVisibilityFlag(show)
-            if selectMode:
-                graphics.setSelectMode(selectMode)
-            while True:
-                graphics = scene.getNextGraphics(graphics)
-                if (not graphics.isValid()) or (graphics.getName() == graphicsName):
-                    break
+            graphicsName = graphics.getName()
+            if graphicsPartName in graphicsName:
+                graphics.setVisibilityFlag(show)
+                if selectMode:
+                    graphics.setSelectMode(selectMode)
+            graphics = scene.getNextGraphics(graphics)
 
     def setDisplayNodeDerivatives(self, triState):
         """
         :param triState: From Qt::CheckState: 0=show none, 1=show selected, 2=show all
         """
         self._settings['displayNodeDerivatives'] = triState
-        for nodeDerivativeLabel in self._nodeDerivativeLabels:
-            self._setAllGraphicsVisibility(
-                'displayNodeDerivatives' + nodeDerivativeLabel,
-                bool(triState) and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel),
-                selectMode=Graphics.SELECT_MODE_DRAW_SELECTED if (triState == 1) else Graphics.SELECT_MODE_ON)
+        displayVersion = self.getDisplayNodeDerivativeVersion()
+        with ChangeManager(self._scene):
+            for nodeDerivativeLabel in self._nodeDerivativeLabels:
+                graphicsPartName = 'displayNodeDerivatives_' + nodeDerivativeLabel
+                if displayVersion > 0:
+                    # hide all then display chosen version below
+                    self._setMultipleGraphicsVisibility(graphicsPartName, show=False)
+                    graphicsPartName += '_v' + str(displayVersion)
+                self._setMultipleGraphicsVisibility(
+                    graphicsPartName,
+                    bool(triState) and self.isDisplayNodeDerivativeLabels(nodeDerivativeLabel),
+                    selectMode=Graphics.SELECT_MODE_DRAW_SELECTED if (triState == 1) else Graphics.SELECT_MODE_ON)
 
     def isDisplayNodeDerivativeLabels(self, nodeDerivativeLabel):
         """
@@ -851,8 +881,25 @@ class ScaffoldCreatorModel(object):
         else:
             if shown:
                 self._settings['displayNodeDerivativeLabels'].remove(nodeDerivativeLabel)
-        self._setAllGraphicsVisibility('displayNodeDerivatives' + nodeDerivativeLabel,
-                                       show and bool(self.getDisplayNodeDerivatives()))
+        displayVersion = self.getDisplayNodeDerivativeVersion()
+        graphicsPartName = 'displayNodeDerivatives_' + nodeDerivativeLabel
+        if displayVersion > 0:
+            graphicsPartName += '_v' + str(displayVersion)
+        self._setMultipleGraphicsVisibility(graphicsPartName, show and bool(self.getDisplayNodeDerivatives()))
+
+    def getDisplayNodeDerivativeVersion(self):
+        """
+        :return: 0 to show all versions, otherwise version number > 0.
+        """
+        return self._settings['displayNodeDerivativeVersion']
+
+    def setDisplayNodeDerivativeVersion(self, version):
+        """
+        :param version: Integer >= 0; 0 to show all versions, otherwise version number.
+        """
+        assert isinstance(version, int) and (version >= 0)
+        self._settings['displayNodeDerivativeVersion'] = version
+        self.setDisplayNodeDerivatives(self.getDisplayNodeDerivatives())
 
     def isDisplayNodeNumbers(self):
         return self._getVisibility('displayNodeNumbers')
@@ -1004,17 +1051,18 @@ class ScaffoldCreatorModel(object):
         nodes = fm.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
         coordinates = fm.findFieldByName('coordinates').castFiniteElement()
         componentsCount = coordinates.getNumberOfComponents()
-        minX, maxX = evaluateFieldNodesetRange(coordinates, nodes)
-        if componentsCount == 1:
-            maxRange = (maxX - minX) * scale[0]
-        else:
-            maxRange = max((maxX[c] - minX[c]) * scale[c] for c in range(componentsCount))
         axesScale = 1.0
-        if maxRange > 0.0:
-            while axesScale * 10.0 < maxRange:
-                axesScale *= 10.0
-            while axesScale > maxRange:
-                axesScale *= 0.1
+        if nodes.getSize() > 0:
+            minX, maxX = evaluateFieldNodesetRange(coordinates, nodes)
+            if componentsCount == 1:
+                maxRange = (maxX - minX) * scale[0]
+            else:
+                maxRange = max((maxX[c] - minX[c]) * scale[c] for c in range(componentsCount))
+            if maxRange > 0.0:
+                while axesScale * 10.0 < maxRange:
+                    axesScale *= 10.0
+                while axesScale > maxRange:
+                    axesScale *= 0.1
         return axesScale
 
     def _setGraphicsTransformation(self):
@@ -1153,8 +1201,17 @@ class ScaffoldCreatorModel(object):
                 pointattr.setBaseSize([0.0, 0.0, 2 * glyphWidth])
                 pointattr.setScaleFactors([0.25, 0.25, 0.0])
             else:
-                pointattr.setBaseSize([0.0, 0.0, 0.0])
-                pointattr.setScaleFactors([0.25, 0.25, 0.25])
+                # pointattr.setBaseSize([0.0, 0.0, 0.0])
+                # pointattr.setScaleFactors([0.25, 0.25, 0.25])
+                # workaround for zinc not transforming axes correctly: use REPEAT_MODE_AXES_3D
+                pointattr.setGlyphShapeType(Glyph.SHAPE_TYPE_LINE)
+                pointattr.setGlyphRepeatMode(Glyph.REPEAT_MODE_AXES_3D)
+                pointattr.setBaseSize([0.0, 2 * glyphWidth, 2 * glyphWidth])
+                pointattr.setScaleFactors([0.25, 0.0, 0.0])
+                pointattr.setLabelText(1, "1")
+                pointattr.setLabelText(2, "2")
+                pointattr.setLabelText(3, "3")
+                pointattr.setLabelOffset([1.1, 0.0, 0.0])
             elementAxes.setMaterial(self._materialmodule.findMaterialByName('yellow'))
             elementAxes.setName('displayElementAxes')
             elementAxes.setVisibilityFlag(self.isDisplayElementAxes())
