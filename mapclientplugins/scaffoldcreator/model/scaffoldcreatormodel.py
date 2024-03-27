@@ -716,23 +716,22 @@ class ScaffoldCreatorModel(object):
             if self._settings['deleteElementRanges'] != oldText:
                 self._generateMesh()
 
-    def applyTransformation(self, editCoordinates):
+    def applyTransformation(self, editCoordinatesField):
         """
         Apply transformation to nodes and clear it, recording all modified nodes.
+        :param editCoordinatesField: Coordinate field to which transformation is applied to.
         """
         scaffoldPackage = self._scaffoldPackages[-1]
         fieldmodule = self._region.getFieldmodule()
         with ChangeManager(fieldmodule):
-            if scaffoldPackage.applyTransformation(editCoordinates):
+            if scaffoldPackage.applyTransformation(editCoordinatesField):
                 scaffoldPackage.setRotation([0.0, 0.0, 0.0])
                 scaffoldPackage.setScale([1.0, 1.0, 1.0])
                 scaffoldPackage.setTranslation([0.0, 0.0, 0.0])
                 # mark all nodes as edited:
-                editCoordinates = fieldmodule.findFieldByName(editCoordinates.getName())
-                if editCoordinates.isValid():
-                    nodes = fieldmodule.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
-                    meshEditsNodeset = self.getOrCreateMeshEditsNodesetGroup(nodes)
-                    meshEditsNodeset.addNodesConditional(fieldmodule.createFieldIsDefined(editCoordinates))
+                nodes = fieldmodule.findNodesetByFieldDomainType(Field.DOMAIN_TYPE_NODES)
+                meshEditsNodeset = self.getOrCreateMeshEditsNodesetGroup(nodes)
+                meshEditsNodeset.addNodesConditional(fieldmodule.createFieldIsDefined(editCoordinatesField))
                 self._updateScaffoldEdits()
                 self._checkCustomParameterSet()
                 self._setGraphicsTransformation()
