@@ -1168,7 +1168,7 @@ class ScaffoldCreatorModel(object):
 
             nodeDerivativeFields = determine_node_field_derivatives(self._region, coordinates, True)
             scene_create_node_derivative_graphics(scene, coordinates, nodeDerivativeFields, glyphWidth, self._nodeDerivativeLabels,
-                                                  self.getDisplayNodeDerivatives(), self._settings['displayNodeDerivativeLabels'])
+                                                  self.getDisplayNodeDerivatives(), self._settings['displayNodeDerivativeLabels'], self.getDisplayNodeDerivativeVersion())
 
             elementNumbers = scene.createGraphicsPoints()
             elementNumbers.setFieldDomainType(Field.DOMAIN_TYPE_MESH_HIGHEST_DIMENSION)
