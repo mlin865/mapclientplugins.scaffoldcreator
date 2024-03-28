@@ -1326,9 +1326,11 @@ class ScaffoldCreatorModel(object):
         Finish generating mesh by applying transformation.
         """
         assert 1 == len(self._scaffoldPackages)
-        self._region.getFieldmodule()
-        coordinates = self.getModelCoordinatesField()
-        self._scaffoldPackages[0].applyTransformation(coordinates)
+        fieldmodule = self._region.getFieldmodule()
+        for editFieldName in ['coordinates', 'inner coordinates']:
+            editCoordinates = fieldmodule.findFieldByName(editFieldName)
+            if editCoordinates.isValid():
+                self._scaffoldPackages[0].applyTransformation(editCoordinates)
 
     def writeModel(self, file_name):
         self._region.writeFile(file_name)
