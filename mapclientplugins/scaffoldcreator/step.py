@@ -58,12 +58,15 @@ class ScaffoldCreator(WorkflowStepMountPoint):
                 self._model.setSegmentationDataFile(self._port1_inputZincDataFile)
             self._view = ScaffoldCreatorWidget(self._model)
             # self._view.setWindowFlags(QtCore.Qt.Widget)
-            self._view.registerDoneExecution(self._myDoneExecution)
-            self._setCurrentWidget(self._view)
+            if self._config['AutoDone']:
+                self._my_done_execution()
+            else:
+                self._view.registerDoneExecution(self._my_done_execution)
+                self._setCurrentWidget(self._view)
         finally:
             QtWidgets.QApplication.restoreOverrideCursor()
 
-    def _myDoneExecution(self):
+    def _my_done_execution(self):
         self._portData0 = self._model.getOutputModelFilename()
         self._port2_annotationsFilename = self._model.getOutputAnnotationsFilename()
         self._view = None
