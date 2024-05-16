@@ -2,6 +2,7 @@
 MAP Client Plugin Step
 """
 import json
+import os.path
 
 from PySide6 import QtGui, QtWidgets, QtCore
 
@@ -42,7 +43,7 @@ class ScaffoldCreator(WorkflowStepMountPoint):
         self._port1_inputZincDataFile = None  # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
         self._port2_annotationsFilename = None  # https://github.com/ABI-Software/scaffoldmaker#annotation_groups_file_location
         # Config:
-        self._config = {'identifier': '', 'AutoDone': False}
+        self._config = {'identifier': '', 'AutoDone': False, 'enable-auto-done': False}
         self._model = None
         self._view = None
 
@@ -71,6 +72,7 @@ class ScaffoldCreator(WorkflowStepMountPoint):
         self._port2_annotationsFilename = self._model.getOutputAnnotationsFilename()
         self._view = None
         self._model = None
+        self._config['enable-auto-done'] = os.path.isfile(self._portData0)
         self._doneExecution()
 
     def getPortData(self, index):
