@@ -100,6 +100,15 @@ class ScaffoldCreator(WorkflowStepMountPoint):
         if index == 1:
             self._port1_inputZincDataFile = dataIn  # http://physiomeproject.org/workflow/1.0/rdf-schema#file_location
 
+    def _update_config(self):
+        model = MasterModel(self._location, self._config['identifier'])
+        output_filename = model.getOutputModelFilename()
+        if os.path.isfile(output_filename):
+            self._config['enable-auto-done'] = True
+        else:
+            self._config['enable-auto-done'] = False
+            self._config['AutoDone'] = False
+
     def configure(self):
         """
         This function will be called when the configure icon on the step is
@@ -110,6 +119,7 @@ class ScaffoldCreator(WorkflowStepMountPoint):
         """
         dlg = ConfigureDialog(self._main_window)
         dlg.identifierOccursCount = self._identifierOccursCount
+        self._update_config()
         dlg.setConfig(self._config)
         dlg.validate()
         dlg.setModal(True)
@@ -150,6 +160,7 @@ class ScaffoldCreator(WorkflowStepMountPoint):
 
         d = ConfigureDialog()
         d.identifierOccursCount = self._identifierOccursCount
+        self._update_config()
         d.setConfig(self._config)
         self._configured = d.validate()
 
