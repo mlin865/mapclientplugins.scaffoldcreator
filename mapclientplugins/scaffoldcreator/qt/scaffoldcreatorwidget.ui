@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1672</width>
-    <height>1221</height>
+    <height>1061</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -114,7 +114,7 @@
             <x>0</x>
             <y>0</y>
             <width>423</width>
-            <height>766</height>
+            <height>606</height>
            </rect>
           </property>
           <property name="sizePolicy">
@@ -1019,6 +1019,13 @@
                <widget class="QCheckBox" name="displayMarkerPoints_checkBox">
                 <property name="text">
                  <string>Marker points</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QCheckBox" name="displayZeroJacobianContours_checkBox">
+                <property name="text">
+                 <string>Zero Jacobian contours</string>
                 </property>
                </widget>
               </item>
