@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'scaffoldcreatorwidget.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.5.1
+## Created by: Qt User Interface Compiler version 6.6.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -29,7 +29,7 @@ class Ui_ScaffoldCreatorWidget(object):
     def setupUi(self, ScaffoldCreatorWidget):
         if not ScaffoldCreatorWidget.objectName():
             ScaffoldCreatorWidget.setObjectName(u"ScaffoldCreatorWidget")
-        ScaffoldCreatorWidget.resize(1672, 1221)
+        ScaffoldCreatorWidget.resize(1672, 1061)
         sizePolicy = QSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -78,7 +78,7 @@ class Ui_ScaffoldCreatorWidget(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents_2 = QWidget()
         self.scrollAreaWidgetContents_2.setObjectName(u"scrollAreaWidgetContents_2")
-        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 423, 766))
+        self.scrollAreaWidgetContents_2.setGeometry(QRect(0, 0, 423, 606))
         sizePolicy1.setHeightForWidth(self.scrollAreaWidgetContents_2.sizePolicy().hasHeightForWidth())
         self.scrollAreaWidgetContents_2.setSizePolicy(sizePolicy1)
         self.verticalLayout_2 = QVBoxLayout(self.scrollAreaWidgetContents_2)
@@ -565,6 +565,11 @@ class Ui_ScaffoldCreatorWidget(object):
 
         self.horizontalLayout_8.addWidget(self.displayMarkerPoints_checkBox)
 
+        self.displayZeroJacobianContours_checkBox = QCheckBox(self.displayMisc_frame)
+        self.displayZeroJacobianContours_checkBox.setObjectName(u"displayZeroJacobianContours_checkBox")
+
+        self.horizontalLayout_8.addWidget(self.displayZeroJacobianContours_checkBox)
+
         self.displaytMisc_horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum)
 
         self.horizontalLayout_8.addItem(self.displaytMisc_horizontalSpacer)
@@ -823,6 +828,7 @@ class Ui_ScaffoldCreatorWidget(object):
         self.displayElementAxes_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Element axes", None))
         self.displayAxes_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Axes", None))
         self.displayMarkerPoints_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Marker points", None))
+        self.displayZeroJacobianContours_checkBox.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"Zero Jacobian contours", None))
         self.controls_tabWidget.setTabText(self.controls_tabWidget.indexOf(self.display_tab), QCoreApplication.translate("ScaffoldCreatorWidget", u"Display", None))
         self.annotationGroupNew_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"New", None))
         self.annotationGroupNewMarker_pushButton.setText(QCoreApplication.translate("ScaffoldCreatorWidget", u"New Marker", None))

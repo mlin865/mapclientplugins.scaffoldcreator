@@ -137,6 +137,7 @@ class ScaffoldCreatorModel(object):
             'displayElementAxes': False,
             'displayAxes': True,
             'displayMarkerPoints': False,
+            'displayZeroJacobianContours': False,
             'modelCoordinatesField': 'coordinates'
         }
         self._customScaffoldPackage = None  # temporary storage of custom mesh options and edits, to switch back to
@@ -784,6 +785,12 @@ class ScaffoldCreatorModel(object):
     def setDisplayMarkerPoints(self, show):
         self._setVisibility('displayMarkerPoints', show)
 
+    def isDisplayZeroJacobianContours(self):
+        return self._getVisibility('displayZeroJacobianContours')
+
+    def setDisplayZeroJacobianContours(self, show):
+        self._setVisibility('displayZeroJacobianContours', show)
+
     def isDisplayAxes(self):
         return self._getVisibility('displayAxes')
 
@@ -1106,6 +1113,14 @@ class ScaffoldCreatorModel(object):
             markerName = getAnnotationMarkerNameField(fm)
             markerHostCoordinates = fm.createFieldEmbedded(coordinates, markerLocation)
 
+            jacobian = None
+            if meshDimension == 3:
+                jacobian = fm.createFieldDotProduct(
+                    fm.createFieldCrossProduct(
+                        fm.createFieldDerivative(coordinates, 1),
+                        fm.createFieldDerivative(coordinates, 2)),
+                    fm.createFieldDerivative(coordinates, 3))
+
             glyphWidth = determine_appropriate_glyph_size(self._region, coordinates)
 
         # make graphics
@@ -1228,6 +1243,17 @@ class ScaffoldCreatorModel(object):
             markerPoints.setMaterial(self._materialmodule.findMaterialByName('yellow'))
             markerPoints.setName('displayMarkerPoints')
             markerPoints.setVisibilityFlag(self.isDisplayMarkerPoints())
+
+            # zero Jacobian contours
+            contours = scene.createGraphicsContours()
+            contours.setCoordinateField(coordinates)
+            if jacobian:
+                contours.setIsoscalarField(jacobian)
+                contours.setListIsovalues([0.0])
+            contours.setMaterial(self._materialmodule.findMaterialByName('magenta'))
+            contours.setName('displayZeroJacobianContours')
+            contours.setVisibilityFlag(self.isDisplayZeroJacobianContours())
+
         logger = self._context.getLogger()
         loggerMessageCount = logger.getNumberOfMessages()
         if loggerMessageCount > 0:

@@ -143,6 +143,7 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
         self._ui.displayDataMarkerPoints_checkBox.clicked.connect(self._displayDataMarkerPointsClicked)
         self._ui.displayDataMarkerNames_checkBox.clicked.connect(self._displayDataMarkerNamesClicked)
         self._ui.displayMarkerPoints_checkBox.clicked.connect(self._displayMarkerPointsClicked)
+        self._ui.displayZeroJacobianContours_checkBox.clicked.connect(self._displayZeroJacobianContoursClicked)
         self._ui.displayModelCoordinates_fieldChooser.setRegion(self._scaffold_model.getRegion())
         self._ui.displayModelCoordinates_fieldChooser.setConditional(fieldIsManagedCoordinates)
         self._ui.displayModelCoordinates_fieldChooser.currentIndexChanged.connect(
@@ -583,6 +584,7 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
         self._ui.displayDataMarkerNames_checkBox.setChecked(self._segmentation_data_model.isDisplayDataMarkerNames())
         self._ui.displayData_frame.setVisible(self._segmentation_data_model.hasData())
         self._ui.displayMarkerPoints_checkBox.setChecked(self._scaffold_model.isDisplayMarkerPoints())
+        self._ui.displayZeroJacobianContours_checkBox.setChecked(self._scaffold_model.isDisplayZeroJacobianContours())
         self._ui.displayAxes_checkBox.setChecked(self._scaffold_model.isDisplayAxes())
         self._ui.displayElementNumbers_checkBox.setChecked(self._scaffold_model.isDisplayElementNumbers())
         self._ui.displayElementAxes_checkBox.setChecked(self._scaffold_model.isDisplayElementAxes())
@@ -667,6 +669,9 @@ class ScaffoldCreatorWidget(QtWidgets.QWidget):
 
     def _displayMarkerPointsClicked(self):
         self._scaffold_model.setDisplayMarkerPoints(self._ui.displayMarkerPoints_checkBox.isChecked())
+
+    def _displayZeroJacobianContoursClicked(self):
+        self._scaffold_model.setDisplayZeroJacobianContours(self._ui.displayZeroJacobianContours_checkBox.isChecked())
 
     def _displayModelCoordinatesFieldChanged(self, index):
         """
