@@ -1245,14 +1245,14 @@ class ScaffoldCreatorModel(object):
             markerPoints.setVisibilityFlag(self.isDisplayMarkerPoints())
 
             # zero Jacobian contours
-            contours = scene.createGraphicsContours()
-            contours.setCoordinateField(coordinates)
             if jacobian:
+                contours = scene.createGraphicsContours()
+                contours.setCoordinateField(coordinates)
                 contours.setIsoscalarField(jacobian)
                 contours.setListIsovalues([0.0])
-            contours.setMaterial(self._materialmodule.findMaterialByName('magenta'))
-            contours.setName('displayZeroJacobianContours')
-            contours.setVisibilityFlag(self.isDisplayZeroJacobianContours())
+                contours.setMaterial(self._materialmodule.findMaterialByName('magenta'))
+                contours.setName('displayZeroJacobianContours')
+                contours.setVisibilityFlag(self.isDisplayZeroJacobianContours())
 
         logger = self._context.getLogger()
         loggerMessageCount = logger.getNumberOfMessages()
