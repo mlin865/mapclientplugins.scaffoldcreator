@@ -1,6 +1,10 @@
 from PySide6 import QtCore, QtWidgets
 from functools import partial
 
+
+STRING_FLOAT_FORMAT = '{:.8g}'
+
+
 class FunctionOptionsDialog(QtWidgets.QDialog):
     '''
     Modal dialog allowing a dict of options to be edited, then OK/Cancel to be returned.
@@ -60,6 +64,14 @@ class FunctionOptionsDialog(QtWidgets.QDialog):
                 newValue = float(text)
             elif type(oldValue) is str:
                 newValue = str(text)
+            elif type(oldValue) is list:
+                # requires at least one value to work:
+                if type(oldValue[0]) is float:
+                    newValue = parseListFloat(text)
+                elif type(oldValue[0]) is int:
+                    newValue = parseListInt(text)
+                else:
+                    assert False, 'Unimplemented type in list for scaffold option'
             else:
                 assert False, 'Unimplemented type in function option dialog'
         except:
@@ -98,9 +110,52 @@ class FunctionOptionsDialog(QtWidgets.QDialog):
                 else:
                     lineEdit = QtWidgets.QLineEdit(self)
                     lineEdit.setObjectName(key)
-                    lineEdit.setText(str(value))
+                    lineEdit.setText(getValueStr(value))
                     callback = partial(self._optionLineEditChanged, lineEdit)
                     lineEdit.editingFinished.connect(callback)
                     self._dialogLayout.addWidget(lineEdit)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self._dialogLayout.addItem(spacerItem)
+
+
+def getValueStr(value):
+    if type(value) is list:
+        if type(value[0]) is int:
+            return ', '.join(str(v) for v in value)
+        elif type(value[0]) is float:
+            return ', '.join(STRING_FLOAT_FORMAT.format(v) for v in value)
+    return str(value)
+
+
+def parseListFloat(text: str, delimiter=','):
+    """
+    Parse a delimited list of floats from text.
+    :param text: string containing floats separated by delimiter.
+    :param delimiter: character delimiter between component values.
+    :return: list of floats parsed from text.
+    """
+    values = []
+    for s in text.split(delimiter):
+        try:
+            values.append(float(s))
+        except ValueError:
+            print('Invalid float')
+            values.append(0.0)
+    return values
+
+
+def parseListInt(text: str, delimiter=','):
+    """
+    Parse a delimited list of integers from text.
+    :param text: string containing integers separated by delimiter.
+    :param delimiter: character delimiter between component values.
+    :return: list of integers parsed from text.
+    """
+    values = []
+    for s in text.split(delimiter):
+        try:
+            values.append(int(s))
+        except ValueError:
+            print('Invalid integer')
+            values.append(0)
+    return values
