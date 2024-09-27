@@ -888,10 +888,15 @@ class ScaffoldCreatorModel(object):
             if shown:
                 self._settings['displayNodeDerivativeLabels'].remove(nodeDerivativeLabel)
         displayVersion = self.getDisplayNodeDerivativeVersion()
-        graphicsPartName = 'displayNodeDerivatives_' + nodeDerivativeLabel
-        if displayVersion > 0:
-            graphicsPartName += '_v' + str(displayVersion)
-        self._setMultipleGraphicsVisibility(graphicsPartName, show and bool(self.getDisplayNodeDerivatives()))
+        # workaround for setting multiple visibility of d1/d2 applied to any derivatives starting with same text!
+        with ChangeManager(self._scene):
+            for tmpNodeDerivativeLabel in self._nodeDerivativeLabels:
+                if nodeDerivativeLabel in tmpNodeDerivativeLabel:
+                    graphicsPartName = 'displayNodeDerivatives_' + tmpNodeDerivativeLabel
+                    if displayVersion > 0:
+                        graphicsPartName += '_v' + str(displayVersion)
+                    show = tmpNodeDerivativeLabel in self._settings['displayNodeDerivativeLabels']
+                    self._setMultipleGraphicsVisibility(graphicsPartName, show and bool(self.getDisplayNodeDerivatives()))
 
     def getDisplayNodeDerivativeVersion(self):
         """
