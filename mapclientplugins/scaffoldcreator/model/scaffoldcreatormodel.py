@@ -235,7 +235,7 @@ class ScaffoldCreatorModel(object):
                 group.setName('meshEdits')
                 group.setManaged(True)
             self._unsavedNodeEdits = True
-            self._useCustomScaffoldPackage()
+            # self._useCustomScaffoldPackage()
             nodesetGroup = group.getOrCreateNodesetGroup(nodeset)
         return nodesetGroup
 
